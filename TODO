@@ -1,0 +1,6 @@
+TODO List for mrai:
+In order of importance,
+  1. Make a Makefile for the installation, removal, and updating of mrai
+  2. Ensure the Makefile makes a symlink with aptupdate linking to /bin
+  3. Testing and debugging
+  4. Getting in an existing apt repository or make one for mrai
