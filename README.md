@@ -29,5 +29,5 @@ mrai is an AUR-helper-like script for Debian-based Linux Operating Systems. mrai
   `apt-fast`
   
   
-
+# Notes
 As of yet, this is still pre-production software. There are definitly bugs that need to be worked out, as well as a Makefile that needs to be created to install, uninstall, and update mrai
