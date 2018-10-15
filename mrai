@@ -1,0 +1,456 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+#
+#  mrai
+#  
+#  Copyright 2018 Thomas Castleman <draugeros@gmail.com>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#
+aptinstall () {
+	if [ echo $(apt search "$z" | grep -q "$z") ]; then
+		if [ echo $(apt search apt-fast | grep -q 'installed') ]; then
+			pkexec apt-fast install "$z" || return 2
+		else
+			pkexec apt-get install "$z" || return 2
+		fi
+	else
+		return 1
+	fi
+}
+
+gitautoinst () {
+	cd $HOME
+	mkdir .mrai
+	cd .mrai
+	if [ echo $(echo "$x" | grep -q 'https://github.com/') ] || [ echo $(echo "$x" | grep -q 'http://github.com/') ]; then
+	        git clone "$x"
+	elif [ echo $(echo "$x" | grep -q 'github.com/') ]; then
+	        git clone https://$x
+	else 
+	        git clone https://github.com/$x
+	fi
+	z=$(echo $x | sed 's/.*\///')
+	cd $z
+	if [ $(find Makefile) ] || [ $(find makefile) ]; then
+		make depend
+	        make && make install
+		mkdir "$gitautocache"/"$z" && cp Makefile "$gitautocache"/"$z" || cd .. && rm -rf $z
+		pkexec checkinstall
+		deb=$(find -type f -name "*.deb")
+		cp "$deb" "$gitautocache"/"$z"
+		echo "$x" >> auto.flag
+        #copy Makefile to a directory in a good place in the file system. Name the directory it's in the value of $z
+	else
+	        cd ..
+	        rm -rf $z
+	fi
+}
+
+flatinstall () {
+	if [ echo $(apt search flatpak | grep -q 'installed') ]; then
+		loop=1
+		while [ "$loop" == "1" ]; do
+			q=$(flatpak search "$z")
+			r=$(echo "$q" | awk '{print $1}')
+			if [ "$r" == "No matches found" ]; then
+				flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+				continue
+			elif [ echo $(echo "$r" | grep -q "org.") ] || [ echo $(echo "$r" | grep -q "com.") ]; then
+				set -- "$r"
+				test="$2"
+				if [ -z "$test" ]; then		
+					flatpak install "$r"
+					loop="0"
+				else
+					echo -e "\nERROR: Multiple Installation Candidates Detected.\n"
+					echo -e "Which package would you like to install?\n$r\n"
+					read -p "Please copy-paste the name of the package here: " int
+					flatpak install "$int"
+				fi
+			else
+				loop="0"
+				exit 1
+			fi
+		done
+	else
+		echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -i -a flatpak} or {sudo apt-get install flatpak} to install it.\n"
+	fi
+			
+}
+
+snapinstall () {
+	if [ echo $(apt search snapd | grep -q 'installed') ]; then
+		if [ echo $(snap search "$z" | grep -q "$z") ]; then
+			snap install "$z" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
+			if [ ! -z $ans ]; then
+				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
+					snap install "$z" --classic || return 2
+				else
+					return 2
+				fi
+			fi
+		else
+			return 1
+		fi
+	else
+		exit 1
+	fi
+}
+
+
+gitmaninstall () {
+	read -p "All other installation methods (apt, Snap, flatpak, automatic Github) have failed. Would you like to try manually installing from Github? [y/N]: " ans
+	if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
+		cd $HOME
+		mkdir .mrai
+		cd .mrai
+		if [ echo $(echo "$x" | grep -q 'https://github.com/') ] || [ echo $(echo "$x" | grep -q 'http://github.com/') ]; then
+	        	git clone "$x"
+		elif [ echo $(echo "$x" | grep -q 'github.com/') ]; then
+		        git clone https://$x
+		else 
+		        git clone https://github.com/$x
+		fi
+		z=$(echo $x | sed 's/.*\///')
+		cd $z
+		echo -e "\n$(ls)\n"
+		read -p "Which of the above files would you like to try to run in order to install $z? (Case-Sensitive) : " run
+		read -p "Should this file be run with root privleges? [y/N]: " ans
+		ans=$(echo "$ans" | awk '{print tolower($0)}')
+		if [ "$ans" == "y" ]; then
+			pkexec $(pwd)/$run
+			mkdir "$gitmancache"/"$z" && cp "$run" "$gitmancache"/"$z" || return 2
+			pkexec checkinstall
+			deb=$(find -type f -name "*.deb")
+			cp "$deb" "$gitautocache"/"$z"
+			echo "$x" >> man.flag
+		elif [ "$ans" == "n" ]; then
+			exec $(pwd)/$run
+			mkdir "$gitmancache"/"$z" && cp "$run" "$gitmancache"/"$z" || return 2
+			pkexec checkinstall
+			deb=$(find -type f -name "*.deb")
+			cp "$deb" "$gitautocache"/"$z"
+			echo "$x" >> man.flag
+		elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
+			echo -e "\nAborting . . .\n"
+		else
+			echo -e "\nInput not recognized. Running without root privileges\n"
+			exec $(pwd)/$run
+			mkdir "$gitmancache"/"$z" && cp "$run" "$gitmancache"/"$z" || return 2
+			pkexec checkinstall
+			deb=$(find -type f -name "*.deb")
+			cp "$deb" "$gitautocache"/"$z"
+			echo "$x" >> man.flag
+		fi
+	else
+		echo -e "\nAborting Manual install from Github...\n"
+		exit 1
+	fi
+}
+
+aptremove () {
+	pkexec apt-get -y purge "$y"
+}
+
+gitremove () {
+	cd "$gitautocache"/"$z"
+	if [ echo $( echo $(ls) | grep "Makefile") ]; then
+		make uninstall || make remove || {
+			if [ $(find -type f -name "*.deb") ]; then
+				pak=$(find -type f -name "*.deb")
+				pkexec apt-get remove $(pwd)/"$pak"
+			else
+				echo -e "\nMakefile uninstall method failed and no *.deb back-up file was found.\nPlease run \n{sudo checkinstall && cp $(find -type f -name '*.deb') $gitautocache/$z\nThen run\npkexec apt-get location-of-package/package-name"
+			fi
+		}
+	elif [ echo $( echo $(ls) | grep ".deb") ]; then
+		pak=$(find -type f -name "*.deb")
+		pkexec apt-get remove $(pwd)/"$pak"
+	else
+		echo -e "\nWe're sorry. No Makefile or back-up *.deb file could be found. Therefor, mrai cannot uninstall $z\n"
+	fi
+			
+			
+}
+
+flatremove () {
+	flatpak -y remove "$y"
+}
+
+snapremove () {
+	snap remove "$y"
+}
+
+aptupdate () {
+	if [ echo $(apt search apt-fast | grep -q 'installed') ]; then
+		apt-fast update && apt-fast -y upgrade && apt-fast -y autoremove && apt-fast clean || return 2
+	else
+		apt-get update && apt-get -y upgrade && apt-get -y autoremove && apt-get clean || return 2
+	fi	
+}
+
+gitupdate () {
+	cd "$cache"
+	for each in "$pass":
+		z="$each"
+		if [ echo $( ls | grep -q '$z') ]; then
+			cd "$z"
+			flag=$(ls | grep ".flag")
+			back=$(pwd)
+			del=$(find -type f -name "*.deb")
+			cd $HOME/.mrai/"$z"
+			call=$(cat "$back"/"$flag")
+			if [ echo $(echo "$call" | grep -q 'https://github.com/') ] || [ echo $(echo "$call" | grep -q 'http://github.com/') ]; then
+				git clone "$call"
+			elif [ echo $(echo "$call" | grep -q 'github.com/') ]; then
+	        		git clone https://$call
+			else
+				git clone https://github.com/$call
+			fi
+			if [ echo $( echo $(ls) | grep "Makefile") ]; then
+				make update || make && make install || echo -e "\nMakefile update method failed.\n"
+				rm "$back"/"$del"
+				deb=$(find -type f -name "*.deb")
+				cp "$deb" "$gitautocache"/"$z"
+			else
+				echo -e "\n$(ls)\n"
+				read -p "Which of the above files would you like to try to run in order to update $z? (Case-Sensitive) : " run
+				read -p "Should this file be run with root privleges? [y/N]: " ans
+				read -p "If there is an option, or options, which should be passed while running this file, please enter them now: " opt
+				ans=$(echo "$ans" | awk '{print tolower($0)}')
+				if [ "$ans" == "y" ]; then
+					pkexec $(pwd)/$run $opt
+					pkexec checkinstall
+					rm "$back"/"$del"
+					deb=$(find -type f -name "*.deb")
+					cp "$deb" "$gitautocache"/"$z"
+				elif [ "$ans" == "n" ]; then
+					exec $(pwd)/$run $opt
+					pkexec checkinstall
+					rm "$back"/"$del"
+					deb=$(find -type f -name "*.deb")
+					cp "$deb" "$gitautocache"/"$z"
+				elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
+					echo -e "\nAborting . . .\n" && exit 0
+				else
+					echo -e "\nInput not recognized. Running without root privileges\n"
+					exec $(pwd)/$run $opt
+					pkexec checkinstall
+					rm "$back"/"$del"
+					deb=$(find -type f -name "*.deb")
+					cp "$deb" "$gitautocache"/"$z"
+				fi
+			fi
+		else
+			echo -e "\nThis app does not appear to be installed from GitHub.\n"
+		fi
+	done
+}
+
+flatupdate () {
+	flatpak update
+}
+
+checkinstalltype () {
+	if [ echo $( apt search "$pass" | grep -q "$pass") ]; then
+		return 0
+	elif [ echo $( snap search "$pass" | grep -q "$pass") ]; then
+		return 1
+	elif [ echo $( flatpak search "$pass" | grep -q "$pass") ]; then
+		return 2
+	elif [ echo $( ls --group-directories-first "$gitautocache" | grep -q "$pass") ]; then
+		return 3
+	elif [ echo $( ls --group-directories-first "$gitmancache" | grep -q "$pass") ]; then
+		return 4
+	else
+		return 5
+	fi
+}
+
+gitautolist () {
+	echo ""
+	ls --group-directories-first "$gitautocache"
+	echo ""
+}
+
+gitmanlist () {
+	echo ""
+	ls --group-directories-first "$gitmancache"
+	echo ""
+}
+
+h="mrai Package Manager: the Multiple Repo App Installer
+Usage:
+
+To Install:
+   mrai -i {github-username/github-repo-name (or Github URL)} {possible-apt-package-name (or name to be installed under) }
+
+To Remove:
+   mrai -r {name-installed-under}
+
+To Update:
+   mrai -u {github-username/github-repo-name (or Github URL)} {possible-apt-package-name (or name installed under) }
+
+To Search:
+   mrai -S {package-name}
+
+Options:
+-i, --install		Install an app, if none of the below options are given, check in the following order:
+				Github automatic,
+				apt-get,
+				snap,
+				flatpak,
+				Github manual
+
+	-a, --apt	Install just from apt-get. In which case, usage will be:
+
+				mrai -i -a {apt-package-name}
+
+	-g, --git	Install just from Github, In which case, usage will be:
+			
+				mrai -i -g {/github-username/github-repo-name (or Github URL)}
+
+	-s, --snap 	Install just from snapd, In which case, usage will be:
+
+				mrai -i -s {snap-name}
+	
+	-f, --flat	Install as Flatpak, In which case, usage will be:
+
+				mrai -i -f {flatpak-name}
+
+-h, --help		Display this help dialoge and exit.
+
+-r, --remove,		Uninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,
+  --uninstall			the name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed
+
+-S, --search,		Search for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,
+  --find			please vist https://www.github.com
+	
+	-a, --apt	Search for an app through apt-get
+
+	-s, --snap	Search for an app through snap
+
+	-f, --flat	Search for an app through flatpak
+
+	--ga		Search for an app that was installed using GitHub Automatic Method
+
+	--gm		Search for an app that was installed using GitHub Manual Method
+
+	--git		Search for an app installed from GitHub, regardless of method
+
+-u, --update		Update your software. This may or may not work for packages installed from Github.
+
+	-a, --apt	Update from only apt-get
+
+	-f, --flat	Update from only Flatpak
+
+	-g, --git	Update from only Github"
+x="$1"
+y="$2"
+z="$3"
+w="$4"
+cache="/etc/mrai"
+gitautocache="/etc/mrai/gitauto"
+gitmancache="/etc/mrai/gitman"
+if [ -z "$x" ] && [ -z "$y" ]; then
+	echo -e "\n$h\n"
+	exit 0
+else
+	if [ "$x" == "-i" ] || [ "$x" == "--install" ]; then
+		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
+			aptinstall && exit 0 || exit 2
+		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
+			y="$z"
+			gitautoinstall && exit 0 || gitmaninstall && exit 1 || exit 2
+		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
+			snapinstall && exit 0 || exit 2
+		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
+			y="$z"
+			flatinstall && exit 0 || exit 2
+		else
+			echo -e "\nAttempting to install\n"	
+			aptinstall || snapinstall || gitautoinst || flatinstall || gitmaninstall || echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n" && exit 2
+		fi
+	elif [ "$x" == "-r" ] || [ "$x" == "--remove" ] || [ "$x" == "--uninstall" ]; then
+		pass="$y"
+		type=$(checkinstalltype)
+		if [ "$type" == "0" ]; then
+			aptremove
+		elif [ "$type" == "1" ]; then
+			snapremove
+		elif [ "$type" == "2" ]; then
+			flatremove
+		elif [ "$type" == "3" ]; then
+			gitautoremove
+		elif [ "$type" == "4" ]; then
+			gitmanremove
+		elif [ "type" == "5" ]; then
+			echo -e "\nAccording to all our databases, this app is not installed.\n"
+			exit 1
+		else
+			echo -e "\nmrai has encountered an error in function {checkinstalltype}.\nPlease contact Thomas Castleman at draugeros@gmail.com to submit a bug report.\n"
+			exit 2
+		fi
+	elif [ "$x" == "-u" ] || [ "$x" == "--update" ]; then
+		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
+			pkexec aptupdate
+		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
+			flatupdate
+		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
+			each="$z"
+			gitupdate
+		else
+			pkexec aptupdate
+			flatupdate
+			t=$(gitautolist)
+			r=$(gitmanlist)
+			pass="$t $r"
+			gitupdate
+		fi
+	elif [ "$x" == "-h" ] || [ "$x" == "--help" ]; then
+		echo -e "\n$h\n"
+		exit 0
+	elif [ "$x" == "-S" ] || [ "$x" == "--search" ] || [ "$x" == "--find" ]; then
+		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
+			apt search "$z"
+		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
+			flatpak search "$z"
+		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
+			snap search "$z"
+		elif [ "$y" == "--gm" ]; then
+			list=$(gitmanlist | grep "$z")
+			echo -e "\n$list\n"
+		elif [ "$y" == "--ga" ]; then
+			list=$(gitautolist | grep "$z")
+			echo -e "\n$list\n"
+		elif [ "$y" == "--git" ]; then
+			list1=$(gitmanlist | grep "$z")
+			list2=$(gitmanlist | grep "$z")
+			list="$list1 $list2"
+			echo -e "\n$list\n"
+		else
+			list1=$(gitmanlist | grep "$z")
+			list2=$(gitmanlist | grep "$z")
+			apt search "$z"
+			flatpak search "$z"
+			snap search "$z"
+			list="$list1 $list2"
+		fi
+	else
+		echo -e "\We're sorry. mrai encountered a core error.\nPlease contact Thomas Castleman at draugeros@gmail.com to submit a bug report.\n"
+	fi
+fi
