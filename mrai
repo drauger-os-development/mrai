@@ -204,6 +204,10 @@ aptupdate () {
 }
 
 gitupdate () {
+	if [ "$pass" == " " ]; then
+		echo -e "\nNo Apps installed from GitHub through mrai.\n"
+		return 0
+	fi
 	cd "$cache"
 	for each in "$pass"; do
 		z="$each"
@@ -282,15 +286,11 @@ checkinstalltype () {
 }
 
 gitautolist () {
-	echo ""
-	ls --group-directories-first "$gitautocache"
-	echo ""
+	ls --group-directories-first $gitautocache
 }
 
 gitmanlist () {
-	echo ""
-	ls --group-directories-first "$gitmancache"
-	echo ""
+	ls --group-directories-first $gitmancache
 }
 
 h="mrai Package Manager: the Multiple Repo App Installer
@@ -366,11 +366,9 @@ w="$4"
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
-if [[ "$EUID" == "0" ]]; then
-    echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with the GitHub installations.\n" && exit 2
-fi
 if [ -z "$x" ] && [ -z "$y" ]; then
-	echo -e "\n$h\n" && exit 0
+	echo -e "\n$h\n"
+	exit 0
 else
 	if [ "$x" == "-i" ] || [ "$x" == "--install" ]; then
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
@@ -451,6 +449,7 @@ else
 			flatpak search "$z"
 			snap search "$z"
 			list="$list1 $list2"
+			echo "$list"
 		fi
 	else
 		echo -e "\We're sorry. mrai encountered a core error.\nPlease contact Thomas Castleman at draugeros@gmail.com to submit a bug report.\n"
