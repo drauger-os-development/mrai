@@ -205,7 +205,7 @@ aptupdate () {
 
 gitupdate () {
 	cd "$cache"
-	for each in "$pass":
+	for each in "$pass"; do
 		z="$each"
 		if [ echo $( ls | grep -q '$z') ]; then
 			cd "$z"
