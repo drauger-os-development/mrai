@@ -366,9 +366,11 @@ w="$4"
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
+if [[ "$EUID" == "0" ]]; then
+    echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with the GitHub installations.\n" && exit 2
+fi
 if [ -z "$x" ] && [ -z "$y" ]; then
-	echo -e "\n$h\n"
-	exit 0
+	echo -e "\n$h\n" && exit 0
 else
 	if [ "$x" == "-i" ] || [ "$x" == "--install" ]; then
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
