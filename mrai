@@ -73,13 +73,13 @@ flatinstall () {
 				set -- "$r"
 				test="$2"
 				if [ -z "$test" ]; then		
-					flatpak install "$r"
+					flatpak install -y flathub "$r"
 					loop="0"
 				else
 					echo -e "\nERROR: Multiple Installation Candidates Detected.\n"
 					echo -e "Which package would you like to install?\n$r\n"
 					read -p "Please copy-paste the name of the package here: " int
-					flatpak install "$int"
+					flatpak install -y flathub "$int"
 				fi
 			else
 				loop="0"
@@ -91,7 +91,6 @@ flatinstall () {
 	fi
 			
 }
-
 snapinstall () {
 	if [ echo $(apt search snapd | grep -q 'installed') ]; then
 		if [ echo $(snap search "$z" | grep -q "$z") ]; then
