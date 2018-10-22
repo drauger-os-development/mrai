@@ -269,15 +269,15 @@ flatupdate () {
 }
 
 checkinstalltype () {
-	if [[ $(apt search "$pass" | grep "$pass" | grep -q 'installed') == "0" ]]; then
+	if [[ $(apt list --installed | grep -q "$pass") ]]; then
 		type=0
-	elif [[ $(snap search "$pass" | grep -q "$pass") == "0" ]]; then
+	elif [[ $(snap list | grep -q "$pass") ]]; then
 		type=1
-	elif [[ $(flatpak search "$pass" | grep -q "$pass") == "0" ]]; then
+	elif [[ $(flatpak list  | grep -q "$pass") ]]; then
 		type=2
-	elif [[ $(ls --group-directories-first "$gitautocache" | grep -q "$pass") == "0" ]]; then
+	elif [[ $(ls --group-directories-first "$gitautocache" | grep -q "$pass") ]]; then
 		type=3
-	elif [[ $(ls --group-directories-first "$gitmancache" | grep -q "$pass") == "0" ]]; then
+	elif [[ $(ls --group-directories-first "$gitmancache" | grep -q "$pass") ]]; then
 		type=4
 	else
 		type=5
