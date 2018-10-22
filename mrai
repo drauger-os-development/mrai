@@ -269,18 +269,18 @@ flatupdate () {
 }
 
 checkinstalltype () {
-	if [ echo $( apt search "$pass" | grep -q "$pass") ]; then
-		return 0
-	elif [ echo $( snap search "$pass" | grep -q "$pass") ]; then
-		return 1
-	elif [ echo $( flatpak search "$pass" | grep -q "$pass") ]; then
-		return 2
-	elif [ echo $( ls --group-directories-first "$gitautocache" | grep -q "$pass") ]; then
-		return 3
-	elif [ echo $( ls --group-directories-first "$gitmancache" | grep -q "$pass") ]; then
-		return 4
+	if [[ $(apt search "$pass" | grep "$pass" | grep -q 'installed') == "0" ]]; then
+		type=0
+	elif [[ $(snap search "$pass" | grep -q "$pass") == "0" ]]; then
+		type=1
+	elif [[ $(flatpak search "$pass" | grep -q "$pass") == "0" ]]; then
+		type=2
+	elif [[ $(ls --group-directories-first "$gitautocache" | grep -q "$pass") == "0" ]]; then
+		type=3
+	elif [[ $(ls --group-directories-first "$gitmancache" | grep -q "$pass") == "0" ]]; then
+		type=4
 	else
-		return 5
+		type=5
 	fi
 }
 
@@ -389,7 +389,7 @@ else
 		fi
 	elif [ "$x" == "-r" ] || [ "$x" == "--remove" ] || [ "$x" == "--uninstall" ]; then
 		pass="$y"
-		type=$(checkinstalltype)
+		checkinstalltype
 		if [ "$type" == "0" ]; then
 			aptremove
 		elif [ "$type" == "1" ]; then
