@@ -21,8 +21,8 @@
 #  MA 02110-1301, USA.
 #
 aptinstall () {
-	if [ echo $(apt search "$pass" | grep -q "$pass") ]; then
-		if [ echo $(apt search apt-fast | grep -q 'installed') ]; then
+	if $(apt search "$pass" | grep -q "$pass"); then
+		if $(apt search apt-fast | grep -q 'installed'); then
 			pkexec apt-fast install "$pass" || return 2
 		else
 			pkexec apt-get install "$pass" || return 2
@@ -36,16 +36,16 @@ gitautoinst () {
 	cd $HOME
 	mkdir .mrai
 	cd .mrai
-	if [ echo $(echo "$pass" | grep -q 'https://github.com/') ] || [ echo $(echo "$pass" | grep -q 'http://github.com/') ]; then
+	if $(echo "$pass" | grep -q 'https://github.com/') || $(echo "$pass" | grep -q 'http://github.com/'); then
 	        git clone "$pass"
-	elif [ echo $(echo "$pass" | grep -q 'github.com/') ]; then
+	elif $(echo "$pass" | grep -q 'github.com/'); then
 	        git clone https://$pass
 	else 
 	        git clone https://github.com/$pass
 	fi
 	pass1=$(echo $pass | sed 's/.*\///')
 	cd $pass1
-	if [ $(find Makefile) ] || [ $(find makefile) ]; then
+	if $(find Makefile) || $(find makefile); then
 		make depend
 	        make && make install
 		mkdir "$gitautocache"/"$z" && cp Makefile "$gitautocache"/"$pass1" || cd .. && rm -rf $pass1
@@ -61,7 +61,7 @@ gitautoinst () {
 }
 
 flatinstall () {
-	if [ echo $(apt list --installed | grep -q 'flatpak') ]; then
+	if $(apt list --installed | grep -q 'flatpak'); then
 		loop=1
 		while [ "$loop" == "1" ]; do
 			q=$(flatpak search "$pass")
@@ -69,7 +69,7 @@ flatinstall () {
 			if [ "$r" == "No matches found" ]; then
 				flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 				continue
-			elif [ echo $(echo "$r" | grep -q "org.") ] || [ echo $(echo "$r" | grep -q "com.") ]; then
+			elif $(echo "$r" | grep -q "org.") || $(echo "$r" | grep -q "com."); then
 				set -- "$r"
 				test="$2"
 				if [ -z "$test" ]; then		
@@ -93,8 +93,8 @@ flatinstall () {
 }
 
 snapinstall () {
-	if [ echo $(apt list --installed | grep -q 'snapd') ]; then
-		if [ echo $(snap search "$pass" | grep -q "$pass") ]; then
+	if $(apt list --installed | grep -q 'snapd'); then
+		if $(snap search "$pass" | grep -q "$pass"); then
 			snap install "$pass" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ ! -z $ans ]; then
 				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
@@ -118,9 +118,9 @@ gitmaninstall () {
 		cd $HOME
 		mkdir .mrai
 		cd .mrai
-		if [ echo $(echo "$pass" | grep -q 'https://github.com/') ] || [ echo $(echo "$pass" | grep -q 'http://github.com/') ]; then
+		if $(echo "$pass" | grep -q 'https://github.com/') || $(echo "$pass" | grep -q 'http://github.com/'); then
 	        	git clone "$pass"
-		elif [ echo $(echo "$pass" | grep -q 'github.com/') ]; then
+		elif $(echo "$pass" | grep -q 'github.com/'); then
 		        git clone https://$pass
 		else 
 		        git clone https://github.com/$pass
@@ -168,16 +168,16 @@ aptremove () {
 
 gitremove () {
 	cd "$gitautocache"/"$pass"
-	if [ echo $( echo $(ls) | grep "Makefile") ]; then
+	if $( echo $(ls) | grep "Makefile"); then
 		make uninstall || make remove || {
-			if [ $(find -type f -name "*.deb") ]; then
+			if $(find -type f -name "*.deb"); then
 				pak=$(find -type f -name "*.deb")
 				pkexec apt-get remove $(pwd)/"$pak"
 			else
 				echo -e "\nMakefile uninstall method failed and no *.deb back-up file was found.\nPlease run \n{sudo checkinstall && cp $(find -type f -name '*.deb') $gitautocache/$z\nThen run\npkexec apt-get location-of-package/package-name"
 			fi
 		}
-	elif [ echo $( echo $(ls) | grep ".deb") ]; then
+	elif $( echo $(ls) | grep ".deb"); then
 		pak=$(find -type f -name "*.deb")
 		pkexec apt-get remove $(pwd)/"$pak"
 	else
@@ -203,21 +203,21 @@ gitupdate () {
 	cd "$cache"
 	for each in "$pass"; do
 		pass1="$each"
-		if [ echo $( ls | grep -q '$z') ]; then
+		if $( ls | grep -q '$z'); then
 			cd "$pass1"
 			flag=$(ls | grep ".flag")
 			back=$(pwd)
 			del=$(find -type f -name "*.deb")
 			cd $HOME/.mrai/"$pass1"
 			call=$(cat "$back"/"$flag")
-			if [ echo $(echo "$call" | grep -q 'https://github.com/') ] || [ echo $(echo "$call" | grep -q 'http://github.com/') ]; then
+			if $(echo "$call" | grep -q 'https://github.com/') || $(echo "$call" | grep -q 'http://github.com/'); then
 				git clone "$call"
-			elif [ echo $(echo "$call" | grep -q 'github.com/') ]; then
+			elif $(echo "$call" | grep -q 'github.com/'); then
 	        		git clone https://$call
 			else
 				git clone https://github.com/$call
 			fi
-			if [ echo $( echo $(ls) | grep "Makefile") ]; then
+			if $( echo $(ls) | grep "Makefile"); then
 				make update || make && make install || echo -e "\nMakefile update method failed.\n"
 				rm "$back"/"$del"
 				deb=$(find -type f -name "*.deb")
@@ -262,15 +262,15 @@ flatupdate () {
 }
 
 checkinstalltype () {
-	if [[ $(apt list --installed | grep -q "$pass") == 0 ]]; then
+	if $(apt list --installed | grep -q "$pass"); then
 		type=0
-	elif [[ $(snap list | grep -q "$pass") == 0 ]]; then
+	elif $(snap list | grep -q "$pass"); then
 		type=1
-	elif [[ $(flatpak list  | grep -q "$pass") == 0 ]]; then
+	elif $(flatpak list  | grep -q "$pass"); then
 		type=2
-	elif [[ $(ls --group-directories-first "$gitautocache" | grep -q "$pass") == 0 ]]; then
+	elif $(ls --group-directories-first "$gitautocache" | grep -q "$pass"); then
 		type=3
-	elif [[ $(ls --group-directories-first "$gitmancache" | grep -q "$pass") == 0 ]]; then
+	elif $(ls --group-directories-first "$gitmancache" | grep -q "$pass"); then
 		type=4
 	else
 		type=5
@@ -446,11 +446,11 @@ else
 			list2=$(gitautolist | grep "$y")
 			echo -e "\nApt packages:\n"
 			apt search "$y"
-			if [ echo $(apt list --installed | grep -q 'flatpak') ]; then
+			if $(apt list --installed | grep -q 'flatpak'); then
 				echo -e "\nFlatpak Packages:\n"
 				flatpak search "$y"
 			fi
-			if [ echo $(apt list --installed | grep -q 'flatpak') ]; then
+			if $(apt list --installed | grep -q 'snap'); then
 				echo -e "\nSnap Packages:\n"
 				snap search "$y"
 			fi
