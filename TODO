@@ -1,8 +1,4 @@
 TODO List for mrai:
 In order of importanc
   1. Create an installation method for the installation, removal, and updating of mrai
-  2. Testing and debugging
-    Known bugs:
-      1. When installing an app using the normal `mrai -i` method, nothing gets installed
-      2. When uninstalling, function checkinstalltype is not returning the correct value associated with the given installation type
-  3. Getting in an existing apt repository or make one for mrai
+  2. Getting in an existing apt repository or make one for mrai
