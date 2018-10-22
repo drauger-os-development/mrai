@@ -21,11 +21,11 @@
 #  MA 02110-1301, USA.
 #
 aptinstall () {
-	if [ echo $(apt search "$z" | grep -q "$z") ]; then
+	if [ echo $(apt search "$pass" | grep -q "$pass") ]; then
 		if [ echo $(apt search apt-fast | grep -q 'installed') ]; then
-			pkexec apt-fast install "$z" || return 2
+			pkexec apt-fast install "$pass" || return 2
 		else
-			pkexec apt-get install "$z" || return 2
+			pkexec apt-get install "$pass" || return 2
 		fi
 	else
 		return 1
@@ -36,35 +36,35 @@ gitautoinst () {
 	cd $HOME
 	mkdir .mrai
 	cd .mrai
-	if [ echo $(echo "$x" | grep -q 'https://github.com/') ] || [ echo $(echo "$x" | grep -q 'http://github.com/') ]; then
-	        git clone "$x"
-	elif [ echo $(echo "$x" | grep -q 'github.com/') ]; then
-	        git clone https://$x
+	if [ echo $(echo "$pass" | grep -q 'https://github.com/') ] || [ echo $(echo "$pass" | grep -q 'http://github.com/') ]; then
+	        git clone "$pass"
+	elif [ echo $(echo "$pass" | grep -q 'github.com/') ]; then
+	        git clone https://$pass
 	else 
-	        git clone https://github.com/$x
+	        git clone https://github.com/$pass
 	fi
-	z=$(echo $x | sed 's/.*\///')
-	cd $z
+	pass1=$(echo $pass | sed 's/.*\///')
+	cd $pass1
 	if [ $(find Makefile) ] || [ $(find makefile) ]; then
 		make depend
 	        make && make install
-		mkdir "$gitautocache"/"$z" && cp Makefile "$gitautocache"/"$z" || cd .. && rm -rf $z
+		mkdir "$gitautocache"/"$z" && cp Makefile "$gitautocache"/"$pass1" || cd .. && rm -rf $pass1
 		pkexec checkinstall
 		deb=$(find -type f -name "*.deb")
-		cp "$deb" "$gitautocache"/"$z"
-		echo "$x" >> auto.flag
+		cp "$deb" "$gitautocache"/"$pass1"
+		echo "$pass" >> auto.flag
         #copy Makefile to a directory in a good place in the file system. Name the directory it's in the value of $z
 	else
 	        cd ..
-	        rm -rf $z
+	        rm -rf $pass1
 	fi
 }
 
 flatinstall () {
-	if [ echo $(apt search flatpak | grep -q 'installed') ]; then
+	if [ echo $(apt list --installed | grep -q 'flatpak') ]; then
 		loop=1
 		while [ "$loop" == "1" ]; do
-			q=$(flatpak search "$z")
+			q=$(flatpak search "$pass")
 			r=$(echo "$q" | awk '{print $1}')
 			if [ "$r" == "No matches found" ]; then
 				flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -91,13 +91,14 @@ flatinstall () {
 	fi
 			
 }
+
 snapinstall () {
-	if [ echo $(apt search snapd | grep -q 'installed') ]; then
-		if [ echo $(snap search "$z" | grep -q "$z") ]; then
-			snap install "$z" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
+	if [ echo $(apt list --installed | grep -q 'snapd') ]; then
+		if [ echo $(snap search "$pass" | grep -q "$pass") ]; then
+			snap install "$pass" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ ! -z $ans ]; then
 				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-					snap install "$z" --classic || return 2
+					snap install "$pass" --classic || return 2
 				else
 					return 2
 				fi
@@ -117,43 +118,43 @@ gitmaninstall () {
 		cd $HOME
 		mkdir .mrai
 		cd .mrai
-		if [ echo $(echo "$x" | grep -q 'https://github.com/') ] || [ echo $(echo "$x" | grep -q 'http://github.com/') ]; then
-	        	git clone "$x"
-		elif [ echo $(echo "$x" | grep -q 'github.com/') ]; then
-		        git clone https://$x
+		if [ echo $(echo "$pass" | grep -q 'https://github.com/') ] || [ echo $(echo "$pass" | grep -q 'http://github.com/') ]; then
+	        	git clone "$pass"
+		elif [ echo $(echo "$pass" | grep -q 'github.com/') ]; then
+		        git clone https://$pass
 		else 
-		        git clone https://github.com/$x
+		        git clone https://github.com/$pass
 		fi
-		z=$(echo $x | sed 's/.*\///')
-		cd $z
+		pass1=$(echo $pass | sed 's/.*\///')
+		cd $pass1
 		echo -e "\n$(ls)\n"
 		read -p "Which of the above files would you like to try to run in order to install $z? (Case-Sensitive) : " run
 		read -p "Should this file be run with root privleges? [y/N]: " ans
 		ans=$(echo "$ans" | awk '{print tolower($0)}')
 		if [ "$ans" == "y" ]; then
 			pkexec $(pwd)/$run
-			mkdir "$gitmancache"/"$z" && cp "$run" "$gitmancache"/"$z" || return 2
+			mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
 			pkexec checkinstall
 			deb=$(find -type f -name "*.deb")
-			cp "$deb" "$gitautocache"/"$z"
-			echo "$x" >> man.flag
+			cp "$deb" "$gitautocache"/"$pass1"
+			echo "$pass" >> man.flag
 		elif [ "$ans" == "n" ]; then
 			exec $(pwd)/$run
-			mkdir "$gitmancache"/"$z" && cp "$run" "$gitmancache"/"$z" || return 2
+			mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
 			pkexec checkinstall
 			deb=$(find -type f -name "*.deb")
-			cp "$deb" "$gitautocache"/"$z"
-			echo "$x" >> man.flag
+			cp "$deb" "$gitautocache"/"$pass1"
+			echo "$pass" >> man.flag
 		elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
 			echo -e "\nAborting . . .\n"
 		else
 			echo -e "\nInput not recognized. Running without root privileges\n"
 			exec $(pwd)/$run
-			mkdir "$gitmancache"/"$z" && cp "$run" "$gitmancache"/"$z" || return 2
+			mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
 			pkexec checkinstall
 			deb=$(find -type f -name "*.deb")
-			cp "$deb" "$gitautocache"/"$z"
-			echo "$x" >> man.flag
+			cp "$deb" "$gitautocache"/"$pass1"
+			echo "$pass" >> man.flag
 		fi
 	else
 		echo -e "\nAborting Manual install from Github...\n"
@@ -162,11 +163,11 @@ gitmaninstall () {
 }
 
 aptremove () {
-	pkexec apt-get -y purge "$y"
+	pkexec apt-get -y purge "$pass"
 }
 
 gitremove () {
-	cd "$gitautocache"/"$z"
+	cd "$gitautocache"/"$pass"
 	if [ echo $( echo $(ls) | grep "Makefile") ]; then
 		make uninstall || make remove || {
 			if [ $(find -type f -name "*.deb") ]; then
@@ -187,35 +188,27 @@ gitremove () {
 }
 
 flatremove () {
-	flatpak -y remove "$y"
+	flatpak -y remove "$pass"
 }
 
 snapremove () {
-	snap remove "$y"
-}
-
-aptupdate () {
-	if [ echo $(apt search apt-fast | grep -q 'installed') ]; then
-		apt-fast update && apt-fast -y upgrade && apt-fast -y autoremove && apt-fast clean || return 2
-	else
-		apt-get update && apt-get -y upgrade && apt-get -y autoremove && apt-get clean || return 2
-	fi	
+	snap remove "$pass"
 }
 
 gitupdate () {
-	if [ "$pass" == " " ]; then
+	if [ "$pass" == " " ] || [ "$pass" == "" ]; then
 		echo -e "\nNo Apps installed from GitHub through mrai.\n"
 		return 0
 	fi
 	cd "$cache"
 	for each in "$pass"; do
-		z="$each"
+		pass1="$each"
 		if [ echo $( ls | grep -q '$z') ]; then
-			cd "$z"
+			cd "$pass1"
 			flag=$(ls | grep ".flag")
 			back=$(pwd)
 			del=$(find -type f -name "*.deb")
-			cd $HOME/.mrai/"$z"
+			cd $HOME/.mrai/"$pass1"
 			call=$(cat "$back"/"$flag")
 			if [ echo $(echo "$call" | grep -q 'https://github.com/') ] || [ echo $(echo "$call" | grep -q 'http://github.com/') ]; then
 				git clone "$call"
@@ -228,7 +221,7 @@ gitupdate () {
 				make update || make && make install || echo -e "\nMakefile update method failed.\n"
 				rm "$back"/"$del"
 				deb=$(find -type f -name "*.deb")
-				cp "$deb" "$gitautocache"/"$z"
+				cp "$deb" "$gitautocache"/"$pass1"
 			else
 				echo -e "\n$(ls)\n"
 				read -p "Which of the above files would you like to try to run in order to update $z? (Case-Sensitive) : " run
@@ -240,13 +233,13 @@ gitupdate () {
 					pkexec checkinstall
 					rm "$back"/"$del"
 					deb=$(find -type f -name "*.deb")
-					cp "$deb" "$gitautocache"/"$z"
+					cp "$deb" "$gitautocache"/"$pass1"
 				elif [ "$ans" == "n" ]; then
 					exec $(pwd)/$run $opt
 					pkexec checkinstall
 					rm "$back"/"$del"
 					deb=$(find -type f -name "*.deb")
-					cp "$deb" "$gitautocache"/"$z"
+					cp "$deb" "$gitautocache"/"$pass1"
 				elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
 					echo -e "\nAborting . . .\n" && exit 0
 				else
@@ -255,7 +248,7 @@ gitupdate () {
 					pkexec checkinstall
 					rm "$back"/"$del"
 					deb=$(find -type f -name "*.deb")
-					cp "$deb" "$gitautocache"/"$z"
+					cp "$deb" "$gitautocache"/"$pass1"
 				fi
 			fi
 		else
@@ -269,15 +262,15 @@ flatupdate () {
 }
 
 checkinstalltype () {
-	if [[ $(apt list --installed | grep -q "$pass") ]]; then
+	if [[ $(apt list --installed | grep -q "$pass") == 0 ]]; then
 		type=0
-	elif [[ $(snap list | grep -q "$pass") ]]; then
+	elif [[ $(snap list | grep -q "$pass") == 0 ]]; then
 		type=1
-	elif [[ $(flatpak list  | grep -q "$pass") ]]; then
+	elif [[ $(flatpak list  | grep -q "$pass") == 0 ]]; then
 		type=2
-	elif [[ $(ls --group-directories-first "$gitautocache" | grep -q "$pass") ]]; then
+	elif [[ $(ls --group-directories-first "$gitautocache" | grep -q "$pass") == 0 ]]; then
 		type=3
-	elif [[ $(ls --group-directories-first "$gitmancache" | grep -q "$pass") ]]; then
+	elif [[ $(ls --group-directories-first "$gitmancache" | grep -q "$pass") == 0 ]]; then
 		type=4
 	else
 		type=5
@@ -374,22 +367,26 @@ if [ -z "$x" ] && [ -z "$y" ]; then
 else
 	if [ "$x" == "-i" ] || [ "$x" == "--install" ]; then
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
+			pass="$z"
 			aptinstall && exit 0 || exit 2
 		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
-			y="$z"
+			pass="$z"
 			gitautoinstall && exit 0 || gitmaninstall && exit 1 || exit 2
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
+			pass="$z"
 			snapinstall && exit 0 || exit 2
 		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
-			y="$z"
+			pass="$z"
 			flatinstall && exit 0 || exit 2
 		else
-			echo -e "\nAttempting to install\n"	
+			echo -e "\nAttempting to install\n"
+			pass="$y"	
 			aptinstall || snapinstall || gitautoinst || flatinstall || gitmaninstall || echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n" && exit 2
 		fi
 	elif [ "$x" == "-r" ] || [ "$x" == "--remove" ] || [ "$x" == "--uninstall" ]; then
-		pass="$y"
+		pass="$y"		
 		checkinstalltype
+		echo "$type"
 		if [ "$type" == "0" ]; then
 			aptremove
 		elif [ "$type" == "1" ]; then
@@ -400,7 +397,7 @@ else
 			gitautoremove
 		elif [ "$type" == "4" ]; then
 			gitmanremove
-		elif [ "type" == "5" ]; then
+		elif [ "$type" == "5" ]; then
 			echo -e "\nAccording to all our databases, this app is not installed.\n"
 			exit 1
 		else
@@ -413,7 +410,7 @@ else
 		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
 			flatupdate
 		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
-			each="$z"
+			pass="$z"
 			gitupdate
 		else
 			pkexec aptupdate
@@ -441,17 +438,29 @@ else
 			echo -e "\n$list\n"
 		elif [ "$y" == "--git" ]; then
 			list1=$(gitmanlist | grep "$z")
-			list2=$(gitmanlist | grep "$z")
+			list2=$(gitautolist | grep "$z")
 			list="$list1 $list2"
 			echo -e "\n$list\n"
 		else
-			list1=$(gitmanlist | grep "$z")
-			list2=$(gitmanlist | grep "$z")
-			apt search "$z"
-			flatpak search "$z"
-			snap search "$z"
+			list1=$(gitmanlist | grep "$y")
+			list2=$(gitautolist | grep "$y")
+			echo -e "\nApt packages:\n"
+			apt search "$y"
+			if [ echo $(apt list --installed | grep -q 'flatpak') ]; then
+				echo -e "\nFlatpak Packages:\n"
+				flatpak search "$y"
+			fi
+			if [ echo $(apt list --installed | grep -q 'flatpak') ]; then
+				echo -e "\nSnap Packages:\n"
+				snap search "$y"
+			fi
 			list="$list1 $list2"
-			echo "$list"
+			echo -e "\nInstalled GitHub Apps:\n"
+			if [ "$list" == " " ]; then
+				echo -e "No matching GitHub Apps Installed.\n"
+			else
+				echo "$list"
+			fi
 		fi
 	else
 		echo -e "\We're sorry. mrai encountered a core error.\nPlease contact Thomas Castleman at draugeros@gmail.com to submit a bug report.\n"
