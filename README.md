@@ -9,7 +9,7 @@ mrai (meer-eye)
 mrai: Multiple Repository App Installer
 ---
 
-mrai is an AUR-helper-like script for Debian-based Linux Operating Systems. mrai works with apt, snaps, flatpaks, and can install apps from GitHub.
+`mrai` is an AUR-helper-like script for Debian-based Linux Operating Systems. `mrai` works with apt, snaps, flatpaks, and can install apps from GitHub.
 
 # Dependencies
   `apt`
