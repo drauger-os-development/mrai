@@ -39,8 +39,8 @@ Right now, the prefered method of installtion is to either install `mrai` from t
 To uninstall, run the following code:
 
   If installed from GitHub repo:
-  `sudo rm /bin/mrai
-  sudo rm /bin/aptupdate
+  `sudo rm /bin/mrai;
+  sudo rm /bin/aptupdate;
   sudo rm -rf /etc/mrai`
   
   If installed from the .deb package:
