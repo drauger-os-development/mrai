@@ -67,8 +67,14 @@ flatinstall () {
 			q=$(flatpak search "$pass")
 			r=$(echo "$q" | awk '{print $1}')
 			if [ "$r" == "No matches found" ]; then
-				flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-				continue
+				list=$(flatpak remotes)
+				if $(echo "$list" | grep -q 'flathub'); then
+					echo -e "\nNo installation candidates found.\n"
+					exit 1
+				else
+					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+					continue
+				fi
 			elif $(echo "$r" | grep -q "org.") || $(echo "$r" | grep -q "com.") || $(echo "$r" | grep -q "ws."); then
 				set -- "$r"
 				test="$2"
