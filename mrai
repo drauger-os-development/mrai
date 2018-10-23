@@ -81,6 +81,7 @@ flatinstall () {
 				if [ -z "$test" ]; then		
 					list=$(flatpak remotes)
 					list1=$(echo "$list" | awk '{print $1}')
+					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
 					for entry in $list1; do
 						flatpak install -y "$entry" "$r" && break || echo -e "\nFlatpak installation from $entry failed.\n"
 					done
