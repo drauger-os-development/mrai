@@ -69,7 +69,7 @@ flatinstall () {
 			if [ "$r" == "No matches found" ]; then
 				flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 				continue
-			elif $(echo "$r" | grep -q "org.") || $(echo "$r" | grep -q "com."); then
+			elif $(echo "$r" | grep -q "org.") || $(echo "$r" | grep -q "com.") || $(echo "$r" | grep -q "ws."); then
 				set -- "$r"
 				test="$2"
 				if [ -z "$test" ]; then		
