@@ -9,6 +9,11 @@ while ["$x" == "0" ]; do
     if  [ -d .git ]; then
       git pull https://github.com/Batcastle/mrai
     fi
+    echo -e "\nUpdating the system . . .\n"
+    apt-get update && apt-get -y upgrade || echo -e "\nWe encountered an error updating your system. Are you hooked up to the interent?\n" && exit 1
+    echo -e "\nInstalling dependencies . . .\n"
+    apt-get install checkinstall git make
+    echo -e "\nInstalling mrai . . .\n"
     cp mrai /bin/mrai
     cp aptupdate /bin/aptupdate
     chmod +x /bin/mrai
@@ -16,6 +21,11 @@ while ["$x" == "0" ]; do
     mkdir /etc/mrai
     mkdir /etc/mrai/gitauto
     mkdir /etc/mrai/gitman
+    echo -e "\nRemoving old dependencies . . .\n"
+    apt-get -y autoremove
+    echo -e "\nCleaning up . . .\n"
+    apt-get clean && apt-get -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+    echo -e "\nIntallation is complete!\n"
     x=1
   else
     git pull https://github.com/Batcastle/mrai
