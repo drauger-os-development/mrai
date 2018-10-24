@@ -269,7 +269,9 @@ gitupdate () {
 }
 
 flatupdate () {
-	flatpak update
+	if $(apt list --installed | grep -q 'flatpak'); then
+		flatpak update
+	fi
 }
 
 checkinstalltype () {
