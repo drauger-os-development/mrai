@@ -3,7 +3,7 @@ if [[ "$EUID" != "0" ]]; then
     echo -e "\nPlease run RUN_TO_INSTALL_MRAI.sh with root privleges.\n" && exit 2
 fi
 x=0
-while ["$x" == "0" ]; do
+while [ "$x" == "0" ]; do
   if $(ls | grep -q 'mrai') && $(ls | grep -q 'aptupdate'); then
     echo -e "\nInstalling/Updating mrai . . . \n"
     if  [ -d .git ]; then
