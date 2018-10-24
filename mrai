@@ -392,7 +392,8 @@ else
 		else
 			echo -e "\nAttempting to install\n"
 			pass="$y"	
-			aptinstall || snapinstall || flatinstall || pass=$z && gitautoinst || gitmaninstall || echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n" && exit 2		fi
+			aptinstall || snapinstall || flatinstall || pass=$z && gitautoinst || gitmaninstall || echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n" && exit 2
+		fi
 	elif [ "$x" == "-r" ] || [ "$x" == "--remove" ] || [ "$x" == "--uninstall" ]; then
 		pass="$y"		
 		checkinstalltype
