@@ -22,10 +22,28 @@
 #
 aptinstall () {
 	if $(apt search "$pass" | grep -q "$pass"); then
-		if $(apt search apt-fast | grep -q 'installed'); then
-			pkexec apt-fast install "$pass" || return 2
+		if [ -f /etc/mrai/apt-fast.flag ]; then
+			({
+				pkexec apt-fast install "$pass" 
+			} && {
+				if [ "$pass" == "flatpak" ]; then
+					echo "" >> /etc/mrai/flatpak.flag
+				elif [ "$pass" == "snapd" ]; then
+					echo "" >> /etc/mrai/snapd.flag
+				fi
+			}) || return 2
 		else
-			pkexec apt-get install "$pass" || return 2
+			({
+				pkexec apt-get install "$pass"
+			} && {
+				if [ "$pass" == "apt-fast" ]; then
+					echo "" >> /etc/mrai/apt-fast.flag
+				elif [ "$pass" == "snapd" ]; then
+					echo "" >> /etc/mrai/snapd.flag
+				elif [ "$pass" == "flatpak" ]; then
+					echo "" >> /etc/mrai/flatpak.flag
+				fi
+			}) || return 2
 		fi
 	else
 		return 1
@@ -61,7 +79,7 @@ gitautoinst () {
 }
 
 flatinstall () {
-	if $(apt list --installed | grep -q 'flatpak/'); then
+	if [ -f /etc/mrai/flatpak.flag ]; then
 		loop=1
 		while [ "$loop" == "1" ]; do
 			q=$(flatpak search "$pass")
@@ -104,7 +122,7 @@ flatinstall () {
 }
 
 snapinstall () {
-	if $(apt list --installed | grep -q 'snapd/'); then
+	if [ -f /etc/mrai/snapd.flag ]; then
 		if $(snap search "$pass" | grep -q "$pass"); then
 			snap install "$pass" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ ! -z $ans ]; then
@@ -183,6 +201,13 @@ gitmaninstall () {
 
 aptremove () {
 	pkexec apt purge "$pass"
+	if [ "$pass" == "apt-fast" ]; then
+		rm /etc/mrai/apt-fast.flag
+	elif [ "$pass" == "snapd" ]; then
+		rm /etc/mrai/snapd.flag
+	elif [ "$pass" == "flatpak" ]; then
+		rm /etc/mrai/flatpak.flag
+	fi
 }
 
 gitremove () {
@@ -345,7 +370,7 @@ gitupdate () {
 }
 
 flatupdate () {
-	if $(apt list --installed | grep -q 'flatpak'); then
+	if [ -f /etc/mrai/flatpak.flag ]; then
 		flatpak update
 	fi
 }
@@ -353,9 +378,9 @@ flatupdate () {
 checkinstalltype () {
 	if $(apt list --installed | grep -q "$pass"); then
 		type=0
-	elif $(apt list --installed | grep -q "snapd/") && $(snap list | grep -q "$pass"); then
+	elif [ -f /etc/mrai/snapd.flag ] && $(snap list | grep -q "$pass"); then
 		type=1
-	elif $(apt list --installed | grep -q "flatpak/") && $(flatpak list  | grep -q "$pass"); then
+	elif [ -f /etc/mrai/flatpak.flag ] && $(flatpak list  | grep -q "$pass"); then
 		type=2
 	elif $(ls --group-directories-first "$gitautocache" | grep -q "$pass"); then
 		type=3
@@ -541,11 +566,11 @@ else
 			list2=$(gitautolist | grep "$y")
 			echo -e "\nApt packages:\n"
 			apt search "$y"
-			if $(apt list --installed | grep -q 'flatpak/'); then
+			if [ -f /etc/mrai/flatpak.flag ]; then
 				echo -e "\nFlatpak Packages:\n"
 				flatpak search "$y"
 			fi
-			if $(apt list --installed | grep -q 'snapd/'); then
+			if [ -f /etc/mrai/snapd.flag ]; then
 				echo -e "\nSnap Packages:\n"
 				snap search "$y"
 			fi
