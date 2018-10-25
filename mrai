@@ -61,7 +61,7 @@ gitautoinst () {
 }
 
 flatinstall () {
-	if $(apt list --installed | grep -q 'flatpak'); then
+	if $(apt list --installed | grep -q 'flatpak/'); then
 		loop=1
 		while [ "$loop" == "1" ]; do
 			q=$(flatpak search "$pass")
@@ -104,7 +104,7 @@ flatinstall () {
 }
 
 snapinstall () {
-	if $(apt list --installed | grep -q 'snapd'); then
+	if $(apt list --installed | grep -q 'snapd/'); then
 		if $(snap search "$pass" | grep -q "$pass"); then
 			snap install "$pass" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ ! -z $ans ]; then
@@ -174,7 +174,7 @@ gitmaninstall () {
 }
 
 aptremove () {
-	pkexec apt-get -y purge "$pass"
+	pkexec apt purge "$pass"
 }
 
 gitremove () {
@@ -199,7 +199,7 @@ gitremove () {
 }
 
 flatremove () {
-	flatpak -y remove "$pass"
+	flatpak remove "$pass"
 }
 
 snapremove () {
@@ -277,9 +277,9 @@ flatupdate () {
 checkinstalltype () {
 	if $(apt list --installed | grep -q "$pass"); then
 		type=0
-	elif $(snap list | grep -q "$pass"); then
+	elif $(apt list --installed | grep -q "snapd/") && $(snap list | grep -q "$pass"); then
 		type=1
-	elif $(flatpak list  | grep -q "$pass"); then
+	elif $(apt list --installed | grep -q "flatpak/") && $(flatpak list  | grep -q "$pass"); then
 		type=2
 	elif $(ls --group-directories-first "$gitautocache" | grep -q "$pass"); then
 		type=3
@@ -459,11 +459,11 @@ else
 			list2=$(gitautolist | grep "$y")
 			echo -e "\nApt packages:\n"
 			apt search "$y"
-			if $(apt list --installed | grep -q 'flatpak'); then
+			if $(apt list --installed | grep -q 'flatpak/'); then
 				echo -e "\nFlatpak Packages:\n"
 				flatpak search "$y"
 			fi
-			if $(apt list --installed | grep -q 'snap'); then
+			if $(apt list --installed | grep -q 'snapd/'); then
 				echo -e "\nSnap Packages:\n"
 				snap search "$y"
 			fi
