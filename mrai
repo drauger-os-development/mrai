@@ -143,6 +143,7 @@ gitmaninstall () {
 		read -p "Should this file be run with root privleges? [y/N]: " ans
 		ans=$(echo "$ans" | awk '{print tolower($0)}')
 		if [ "$ans" == "y" ]; then
+			chmod +x $(pwd)/$run
 			pkexec $(pwd)/$run
 			mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
 			pkexec checkinstall
@@ -150,6 +151,7 @@ gitmaninstall () {
 			cp "$deb" "$gitautocache"/"$pass1"
 			echo "$pass" >> man.flag
 		elif [ "$ans" == "n" ]; then
+			chmod +x $(pwd)/$run
 			exec $(pwd)/$run
 			mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
 			pkexec checkinstall
