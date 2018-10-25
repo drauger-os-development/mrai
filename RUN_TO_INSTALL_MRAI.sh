@@ -36,6 +36,7 @@ while [ "$x" == "0" ]; do
     if $(apt list --installed | grep -q 'apt-fast/'); then
         echo "" >> /etc/mrai/apt-fast.flag
     fi
+    chown -R $(users):$(users) /etc/mrai
     echo -e "\nRemoving old dependencies . . .\n"
     apt-get -y autoremove
     echo -e "\nCleaning up . . .\n"
