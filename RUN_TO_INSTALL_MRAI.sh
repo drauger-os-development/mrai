@@ -13,7 +13,7 @@ while [ "$x" == "0" ]; do
   if $(ls | grep -q 'mrai') && $(ls | grep -q 'aptupdate'); then
     echo -e "\nInstalling/Updating mrai . . . \n"
     if  [ -d .git ]; then
-      git pull https://github.com/Batcastle/mrai
+      su $(users) -c git pull https://github.com/Batcastle/mrai
     fi
     echo -e "\nUpdating the system . . .\n"
     ( apt-get update && apt-get -y upgrade ) || ( echo -e "\nWe encountered an error updating your system. Are you hooked up to the interent?\n" && exit 1 )
@@ -43,7 +43,7 @@ while [ "$x" == "0" ]; do
     echo -e "\nIntallation is complete!\n"
     x=1
   else
-    git clone https://github.com/Batcastle/mrai
+    su $(users) -c git clone https://github.com/Batcastle/mrai
     cd mrai
     continue
   fi
