@@ -21,9 +21,9 @@
 #  MA 02110-1301, USA.
 #
 echo -e "\nUpdating installed software . . . \n"
-apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+apt update && apt upgrade && apt full-upgrade
 echo -e "\nRemoving old dependencies . . . \n"
-apt-get -y autoremove
+apt autoremove
 echo -e "\nCleaning up . . . \n"
 apt-get clean
-apt-get purge -y $(dpkg -l | grep '^rc' | awk '{print $2}')
+apt purge $(dpkg -l | grep '^rc' | awk '{print $2}')
