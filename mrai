@@ -386,7 +386,7 @@ else
 			aptinstall && exit 0 || exit 2
 		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
 			pass="$z"
-			gitautoinstall && exit 0 || gitmaninstall && exit 1 || exit 2
+			( gitautoinst && exit 0 ) || ( gitmaninstall && exit 1 ) || exit 2
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			pass="$z"
 			snapinstall && exit 0 || exit 2
@@ -396,7 +396,7 @@ else
 		else
 			echo -e "\nAttempting to install\n"
 			pass="$y"	
-			aptinstall || snapinstall || flatinstall || pass=$z && gitautoinst || gitmaninstall || echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n" && exit 2
+			( aptinstall ) || ( snapinstall ) || ( flatinstall ) || ( pass=$z && gitautoinst ) || ( gitmaninstall ) || ( echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n" && exit 2 )
 		fi
 	elif [ "$x" == "-r" ] || [ "$x" == "--remove" ] || [ "$x" == "--uninstall" ]; then
 		pass="$y"		
@@ -469,7 +469,14 @@ else
 				echo -e "\nSnap Packages:\n"
 				snap search "$y"
 			fi
-			list="$list1 $list2"
+			list="Installed through Manual Method:
+$list1
+
+Installed through Automatic Method:
+
+$list2
+
+"
 			echo -e "\nInstalled GitHub Apps:\n"
 			if [ "$list" == " " ]; then
 				echo -e "No matching GitHub Apps Installed.\n"
