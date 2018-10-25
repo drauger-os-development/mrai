@@ -21,6 +21,15 @@ while [ "$x" == "0" ]; do
     mkdir /etc/mrai
     mkdir /etc/mrai/gitauto
     mkdir /etc/mrai/gitman
+    if $(apt list --installed | grep -q 'flatpak/'); then
+        echo "" >> /etc/mrai/flatpak.flag
+    fi
+    if $(apt list --installed | grep -q 'snapd/'); then
+        echo "" >> /etc/mrai/snapd.flag
+    fi
+    if $(apt list --installed | grep -q 'apt-fast/'); then
+        echo "" >> /etc/mrai/apt-fast.flag
+    fi
     echo -e "\nRemoving old dependencies . . .\n"
     apt-get -y autoremove
     echo -e "\nCleaning up . . .\n"
