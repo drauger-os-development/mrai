@@ -52,7 +52,7 @@ gitautoinst () {
 		pkexec checkinstall
 		deb=$(find -type f -name "*.deb")
 		cp "$deb" "$gitautocache"/"$pass1"
-		echo "$pass" >> auto.flag
+		echo "ADDRESS=$pass" >> "$gitautocache"/auto.flag
         #copy Makefile to a directory in a good place in the file system. Name the directory it's in the value of $z
 	else
 	        cd ..
@@ -186,21 +186,80 @@ aptremove () {
 }
 
 gitremove () {
-	cd "$gitautocache"/"$pass"
-	if $( echo $(ls) | grep "Makefile"); then
-		make uninstall || make remove || {
-			if $(find -type f -name "*.deb"); then
-				pak=$(find -type f -name "*.deb")
-				pkexec apt-get remove $(pwd)/"$pak"
-			else
-				echo -e "\nMakefile uninstall method failed and no *.deb back-up file was found.\nPlease run \n{sudo checkinstall && cp \$(find -type f -name '*.deb') $gitautocache/$z\nThen run\npkexec apt-get location-of-package/package-name"
-			fi
-		}
-	elif $( echo $(ls) | grep ".deb"); then
-		pak=$(find -type f -name "*.deb")
-		pkexec apt-get remove $(pwd)/"$pak"
+	if $(gitautolist | grep -q "$pass"); then
+		cd "$gitautocache"/"$pass"
+		if $( echo $(ls) | grep "Makefile"); then
+			(( make uninstall || make remove ) || {
+				if $(find -type f -name "*.deb"); then
+					pak=$(find -type f -name "*.deb")
+					pkexec apt-get remove $(pwd)/"$pak"
+				else
+					echo -e "\nMakefile uninstall method failed and no *.deb back-up file was found.\nPlease run \n{sudo checkinstall && cp \$(find -type f -name '*.deb') $gitautocache/$z\nThen run\npkexec apt-get location-of-package/package-name" && exit 2
+				fi
+			}) && {
+				cd ..
+				rm -rf "$pass"
+				echo -e "\n$pass has been removed.\n"
+				exit 0
+			}
+			
+		elif $(echo $(ls) | grep ".deb"); then
+			pak=$(find -type f -name "*.deb")
+			pkexec apt-get remove $(pwd)/"$pak"
+		else
+			echo -e "\nWe're sorry. No Makefile or back-up *.deb file could be found. Therefor, mrai cannot uninstall $z\n"
+		fi
+	elif $(gitmanlist | grep -q "$pass"); then
+		cd "$gitmancache"/"$pass"
+		flag=$(ls | grep "man.flag")
+		root=$(cat $flag | grep "RUN_AS_ROOT=")
+		run=$(cat $flag | grep "RUN=")
+		run=$(echo $run | sed 's/RUN=//')
+		if [ "$root" == "RUN_AS_ROOT=yes" ]; then
+			echo -e "\nAttempting to uninstall. Please wait . . .\n"
+			sent=0
+			num=1
+			while [ "$sent" == "0" ]; do
+				echo -e "\nTry $num . . .\n"
+				if [ "$num" == "1" ]; then
+					opt="remove"
+				elif [ "$num" == "2" ]; then
+					opt="--remove"
+				elif [ "$num" == "3" ]; then
+					opt="uninstall"
+				elif [ "$num" == "4" ]; then
+					opt="--uninstall"
+				else
+					echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2
+				fi
+				sleep 3s
+				(( pkexec $(pwd)/"$run" "$opt" ) && ( sent=1 )) || ( ((num+=1)) )
+			done
+		elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
+			echo -e "\nAttempting to uninstall. Please wait . . .\n"
+			sent=0
+			num=1
+			while [ "$sent" == "0" ]; do
+				echo -e "\nTry $num . . .\n"
+				if [ "$num" == "1" ]; then
+					opt="remove"
+				elif [ "$num" == "2" ]; then
+					opt="--remove"
+				elif [ "$num" == "3" ]; then
+					opt="uninstall"
+				elif [ "$num" == "4" ]; then
+					opt="--uninstall"
+				else
+					echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2
+				fi
+				sleep 3s
+				(( exec $(pwd)/"$run" "$opt" ) && ( sent=1 )) || ( ((num+=1)) )
+			done
+		else
+			echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2
+		fi
 	else
-		echo -e "\nWe're sorry. No Makefile or back-up *.deb file could be found. Therefor, mrai cannot uninstall $z\n"
+		echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2
 	fi
 			
 			
