@@ -44,4 +44,4 @@ To uninstall, run the following code:
   sudo rm -rf /etc/mrai`
   
   If installed from the .deb package:
-  `sudo apt-get purge mrai`
+  `sudo apt purge mrai`
