@@ -43,5 +43,8 @@ To uninstall, run the following code:
   sudo rm /bin/aptupdate;
   sudo rm -rf /etc/mrai`
   
+  or run
+  `sudo ./RUN_TO_INSTALL_MRAI.sh remove`
+  
   If installed from the .deb package:
   `sudo apt purge mrai`
