@@ -2,6 +2,12 @@
 if [[ "$EUID" != "0" ]]; then
     echo -e "\nPlease run RUN_TO_INSTALL_MRAI.sh with root privleges.\n" && exit 2
 fi
+if [ "$1" == "remove" ]; then
+    rm /bin/mrai /bin/aptupdate
+    rm -rf /etc/mrai
+    echo -e "\nmrai has been uninstalled.\n"
+    exit 0
+fi
 x=0
 while [ "$x" == "0" ]; do
   if $(ls | grep -q 'mrai') && $(ls | grep -q 'aptupdate'); then
@@ -42,5 +48,3 @@ while [ "$x" == "0" ]; do
     continue
   fi
 done
-    
-  
