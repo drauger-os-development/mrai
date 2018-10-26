@@ -20,12 +20,19 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+
+#Start Defining Functions
+
+#Install software from apt
 aptinstall () {
 	if $(apt search "$pass" | grep -q "$pass"); then
 		if [ -f /etc/mrai/apt-fast.flag ]; then
 			({
+				#Install software using apt-fast, if available based on the apt-fast.flag
+				#use pkexec to gain root privleges in order to install software
 				pkexec apt-fast install "$pass" 
 			} && {
+			#update flags if snapd or flatpak get installed
 				if [ "$pass" == "flatpak" ]; then
 					echo "" >> /etc/mrai/flatpak.flag
 				elif [ "$pass" == "snapd" ]; then
@@ -34,8 +41,10 @@ aptinstall () {
 			}) || return 2
 		else
 			({
-				pkexec apt-get install "$pass"
+				#install software using apt, due to the unavailability of apt-fast
+				pkexec apt install "$pass"
 			} && {
+			#update flags if snapd, flatpak, or apt-fast get installed
 				if [ "$pass" == "apt-fast" ]; then
 					echo "" >> /etc/mrai/apt-fast.flag
 				elif [ "$pass" == "snapd" ]; then
@@ -50,24 +59,40 @@ aptinstall () {
 	fi
 }
 
+#install software, using a more automatic method, from GitHub
 gitautoinst () {
 	cd $HOME
-	mkdir .mrai
+	#make directory .mrai if it exists
+	if [[ ! -d .mrai ]]; then
+		mkdir .mrai
+	fi
 	cd .mrai
+	#check to see how the URL to github is formatted
+	#check for a VERY specific location
 	if $(echo "$pass" | grep -q 'https://github.com/') || $(echo "$pass" | grep -q 'http://github.com/'); then
 	        git clone "$pass"
+	#check for a slightly less specific location
 	elif $(echo "$pass" | grep -q 'github.com/'); then
 	        git clone https://$pass
+	#if they did not specifiy "GitHub.com", assume it.
 	else 
 	        git clone https://github.com/$pass
 	fi
+	#cd into the new directory git just make from the GitHub repo
 	pass1=$(echo $pass | sed 's/.*\///')
 	cd $pass1
+	#Check for a Makefile
 	if $(find Makefile) || $(find makefile); then
+		#if a Makefile exists, run make depend to ensure we have all the dependencies we need
 		make depend
+		#run make && make install to install the new software, if make fails don't bother running make install since
+		#it would most likely fail
 	        make && make install
+		#Back up the Makefile since it might be useful in uninstalling the software
 		mkdir "$gitautocache"/"$z" && cp Makefile "$gitautocache"/"$pass1" || cd .. && rm -rf $pass1
+		#make a deb as a back up for install/uninstall
 		pkexec checkinstall
+		#back up the deb to $gitautocache/#pass1
 		deb=$(find -type f -name "*.deb")
 		cp "$deb" "$gitautocache"/"$pass1"
 		echo "ADDRESS=$pass" >> "$gitautocache"/auto.flag
@@ -116,7 +141,12 @@ flatinstall () {
 			fi
 		done
 	else
-		echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -i -a flatpak} or {sudo apt-get install flatpak} to install it.\n"
+		if [ "$z" == "-f" ] || [ "$z" == "--flatpak" ]; then
+			echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -i -a flatpak} to install it.\n"
+			exit 2
+		else
+			return 2
+		fi
 	fi
 			
 }
@@ -429,6 +459,10 @@ Options:
 	-g, --git	Install just from Github, In which case, usage will be:
 			
 				mrai -i -g {/github-username/github-repo-name (or Github URL)}
+				
+			Under this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or
+			automaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your
+			system.
 
 	-s, --snap 	Install just from snapd, In which case, usage will be:
 
@@ -477,15 +511,23 @@ if [[ "$EUID" == "0" ]]; then
 fi
 if [ -z "$x" ] && [ -z "$y" ]; then
 	echo -e "\n$h\n"
-	exit 0
+	exit 1
 else
 	if [ "$x" == "-i" ] || [ "$x" == "--install" ]; then
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
 			pass="$z"
 			aptinstall && exit 0 || exit 2
 		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
-			pass="$z"
-			( gitautoinst && exit 0 ) || ( gitmaninstall && exit 1 ) || exit 2
+			if [ "$z" == "-m" ] || [ "$z" == "--manual" ]; then
+				pass="$w"
+				gitmaninstall && exit 0 || exit 2
+			elif [ "$z" == "-a" ] || [ "$z" == "--auto" ]; then
+				pass="$w"
+				gitautoinst && exit 0 || exit 2
+			else
+				pass="$z"
+				( gitautoinst && exit 0 ) || ( gitmaninstall && exit 1 ) || exit 2
+			fi
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			pass="$z"
 			snapinstall && exit 0 || exit 2
@@ -495,7 +537,21 @@ else
 		else
 			echo -e "\nAttempting to install\n"
 			pass="$y"	
-			( aptinstall ) || ( snapinstall ) || ( flatinstall ) || ( pass=$z && gitautoinst ) || ( gitmaninstall ) || ( echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n" && exit 2 )
+			{
+				aptinstall
+			} || {
+				snapinstall
+			} || {
+				flatinstall
+			} || {
+				pass=$z
+				gitautoinst
+			} || {
+				gitmaninstall
+			} || {
+				echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n"
+				exit 2
+			}
 		fi
 	elif [ "$x" == "-r" ] || [ "$x" == "--remove" ] || [ "$x" == "--uninstall" ]; then
 		pass="$y"		
