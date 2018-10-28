@@ -23,6 +23,18 @@
 
 #Start Defining Functions
 
+#Force update snaps
+snapupdate () {
+	#check for /etc/mrai/snapd.flag
+	if [ -f /etc/mrai/snapd.flag ]; then
+		#force snaps to update
+		echo -e "\nForce Updating Snaps. Please Wait . . .\n"
+		snap refresh
+	else
+		return 1
+	fi
+}
+
 #Install software from apt
 aptinstall () {
 	if $(apt search "$pass" | grep -q "$pass"); then
@@ -98,66 +110,121 @@ gitautoinst () {
 		echo "ADDRESS=$pass" >> "$gitautocache"/auto.flag
         #copy Makefile to a directory in a good place in the file system. Name the directory it's in the value of $z
 	else
-	        cd ..
+	        #remove the folder to save space
+		cd ..
 	        rm -rf $pass1
 	fi
 }
 
 flatinstall () {
+	#check that flatpak.flag is in place
 	if [ -f /etc/mrai/flatpak.flag ]; then
 		loop=1
 		while [ "$loop" == "1" ]; do
+			#search for the desired package, to ensure it exists
 			q=$(flatpak search "$pass")
 			r=$(echo "$q" | awk '{print $1}')
 			if [ "$r" == "No matches found" ]; then
+				#see if there are any flatpak repos added, this is a common
+				#issue with people new to flatpak. Checking and adding it for them
+				#then rechecking just saves them the pain
 				list=$(flatpak remotes)
 				if $(echo "$list" | grep -q 'flathub'); then
+					#there are repos added, so the flatpak is at least not in these repos
+					#or just straight up does not exist
 					echo -e "\nNo installation candidates found.\n"
 					exit 1
 				else
+					#no repos where found. Add Flathub and try again.
 					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 					continue
 				fi
+			#check to see if it has one of three known flatpack domains. More domains will be added in the future
 			elif $(echo "$r" | grep -q "org.") || $(echo "$r" | grep -q "com.") || $(echo "$r" | grep -q "ws."); then
 				set -- "$r"
 				test="$2"
-				if [ -z "$test" ]; then		
+				if [ -z "$test" ]; then	
+					#try installing the desired flatpak from each repo
 					list=$(flatpak remotes)
 					list1=$(echo "$list" | awk '{print $1}')
 					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
 					for entry in $list1; do
-						flatpak install -y "$entry" "$r" && break || echo -e "\nFlatpak installation from $entry failed.\n"
+						{
+							flatpak install -y "$entry" "$r"
+							break
+						} || { 
+							echo -e "\nFlatpak installation from $entry failed.\n"
+						}
 					done
 					loop="0"
 				else
+					#for mutliple installation canditdates, ask which the user wishes to install.
 					echo -e "\nERROR: Multiple Installation Candidates Detected.\n"
 					echo -e "Which package would you like to install?\n$r\n"
-					read -p "Please copy-paste the name of the package here: " int
-					flatpak install -y flathub "$int"
+					read -p "Please copy-paste the name of the package here (Type \"exit\", \"break\", or \"end\" to exit): " int
+					#check if the user wants out. If they do, let them out
+					if [ "$int" == "exit" ] || [ "$int" == "break" ] || [ "$int" == "end" ]; then
+						exit 2
+					fi
+					#go through the install process for the designated flatpak package
+					list=$(flatpak remotes)
+					list1=$(echo "$list" | awk '{print $1}')
+					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
+					for entry in $list1; do
+						{
+							flatpak install -y "$entry" "$int"
+							break
+						} || { 
+							echo -e "\nFlatpak installation from $entry failed.\n"
+						}
+					done
+					loop="0"
 				fi
 			else
+				#Okay. If we end up having to run the code down here, we have an issue. 
+				#It's minor, but an issue.
+				#This should only run if $r is set to something that EITHER
+				#	A. Isn't "No Matches Found"
+				#		OR
+				#	B. Does not contain the name of a flatpak
+				#In fact, lets print that.
+				echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease report this bug to the devs. Thanks! And sorry for the trouble!\n"
+				#There. Bit long, but it was needed. 
+				#Alright. Lets end this puppy.
 				loop="0"
 				exit 1
 			fi
 		done
 	else
-		if [ "$z" == "-f" ] || [ "$z" == "--flatpak" ]; then
+		#Check to see if they called EXPLICITLY to install using flatpak, cause if they did they may not know they don't have it
+		if [ "$z" == "-f" ] || [ "$z" == "--flat" ]; then
+			#Tell them they don't have flatpak
+			#Also, if the user wants to mrai to use flatpak they have to install it through mrai so 
+			#it can make the flag file. Otherwise it won't work.
 			echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -i -a flatpak} to install it.\n"
 			exit 2
 		else
+			#they didn't call it so not as big a deal. Lets just return, not exit.
 			return 2
 		fi
 	fi
 			
 }
 
+#install snap apps
 snapinstall () {
+	#check for the snapd.flag file
 	if [ -f /etc/mrai/snapd.flag ]; then
+		#check for the app we want
 		if $(snap search "$pass" | grep -q "$pass"); then
+			#try to install the snap normally. This is prefered over classic snaps
+			#for security reasons due to it's comperably lacking amount of access to the user's system
+			#as compared to classic snaps
 			snap install "$pass" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ ! -z $ans ]; then
+				#check to see if they are cool with the classic snaps, and if so install it. Or at least try to.
 				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-					snap install "$pass" --classic || return 2
+					snap install "$pass" --classic || echo -e "\nSnap installation failed.\n"
 				else
 					return 2
 				fi
@@ -166,11 +233,21 @@ snapinstall () {
 			return 1
 		fi
 	else
-		exit 1
+		#Check to see if they called EXPLICITLY to install using snapd, cause if they did they may not know they don't have it
+		if [ "$z" == "-s" ] || [ "$z" == "--snap" ]; then
+			#Tell them they don't have snapd
+			#Also, if the user wants to mrai to use snapd they have to install it through mrai so 
+			#it can make the flag file. Otherwise it won't work.
+			echo -e "\nSorry. Package 'snapd' is not installed. Please run {mrai -i -a snapd} to install it.\n"
+			exit 2
+		else
+			#they didn't call it so not as big a deal. Lets just return, not exit.
+			return 2
+		fi
 	fi
 }
 
-
+#install from GitHub using manual method
 gitmaninstall () {
 	read -p "All other installation methods (apt, Snap, flatpak, automatic Github) have failed. Would you like to try manually installing from Github? [y/N]: " ans
 	if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
