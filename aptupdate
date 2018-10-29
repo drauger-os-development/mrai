@@ -21,9 +21,16 @@
 #  MA 02110-1301, USA.
 #
 echo -e "\nUpdating installed software . . . \n"
+#updating apt cache then updating install apt packages
 apt update && apt upgrade && apt full-upgrade
 echo -e "\nRemoving old dependencies . . . \n"
+#removing unneeded dependencies
 apt autoremove
 echo -e "\nCleaning up . . . \n"
+#cleaning up
 apt-get clean
 apt purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+#proceed to update snaps, if mrai said to
+if [ "$1" == "-s" ]; then
+  pkexec /bin/snapupdate
+fi
