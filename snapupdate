@@ -1,0 +1,9 @@
+#!/bin/bash
+#check for /etc/mrai/snapd.flag
+if [ -f /etc/mrai/snapd.flag ]; then
+  #force snaps to update
+  echo -e "\nForce Updating Snaps. Please Wait . . .\n"
+  snap refresh
+else
+  exit 1
+fi
