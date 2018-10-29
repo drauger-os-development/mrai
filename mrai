@@ -20,19 +20,12 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.4.4-alpha2"
+version="0.4.5-alpha2"
 #Start Defining Functions
 
 #Force update snaps
 snapupdate () {
-	#check for /etc/mrai/snapd.flag
-	if [ -f /etc/mrai/snapd.flag ]; then
-		#force snaps to update
-		echo -e "\nForce Updating Snaps. Please Wait . . .\n"
-		snap refresh
-	else
-		return 1
-	fi
+	bash /bin/snapupdate
 }
 
 #Install software from apt
@@ -325,6 +318,7 @@ gitmaninstall () {
 	fi
 }
 
+#remove apt packages
 aptremove () {
 	#remove the software
 	pkexec apt purge "$pass"
@@ -341,7 +335,9 @@ aptremove () {
 	fi
 }
 
+#remove apps installed through GitHub
 gitremove () {
+	#check if the passed app is a git-auto app
 	if $(gitautolist | grep -q "$pass"); then
 		cd "$gitautocache"/"$pass"
 		if $( echo $(ls) | grep "Makefile"); then
@@ -365,6 +361,7 @@ gitremove () {
 		else
 			echo -e "\nWe're sorry. No Makefile or back-up *.deb file could be found. Therefor, mrai cannot uninstall $z\n"
 		fi
+	#check if the passed app is a git-man app if not a git-auto
 	elif $(gitmanlist | grep -q "$pass"); then
 		cd "$gitmancache"/"$pass"
 		flag=$(ls | grep "man.flag")
@@ -696,7 +693,6 @@ else
 		else
 			pkexec aptupdate
 			flatupdate
-			snapupdate
 			t=$(gitautolist)
 			r=$(gitmanlist)
 			pass="$t $r"
