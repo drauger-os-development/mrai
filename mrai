@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.4.5-alpha2"
+version="0.4.6-alpha2"
 #Start Defining Functions
 
 #Force update snaps
@@ -691,7 +691,7 @@ else
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			snapupdate
 		else
-			pkexec aptupdate
+			pkexec aptupdate -s
 			flatupdate
 			t=$(gitautolist)
 			r=$(gitmanlist)
