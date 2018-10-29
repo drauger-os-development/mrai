@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-
+version="0.4.4-alpha2"
 #Start Defining Functions
 
 #Force update snaps
@@ -249,70 +249,94 @@ snapinstall () {
 
 #install from GitHub using manual method
 gitmaninstall () {
-	read -p "All other installation methods (apt, Snap, flatpak, automatic Github) have failed. Would you like to try manually installing from Github? [y/N]: " ans
-	if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-		cd $HOME
-		mkdir .mrai
-		cd .mrai
-		if $(echo "$pass" | grep -q 'https://github.com/') || $(echo "$pass" | grep -q 'http://github.com/'); then
-	        	git clone "$pass"
-		elif $(echo "$pass" | grep -q 'github.com/'); then
-		        git clone https://$pass
-		else 
-		        git clone https://github.com/$pass
-		fi
-		pass1=$(echo $pass | sed 's/.*\///')
-		cd $pass1
-		echo -e "\n$(ls)\n"
-		read -p "Which of the above files would you like to try to run in order to install $z? (Case-Sensitive) : " run
-		read -p "Should this file be run with root privleges? [y/N]: " ans
-		ans=$(echo "$ans" | awk '{print tolower($0)}')
-		if [ "$ans" == "y" ]; then
-			chmod +x $(pwd)/$run
-			pkexec $(pwd)/$run
-			mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
-			pkexec checkinstall
-			deb=$(find -type f -name "*.deb")
-			cp "$deb" "$gitautocache"/"$pass1"
-			echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
-			echo "RUN_AS_ROOT=yes" >> "$gitmancache"/man.flag
-			echo "RUN=$run" >> "$gitmancache"/man.flag
-		elif [ "$ans" == "n" ]; then
-			chmod +x $(pwd)/$run
-			exec $(pwd)/$run
-			mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
-			pkexec checkinstall
-			deb=$(find -type f -name "*.deb")
-			cp "$deb" "$gitautocache"/"$pass1"
-			echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
-			echo "RUN_AS_ROOT=no" >> "$gitmancache"/man.flag
-			echo "RUN=$run" >> "$gitmancache"/man.flag
-		elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
-			echo -e "\nAborting . . .\n"
-		else
-			echo -e "\nInput not recognized. Running without root privileges\n"
-			exec $(pwd)/$run
-			mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
-			pkexec checkinstall
-			deb=$(find -type f -name "*.deb")
-			cp "$deb" "$gitautocache"/"$pass1"
-			echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
-			echo "RUN_AS_ROOT=null" >> "$gitmancache"/man.flag
-			echo "RUN=$run" >> "$gitmancache"/man.flag
-		fi
+	cd $HOME
+	mkdir .mrai
+	cd .mrai
+	#check the passed URL's syntax
+	if $(echo "$pass" | grep -q 'https://github.com/') || $(echo "$pass" | grep -q 'http://github.com/'); then
+        	git clone "$pass"
+	elif $(echo "$pass" | grep -q 'github.com/'); then
+	        git clone https://$pass
+	else 
+	        git clone https://github.com/$pass
+	fi
+	pass1=$(echo $pass | sed 's/.*\///')
+	cd $pass1
+	echo -e "\n$(ls)\n"
+	#get the file the user needs to run to install their software
+	read -p "Which of the above files would you like to try to run in order to install $z? (Case-Sensitive) : " run
+	#check if the indicated file needs to run as root. Cause we can do that . . . indirectly.
+	read -p "Should this file be run with root privleges? [y/N]: " ans
+	ans=$(echo "$ans" | awk '{print tolower($0)}')
+	if [ "$ans" == "y" ]; then
+		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
+		chmod +x $(pwd)/$run
+		#run as root
+		pkexec $(pwd)/$run
+		#back up files that are typically necissaary for updating or removing the software we just attempted to install
+		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
+		#make a backup *.deb file
+		pkexec checkinstall
+		#copy the new *.deb into the backup directory
+		deb=$(find -type f -name "*.deb")
+		cp "$deb" "$gitautocache"/"$pass1"
+		#write necissary info into the flag, to keep the number of files down
+		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
+		echo "RUN_AS_ROOT=yes" >> "$gitmancache"/man.flag
+		echo "RUN=$run" >> "$gitmancache"/man.flag
+	elif [ "$ans" == "n" ]; then
+		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
+		chmod +x $(pwd)/$run
+		#run it
+		exec $(pwd)/$run
+		#back up files that are typically necissaary for updating or removing the software we just attempted to install
+		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
+		#make a backup *.deb file
+		pkexec checkinstall
+		#copy the new *.deb into the backup directory
+		deb=$(find -type f -name "*.deb")
+		cp "$deb" "$gitautocache"/"$pass1"
+		#write necissary info into the flag, to keep the number of files down
+		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
+		echo "RUN_AS_ROOT=no" >> "$gitmancache"/man.flag
+		echo "RUN=$run" >> "$gitmancache"/man.flag
+	elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
+		echo -e "\nAborting . . .\n"
 	else
-		echo -e "\nAborting Manual install from Github...\n"
-		exit 1
+		#this will probably happen to someone at some point.
+		#WE DO NOT RUN ANYTHING, I REPEAT, ANYTHING, AS ROOT BY DEFAULT
+		#THIS PRESENTS A SECURITY RISK AND SHOULD NEVER BE DONE
+		echo -e "\nInput not recognized. Running without root privileges\n"
+		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
+		chmod +x $(pwd)/$run
+		#run it
+		exec $(pwd)/$run
+		#back up files that are typically necissaary for updating or removing the software we just attempted to install
+		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
+		#make a backup *.deb file
+		pkexec checkinstall
+		#copy the new *.deb into the backup directory
+		deb=$(find -type f -name "*.deb")
+		cp "$deb" "$gitautocache"/"$pass1"
+		#write necissary info into the flag, to keep the number of files down
+		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
+		echo "RUN_AS_ROOT=null" >> "$gitmancache"/man.flag
+		echo "RUN=$run" >> "$gitmancache"/man.flag
 	fi
 }
 
 aptremove () {
+	#remove the software
 	pkexec apt purge "$pass"
+	#check if the software removed was apt-fast, snapd, or flatpak
 	if [ "$pass" == "apt-fast" ]; then
+		#remove apt-fast.flag
 		rm /etc/mrai/apt-fast.flag
 	elif [ "$pass" == "snapd" ]; then
+		#remove snapd.flag
 		rm /etc/mrai/snapd.flag
 	elif [ "$pass" == "flatpak" ]; then
+		#remove flatpak.flag
 		rm /etc/mrai/flatpak.flag
 	fi
 }
@@ -575,7 +599,9 @@ Options:
 
 	-f, --flat	Update from only Flatpak
 
-	-g, --git	Update from only Github"
+	-g, --git	Update from only Github
+	
+	-s, --snap	Update only installed snaps"
 x="$1"
 y="$2"
 z="$3"
@@ -665,9 +691,12 @@ else
 				pass="$t $r"
 			fi
 			gitupdate
+		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
+			snapupdate
 		else
 			pkexec aptupdate
 			flatupdate
+			snapupdate
 			t=$(gitautolist)
 			r=$(gitmanlist)
 			pass="$t $r"
@@ -722,6 +751,8 @@ $list2
 				echo "$list"
 			fi
 		fi
+	elif [ "$x" == "--version" ]; then
+		echo -e "\n$version\n"
 	else
 		echo -e "\We're sorry. mrai encountered a core error.\nPlease contact Thomas Castleman at draugeros@gmail.com to submit a bug report.\n"
 	fi
