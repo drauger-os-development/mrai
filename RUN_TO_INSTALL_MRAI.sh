@@ -22,6 +22,8 @@ while [ "$x" == "0" ]; do
     echo -e "\nInstalling mrai . . .\n"
     cp mrai /bin/mrai
     cp aptupdate /bin/aptupdate
+    cp snapupdate /bin/snapupdate
+    chmod +x /bin/snapupdate
     chmod +x /bin/mrai
     chmod +x /bin/aptupdate
     mkdir /etc/mrai
