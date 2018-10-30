@@ -557,7 +557,7 @@ flatupdate () {
 checkinstalltype () {
 	#check how a given app is installed by checking the list of installed apps in each
 	#then grepping over that list and looking for the app
-	if $(apt list --installed | grep -q "$pass"); then
+	if $(dpkg -l "$pass" | grep -q "ii  $pass"); then
 		type=0
 	elif [ -f /etc/mrai/snapd.flag ] && $(snap list | grep -q "$pass"); then
 		type=1
