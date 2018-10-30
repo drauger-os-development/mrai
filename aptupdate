@@ -20,6 +20,11 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+version="0.0.6-alpha2"
+if [ "$1" == "--version" ]; then
+  echo -e "\n$version\n"
+  exit 0
+fi
 echo -e "\nUpdating installed software . . . \n"
 #updating apt cache then updating install apt packages
 apt update && apt upgrade && apt full-upgrade
