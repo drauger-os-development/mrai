@@ -1,4 +1,7 @@
 TODO List for mrai:
-In order of importanc
-  1. Create an installation method for the installation, removal, and updating of mrai
-  2. Getting in an existing apt repository or make one for mrai
+In order of importance
+  1. DEBUG DEBUG DEBUG
+  2. Add a list installed feature
+  3. Add a clean feature
+  4. Debug some more
+  5. Getting in an existing apt repository or make one for mrai
