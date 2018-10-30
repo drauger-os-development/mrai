@@ -46,7 +46,7 @@ while [ "$x" == "0" ]; do
     echo -e "\nIntallation is complete!\n"
     x=1
   else
-    su $(users) -c git clone https://github.com/Batcastle/mrai
+    su $(users) -c 'git clone https://github.com/Batcastle/mrai'
     cd mrai
     continue
   fi
