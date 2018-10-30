@@ -697,11 +697,11 @@ else
 		#snap sub-flag
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			pass="$z"
-			( snapinstall && exit 0 || exit 2
+			( snapinstall && exit 0 ) || exit 2
 		#flatpak sub-flag
 		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
 			pass="$z"
-			flatinstall && exit 0 || exit 2
+			( flatinstall && exit 0 ) || exit 2
 		#none of the sub-flags where passed, so try ALL install methods until one works
 		else
 			echo -e "\nAttempting to install\n"
