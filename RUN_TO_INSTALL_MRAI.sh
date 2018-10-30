@@ -29,13 +29,13 @@ while [ "$x" == "0" ]; do
     mkdir /etc/mrai
     mkdir /etc/mrai/gitauto
     mkdir /etc/mrai/gitman
-    if $(apt list --installed | grep -q 'flatpak/'); then
+    if $(dpkg -l | grep -q "ii  flatpak"); then
         echo "" >> /etc/mrai/flatpak.flag
     fi
-    if $(apt list --installed | grep -q 'snapd/'); then
+    if $(dpkg -l | grep -q "ii  snapd"); then
         echo "" >> /etc/mrai/snapd.flag
     fi
-    if $(apt list --installed | grep -q 'apt-fast/'); then
+    if $(dpkg -l | grep -q "ii  apt-fast"); then
         echo "" >> /etc/mrai/apt-fast.flag
     fi
     chown -R $(users):$(users) /etc/mrai
