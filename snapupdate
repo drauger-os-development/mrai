@@ -20,6 +20,11 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+version="0.0.3-alpha2"
+if [ "$1" == "--version" ]; then
+  echo -e "\n$version\n"
+  exit 0
+fi
 #check for /etc/mrai/snapd.flag
 if [ -f /etc/mrai/snapd.flag ]; then
   #force snaps to update
