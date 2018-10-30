@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.4.8-alpha2"
+version="0.4.9-alpha2"
 #Start Defining Functions
 
 #Force update snaps
@@ -390,6 +390,7 @@ gitremove () {
 		root=$(cat $flag | grep "RUN_AS_ROOT=")
 		run=$(cat $flag | grep "RUN=")
 		run=$(echo $run | sed 's/RUN=//')
+		#check if the designated file needs to be run as root
 		if [ "$root" == "RUN_AS_ROOT=yes" ]; then
 			echo -e "\nAttempting to uninstall. Please wait . . .\n"
 			sent=0
@@ -507,17 +508,24 @@ gitupdate () {
 				if [ "$root" == "RUN_AS_ROOT=yes" ]; then
 					#run the file as root
 					pkexec $(pwd)/$run $opt
+					#make a backup *.deb then copy it to the app's archive (or cache. it's both tbh) directory
 					pkexec checkinstall
 					rm "$back"/"$del"
 					deb=$(find -type f -name "*.deb")
 					cp "$deb" "$gitautocache"/"$pass1"
 				elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
+					#run the designated file, but NOT AS ROOT
 					exec $(pwd)/$run $opt
+					#make a backup *.deb then copy it to the app's archive (or cache. it's both tbh) directory
 					pkexec checkinstall
 					rm "$back"/"$del"
 					deb=$(find -type f -name "*.deb")
 					cp "$deb" "$gitautocache"/"$pass1"
+					#if the *.flag file's RUN_AS_ROOT is set to null, ask if the user wants to reset it to either yes or no
+					#none of the *.flag files should have a RUN_AS_ROOT set as null, but it is possible to happen do to the 
+					#complexity of programming it to re-ask if the passed string doesn't match a certain set of criteria
 					if [ "$root" == "RUN_AS_ROOT=null" ]; then
+						#fix the null value
 						read -p "Should this be run as root in the future? [y/N]: " ans
 						if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 							sed -i 's/RUN_AS_ROOT=null/RUN_AS_ROOT=yes/g' $flag
@@ -527,30 +535,28 @@ gitupdate () {
 							echo -e "\nAnswer not recognized. We will ask again next time.\n"
 						fi
 					fi
-				elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
-					echo -e "\nAborting . . .\n" && exit 0
-				else
-					echo -e "\nInput not recognized. Running without root privileges\n"
-					exec $(pwd)/$run $opt
-					pkexec checkinstall
-					rm "$back"/"$del"
-					deb=$(find -type f -name "*.deb")
-					cp "$deb" "$gitautocache"/"$pass1"
 				fi
 			fi
 		else
+			#gotta have some sorta error handling XD
 			echo -e "\nThis app does not appear to be installed from GitHub.\n"
 		fi
 	done
 }
 
+#update flatpaks
 flatupdate () {
+	#check if the flatpak.flag file is there, cause why use flatpak if flatpak isn't even installed?
 	if [ -f /etc/mrai/flatpak.flag ]; then
+		#update flatpak packages
 		flatpak update
 	fi
 }
 
+#figure out how a specific app is installed
 checkinstalltype () {
+	#check how a given app is installed by checking the list of installed apps in each
+	#then grepping over that list and looking for the app
 	if $(apt list --installed | grep -q "$pass"); then
 		type=0
 	elif [ -f /etc/mrai/snapd.flag ] && $(snap list | grep -q "$pass"); then
@@ -566,14 +572,17 @@ checkinstalltype () {
 	fi
 }
 
+#list apps installed from GitHub that where installed using automatic method
 gitautolist () {
 	ls --group-directories-first $gitautocache
 }
 
+#list apps installed from GitHub that where installed using manual method
 gitmanlist () {
 	ls --group-directories-first $gitmancache
 }
 
+#Welp. There's all the functions Lets define some variables
 h="mrai Package Manager: the Multiple Repo App Installer
 Usage:
 
@@ -653,34 +662,47 @@ w="$4"
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
+#Great! Variables done. Lets make some code that will run EVERY TIME
+
+#first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with the GitHub installations.\n" && exit 2
 fi
-if [ -z "$x" ] && [ -z "$y" ]; then
+#check if $x is set. if it isn't, print the help dialoge and exit
+if [ -z "$x" ]; then
 	echo -e "\n$h\n"
 	exit 1
 else
+	#check for the install flags
 	if [ "$x" == "-i" ] || [ "$x" == "--install" ]; then
+		#check for apt sub-flag
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
+			#set $pass to $z that way aptinstall can use it
 			pass="$z"
-			aptinstall && exit 0 || exit 2
+			( aptinstall && exit 0 ) || exit 2
+		#git sub-flag
 		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
+			#manual sub-flag
 			if [ "$z" == "-m" ] || [ "$z" == "--manual" ]; then
 				pass="$w"
-				gitmaninstall && exit 0 || exit 2
+				( gitmaninstall && exit 0 ) || exit 2
+			#auto sub-flag
 			elif [ "$z" == "-a" ] || [ "$z" == "--auto" ]; then
 				pass="$w"
-				gitautoinst && exit 0 || exit 2
+				( gitautoinst && exit 0 ) || exit 2
 			else
 				pass="$z"
 				( gitautoinst && exit 0 ) || ( gitmaninstall && exit 1 ) || exit 2
 			fi
+		#snap sub-flag
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			pass="$z"
-			snapinstall && exit 0 || exit 2
+			( snapinstall && exit 0 || exit 2
+		#flatpak sub-flag
 		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
 			pass="$z"
 			flatinstall && exit 0 || exit 2
+		#none of the sub-flags where passed, so try ALL install methods until one works
 		else
 			echo -e "\nAttempting to install\n"
 			pass="$y"	
@@ -700,10 +722,12 @@ else
 				exit 2
 			}
 		fi
+	#remove / uninstall flag
 	elif [ "$x" == "-r" ] || [ "$x" == "--remove" ] || [ "$x" == "--uninstall" ]; then
+		#check the way a certain app is installed so it can be properly removed
 		pass="$y"		
 		checkinstalltype
-		echo "$type"
+		#since $pass is already set to the package name, no need to set it so that the package will be removed
 		if [ "$type" == "0" ]; then
 			aptremove
 		elif [ "$type" == "1" ]; then
@@ -715,29 +739,41 @@ else
 		elif [ "$type" == "4" ]; then
 			gitmanremove
 		elif [ "$type" == "5" ]; then
+			#error handling
 			echo -e "\nAccording to all our databases, this app is not installed.\n"
 			exit 1
 		else
+			#if we get something other than a value from 1 and 5 set to $type, we have a SERIOUS issue. Please submit a bug report in this instance
 			echo -e "\nmrai has encountered an error in function {checkinstalltype}.\nPlease contact Thomas Castleman at draugeros@gmail.com to submit a bug report.\n"
 			exit 2
 		fi
+	#update flag
 	elif [ "$x" == "-u" ] || [ "$x" == "--update" ]; then
+		#apt sub-flag
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
 			pkexec aptupdate
+		#flatpak sub-flag
 		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
 			flatupdate
+		#github sub-flag
 		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
-			if [ -z $z ]; then
+			#if $z is set, just update that app
+			if [[ ! -z $z ]]; then
 				pass="$z"
+			#otherwise, update them all
 			else
 				t=$(gitautolist)
 				r=$(gitmanlist)
 				pass="$t $r"
 			fi
 			gitupdate
+		#Force update snaps, snap sub-flag
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			snapupdate
 		else
+			#update all isntalled apps
+			#snapupdate does not need to be called. Just pass a -s flag to aptupdate and it will run it itself
+			#that way the user's password only has to be asked once
 			pkexec aptupdate -s
 			flatupdate
 			t=$(gitautolist)
@@ -745,27 +781,36 @@ else
 			pass="$t $r"
 			gitupdate
 		fi
+	#help flag
 	elif [ "$x" == "-h" ] || [ "$x" == "--help" ]; then
 		echo -e "\n$h\n"
 		exit 0
+	#search flag
 	elif [ "$x" == "-S" ] || [ "$x" == "--search" ] || [ "$x" == "--find" ]; then
+		#apt sub-flag, only search from apt
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
 			apt search "$z"
+		#flatpak sub-flag, only search from flatpak
 		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
 			flatpak search "$z"
+		#snap sub-flag, only search from snap
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			snap search "$z"
+		#Manual GitHub sub-flag, only search apps installed using manual method from GitHub
 		elif [ "$y" == "--gm" ]; then
 			list=$(gitmanlist | grep "$z")
 			echo -e "\n$list\n"
+		#Automatic GitHub sub-flag, only search apps installed using automatic method from GitHub
 		elif [ "$y" == "--ga" ]; then
 			list=$(gitautolist | grep "$z")
 			echo -e "\n$list\n"
+		#generel GitHub sub-flag, only search apps installed from GitHub, regardless of method
 		elif [ "$y" == "--git" ]; then
 			list1=$(gitmanlist | grep "$z")
 			list2=$(gitautolist | grep "$z")
 			list="$list1 $list2"
 			echo -e "\n$list\n"
+		#search EVERYTHING
 		else
 			list1=$(gitmanlist | grep "$y")
 			list2=$(gitautolist | grep "$y")
@@ -794,9 +839,11 @@ $list2
 				echo "$list"
 			fi
 		fi
+	#version flag
 	elif [ "$x" == "--version" ]; then
 		echo -e "\n$version\n"
+	#no recognized flags passed
 	else
-		echo -e "\We're sorry. mrai encountered a core error.\nPlease contact Thomas Castleman at draugeros@gmail.com to submit a bug report.\n"
+		echo -e "\n$h\n"
 	fi
 fi
