@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.4.9-alpha2"
+version="0.5.0-alpha2"
 #Start Defining Functions
 
 #Force update snaps
@@ -88,6 +88,25 @@ gitautoinst () {
 	cd $pass1
 	#Check for a Makefile
 	if $(find Makefile) || $(find makefile); then
+		#ask if we need to run a specific file in order to get set up
+		echo -e "\nA Makefile has been detected. Some apps require you to run a seperate file before the Makefile."
+		read -p "Would you like to run such a file? [y/N]: " ans
+		if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
+			#show a list of files for the user to chose from
+			echo $(ls)
+			read -p "Which of the above files would you like to run? (Press enter to cancel and continue with running the Makefile. Type 'exit' to exit.): " ans
+			#check to see if $ans is set and NOT to exit, if it is it should be set to a file name
+			if [[ ! -z $ans ]] && [ "$ans" != "exit" ]; then
+				#make the designated file executable and run it
+				chmod +x "$ans"
+				./$ans
+			#check to see if $ans is set to exit
+			elif [ "$ans" == "exit" ]; then
+				#exit
+				echo -e "\nAborting . . .\n"
+				exit 1
+			fi
+		fi
 		#if a Makefile exists, run make depend to ensure we have all the dependencies we need
 		make depend
 		#run make && make install to install the new software, if make fails don't bother running make install since
