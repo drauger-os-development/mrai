@@ -23,6 +23,7 @@ while [ "$x" == "0" ]; do
     cp mrai /bin/mrai
     cp aptupdate /bin/aptupdate
     cp snapupdate /bin/snapupdate
+    cp mrai.1.gz /usr/share/man/man1/mrai.1.gz
     chmod +x /bin/snapupdate
     chmod +x /bin/mrai
     chmod +x /bin/aptupdate
