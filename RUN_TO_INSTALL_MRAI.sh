@@ -20,16 +20,19 @@ while [ "$x" == "0" ]; do
     echo -e "\nInstalling dependencies . . .\n"
     apt-get install checkinstall git make
     echo -e "\nInstalling mrai . . .\n"
+    mkdir /etc/mrai
+    mkdir /etc/mrai/gitauto
+    mkdir /etc/mrai/gitman
+    mkdir /etc/mrai/bin
     cp mrai /bin/mrai
     cp aptupdate /bin/aptupdate
     cp snapupdate /bin/snapupdate
+    cp gitautoinst.sh /etc/mrai/bin/gitautoinst.sh
     cp mrai.1.gz /usr/share/man/man1/mrai.1.gz
     chmod +x /bin/snapupdate
     chmod +x /bin/mrai
     chmod +x /bin/aptupdate
-    mkdir /etc/mrai
-    mkdir /etc/mrai/gitauto
-    mkdir /etc/mrai/gitman
+    chmod +x /etc/mrai/bin/gitautoinst.sh
     if $(dpkg -l | grep -q "ii  flatpak"); then
         echo "" >> /etc/mrai/flatpak.flag
     fi
