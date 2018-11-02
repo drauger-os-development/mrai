@@ -20,11 +20,17 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
+#first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
+#we want to do this first, in case there are any bugs in the code below
+if [[ "$EUID" == "0" ]]; then
+    echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with the GitHub installations.\n" && exit 2
+fi
 #pre-config
-version="0.5.5-alpha3"
+version="0.5.6-alpha3"
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
+user=$(whoami)
 #check for apt-fast, snapd, and flatpak and update the flags
 if $(dpkg -l | grep -q "ii  apt-fast"); then
 	if [[ ! -f "$cache"/apt-fast.flag ]]; then
@@ -57,7 +63,12 @@ fi
 
 #Force update snaps
 snapupdate () {
-	bash /bin/snapupdate
+	{
+		bash /bin/snapupdate
+	} || {
+		echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		exit "$?"
+	}
 }
 
 #Install software from apt
@@ -98,66 +109,12 @@ aptinstall () {
 
 #install software, using a more automatic method, from GitHub
 gitautoinst () {
-	cd $HOME
-	#make directory .mrai if it exists
-	if [[ ! -d .mrai ]]; then
-		mkdir .mrai
-	fi
-	cd .mrai
-	#check to see how the URL to github is formatted
-	#check for a VERY specific location
-	if $(echo "$pass" | grep -q 'https://github.com/') || $(echo "$pass" | grep -q 'http://github.com/'); then
-	        git clone "$pass"
-	#check for a slightly less specific location
-	elif $(echo "$pass" | grep -q 'github.com/'); then
-	        git clone https://$pass
-	#if they did not specifiy "GitHub.com", assume it.
-	else 
-	        git clone https://github.com/$pass
-	fi
-	#cd into the new directory git just make from the GitHub repo
-	pass1=$(echo $pass | sed 's/.*\///')
-	cd $pass1
-	#Check for a Makefile
-	if [ -f Makefile ] || [ -f makefile ]; then
-		#ask if we need to run a specific file in order to get set up
-		echo -e "\nA Makefile has been detected. Some apps require you to run a seperate file before the Makefile."
-		read -p "Would you like to run such a file? [y/N]: " ans
-		if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-			#show a list of files for the user to chose from
-			ls
-			read -p "Which of the above files would you like to run? (Press enter to cancel and continue with running the Makefile. Type 'exit' to exit.): " ans
-			#check to see if $ans is set and NOT to exit, if it is it should be set to a file name
-			if [[ ! -z $ans ]] && [ "$ans" != "exit" ]; then
-				#make the designated file executable and run it
-				chmod +x "$ans"
-				./$ans
-			#check to see if $ans is set to exit
-			elif [ "$ans" == "exit" ]; then
-				#exit
-				echo -e "\nAborting . . .\n"
-				exit 1
-			fi
-		fi
-		#if a Makefile exists, run make depend to ensure we have all the dependencies we need
-		make depend
-		#run make && make install to install the new software, if make fails don't bother running make install since
-		#it would most likely fail
-	        make && make install
-		#Back up the Makefile since it might be useful in uninstalling the software
-		mkdir "$gitautocache"/"$z" && cp Makefile "$gitautocache"/"$pass1" || cd .. && rm -rf $pass1
-		#make a deb as a back up for install/uninstall
-		pkexec checkinstall
-		#back up the deb to $gitautocache/#pass1
-		deb=$(find -type f -name "*.deb")
-		cp "$deb" "$gitautocache"/"$pass1"
-		echo "ADDRESS=$pass" >> "$gitautocache"/auto.flag
-        #copy Makefile to a directory in a good place in the file system. Name the directory it's in the value of $z
-	else
-	        #remove the folder to save space
-		cd ..
-	        rm -rf $pass1
-	fi
+	{
+		pkexec /etc/mrai/bin/gitautoinst.sh "$HOME" "$user" "$pass"
+	} || {
+		echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/Batcastle/mrai\n"
+		exit "$?"
+	}
 }
 
 flatinstall () {
@@ -508,15 +465,25 @@ gitremove () {
 
 #remove flatpak packages
 flatremove () {
-	#flatpak doesn't need root, so not called as such
-	flatpak remove "$pass"
+	{
+		#flatpak doesn't need root, so not called as such
+		flatpak remove "$pass"
+	} || {
+		echo -e "\nWe're sorry. Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		exit "$?"
+	}
 }
 
 #remove snap packages
 snapremove () {
-	#snap elevates itself to root, so not gonna bother calling it as root. That way, more of it runs without root access,
-	#allowing it to be more secure, while also saving space in this file
-	snap remove "$pass"
+	{
+		#snap elevates itself to root, so not gonna bother calling it as root. That way, more of it runs without root access,
+		#allowing it to be more secure, while also saving space in this file
+		snap remove "$pass"
+	} || {
+		echo -e "\nWe're sorry. Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		exit "$?"
+	}
 }
 
 #update apps installed through GitHub
@@ -629,12 +596,22 @@ checkinstalltype () {
 
 #list apps installed from GitHub that where installed using automatic method
 gitautolist () {
-	ls --group-directories-first $gitautocache
+	{
+		ls --group-directories-first $gitautocache
+	} || {
+		echo -e "\nWe're sorry. Function gitautolist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		exit "$?"
+	}
 }
 
 #list apps installed from GitHub that where installed using manual method
 gitmanlist () {
-	ls --group-directories-first $gitmancache
+	{
+		ls --group-directories-first $gitmancache
+	} || {
+		echo -e "\nWe're sorry. Function gitmanlist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		exit "$?"
+	}
 }
 
 #Welp. There's all the functions Lets define some variables
@@ -715,11 +692,6 @@ y="$2"
 z="$3"
 w="$4"
 #Great! Variables done. Lets make some code that will run EVERY TIME
-
-#first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
-if [[ "$EUID" == "0" ]]; then
-    echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with the GitHub installations.\n" && exit 2
-fi
 #check if $x is set. if it isn't, print the help dialoge and exit
 if [ -z "$x" ]; then
 	echo -e "\n$h\n"
