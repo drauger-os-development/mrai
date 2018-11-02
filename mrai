@@ -21,7 +21,7 @@
 #  MA 02110-1301, USA.
 #
 #pre-config
-version="0.5.2-alpha3"
+version="0.5.3-alpha3"
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
@@ -118,7 +118,7 @@ gitautoinst () {
 	pass1=$(echo $pass | sed 's/.*\///')
 	cd $pass1
 	#Check for a Makefile
-	if $(find Makefile) || $(find makefile); then
+	if $(find "Makefile") || $(find "makefile"); then
 		#ask if we need to run a specific file in order to get set up
 		echo -e "\nA Makefile has been detected. Some apps require you to run a seperate file before the Makefile."
 		read -p "Would you like to run such a file? [y/N]: " ans
