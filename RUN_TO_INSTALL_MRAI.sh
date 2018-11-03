@@ -20,15 +20,25 @@ while [ "$x" == "0" ]; do
     echo -e "\nInstalling dependencies . . .\n"
     apt-get install git make
     echo -e "\nInstalling mrai . . .\n"
-    mkdir /etc/mrai
-    mkdir /etc/mrai/gitauto
-    mkdir /etc/mrai/gitman
-    mkdir /etc/mrai/bin
+    if [[ ! -d /etc/mrai ]]; then
+        mkdir /etc/mrai
+    fi
+    if [[ ! -d /etc/mrai/gitauto ]]; then
+        mkdir /etc/mrai/gitauto
+    fi
+    if [[ ! -d /etc/mrai/gitman ]]; then
+        mkdir /etc/mrai/gitman
+    fi
+    if [[ ! -d /etc/mrai/bin ]]; then
+        mkdir /etc/mrai/bin
+    fi
     cp mrai /bin/mrai
     cp aptupdate /bin/aptupdate
     cp snapupdate /bin/snapupdate
     cp gitautoinst.sh /etc/mrai/bin/gitautoinst.sh
     cp mrai.1.gz /usr/share/man/man1/mrai.1.gz
+    cp clean.sh /etc/mrai/bin/clean.sh
+    chmod +x /etc/mrai/bin/clean.sh
     chmod +x /bin/snapupdate
     chmod +x /bin/mrai
     chmod +x /bin/aptupdate
