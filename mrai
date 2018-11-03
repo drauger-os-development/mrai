@@ -23,10 +23,10 @@
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want to do this first, in case there are any bugs in the code below
 if [[ "$EUID" == "0" ]]; then
-    echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with the GitHub installations.\n" && exit 2
+    echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
-version="0.5.8-alpha3"
+version="0.5.9-alpha3"
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
@@ -66,7 +66,7 @@ snapupdate () {
 	{
 		bash /bin/snapupdate
 	} || {
-		echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -112,7 +112,7 @@ gitautoinst () {
 	{
 		pkexec /etc/mrai/bin/gitautoinst.sh "$HOME" "$user" "$pass"
 	} || {
-		echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/Batcastle/mrai\n"
+		echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -189,7 +189,7 @@ flatinstall () {
 				#		OR
 				#	B. Does not contain the name of a flatpak
 				#In fact, lets print that.
-				echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease report this bug to the devs. Thanks! And sorry for the trouble!\n"
+				echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"\n"
 				#There. Bit long, but it was needed. 
 				#Alright. Lets end this puppy.
 				loop="0"
@@ -341,24 +341,9 @@ gitremove () {
 		#check for a Makefile
 		if $( echo $(ls) | grep "Makefile"); then
 			#try make uninstall and make remove, cause they sometimes work
-			(( make uninstall || make remove ) || {
-				#check for a *.deb
-				if $(find -type f -name "*.deb"); then
-					#alright. we found one, so now we need to install and uninstall it
-					#that way the files actually get removed
-					#lets echo that, just to be safe
-					echo -e "\nThe Makefile failed to uninstall this app. We found a deb file we can use to uninstall.\nHowever we must first install it so that the files are registered with apt.\nPlease stand by . . .\n"
-					#get the file name
-					pak=$(find -type f -name "*.deb")
-					#sleep to give the user time to read the echo we just sent out
-					sleep 3.5s
-					#install then uninstall
-					pkexec apt install $(pwd)/"$pak"
-					pkexec apt-get purge $(pwd)/"$pak"
-				else
-					echo -e "\nMakefile uninstall method failed and no *.deb back-up file was found.\nPlease run \n{sudo checkinstall && cp \$(find -type f -name '*.deb') $gitautocache/$z\nThen run\npkexec apt-get location-of-package/package-name" && exit 2
-				fi
-			}) && {
+			{
+				make uninstall || make remove
+			} && {
 				#something went right, so remove the files that mrai held on to so that it could
 				#delete or update the app later
 				cd ..
@@ -430,7 +415,7 @@ gitremove () {
 			#The contents of ANY *.flag file made by one of the two git install functions (see gitmaninstall and gitautoinst)
 			#should contain both an "ADDRESS" field and a "RUN_AS_ROOT" feild. RUN_AS_ROOT can only be a "yes", "no", or "null"
 			#if RUN_AS_ROOT is set to anything else, this will be displayed
-			echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2
+			echo -e "\nWe're sorry. The function gitremove has encountered an error. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n" && exit 2
 		fi
 	else
 		echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2
@@ -445,7 +430,7 @@ flatremove () {
 		#flatpak doesn't need root, so not called as such
 		flatpak remove "$pass"
 	} || {
-		echo -e "\nWe're sorry. Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		echo -e "\nWe're sorry. Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -457,7 +442,7 @@ snapremove () {
 		#allowing it to be more secure, while also saving space in this file
 		snap remove "$pass"
 	} || {
-		echo -e "\nWe're sorry. Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		echo -e "\nWe're sorry. Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -570,7 +555,7 @@ gitautolist () {
 	{
 		ls --group-directories-first $gitautocache
 	} || {
-		echo -e "\nWe're sorry. Function gitautolist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		echo -e "\nWe're sorry. Function gitautolist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -580,11 +565,20 @@ gitmanlist () {
 	{
 		ls --group-directories-first $gitmancache
 	} || {
-		echo -e "\nWe're sorry. Function gitmanlist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai\n"
+		echo -e "\nWe're sorry. Function gitmanlist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
 
+#clean up
+clean () {
+	{
+		pkexec /etc/mrai/bin/clean.sh
+	} || {
+		echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/Batcastle/mrai/issues\n"
+		exit $?
+	}
+}
 #Welp. There's all the functions Lets define some variables
 h="mrai Package Manager: the Multiple Repo App Installer
 Usage:
@@ -837,6 +831,8 @@ $list2
 	#version flag
 	elif [ "$x" == "--version" ]; then
 		echo -e "\n$version\n"
+	elif [ "$x" == "-c" ] || [ "$x" == "--clean" ]; then
+		clean
 	#no recognized flags passed
 	else
 		echo -e "\n$h\n"
