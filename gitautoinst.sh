@@ -20,10 +20,12 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.2
+#VERSION 0.0.3
 home="$1"
 user="$2"
 pass="$3"
+cache="/etc/mrai"
+gitautocache="/etc/mrai/gitauto"
 cd $home
 #make directory .mrai if it exists
 if [[ ! -d .mrai ]]; then
