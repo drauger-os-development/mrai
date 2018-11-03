@@ -26,7 +26,7 @@ if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with the GitHub installations.\n" && exit 2
 fi
 #pre-config
-version="0.5.6-alpha3"
+version="0.5.7-alpha3"
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
@@ -276,11 +276,6 @@ gitmaninstall () {
 		pkexec $(pwd)/$run
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
 		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
-		#make a backup *.deb file
-		pkexec checkinstall
-		#copy the new *.deb into the backup directory
-		deb=$(find -type f -name "*.deb")
-		cp "$deb" "$gitautocache"/"$pass1"
 		#write necissary info into the flag, to keep the number of files down
 		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
 		echo "RUN_AS_ROOT=yes" >> "$gitmancache"/man.flag
@@ -292,11 +287,6 @@ gitmaninstall () {
 		exec $(pwd)/$run
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
 		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
-		#make a backup *.deb file
-		pkexec checkinstall
-		#copy the new *.deb into the backup directory
-		deb=$(find -type f -name "*.deb")
-		cp "$deb" "$gitautocache"/"$pass1"
 		#write necissary info into the flag, to keep the number of files down
 		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
 		echo "RUN_AS_ROOT=no" >> "$gitmancache"/man.flag
@@ -314,11 +304,6 @@ gitmaninstall () {
 		exec $(pwd)/$run
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
 		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
-		#make a backup *.deb file
-		pkexec checkinstall
-		#copy the new *.deb into the backup directory
-		deb=$(find -type f -name "*.deb")
-		cp "$deb" "$gitautocache"/"$pass1"
 		#write necissary info into the flag, to keep the number of files down
 		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
 		echo "RUN_AS_ROOT=null" >> "$gitmancache"/man.flag
@@ -381,17 +366,8 @@ gitremove () {
 				echo -e "\n$pass has been removed.\n"
 				exit 0
 			}
-		#check for a *.deb
-		elif $(echo $(ls) | grep ".deb"); then
-			#get the file name
-			pak=$(find -type f -name "*.deb")
-			#sleep to give the user time to read the echo we just sent out
-			sleep 3.5s
-			#install then uninstall
-			pkexec apt install $(pwd)/"$pak"
-			pkexec apt-get purge $(pwd)/"$pak"
 		else
-			echo -e "\nWe're sorry. No Makefile or back-up *.deb file could be found. Therefor, mrai cannot uninstall $z\n"
+			echo -e "\nWe're sorry. No Makefile could be found. Therefore, mrai cannot uninstall $z\n"
 		fi
 	#check if the passed app is a git-man app if not a git-auto
 	elif $(gitmanlist | grep -q "$pass"); then
@@ -538,11 +514,6 @@ gitupdate () {
 				elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
 					#run the designated file, but NOT AS ROOT
 					exec $(pwd)/$run $opt
-					#make a backup *.deb then copy it to the app's archive (or cache. it's both tbh) directory
-					pkexec checkinstall
-					rm "$back"/"$del"
-					deb=$(find -type f -name "*.deb")
-					cp "$deb" "$gitautocache"/"$pass1"
 					#if the *.flag file's RUN_AS_ROOT is set to null, ask if the user wants to reset it to either yes or no
 					#none of the *.flag files should have a RUN_AS_ROOT set as null, but it is possible to happen do to the 
 					#complexity of programming it to re-ask if the passed string doesn't match a certain set of criteria
