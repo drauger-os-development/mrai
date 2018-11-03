@@ -18,7 +18,7 @@ while [ "$x" == "0" ]; do
     echo -e "\nUpdating the system . . .\n"
     ( apt-get update && apt-get -y upgrade ) || ( echo -e "\nWe encountered an error updating your system. Are you hooked up to the interent?\n" && exit 1 )
     echo -e "\nInstalling dependencies . . .\n"
-    apt-get install checkinstall git make
+    apt-get install git make
     echo -e "\nInstalling mrai . . .\n"
     mkdir /etc/mrai
     mkdir /etc/mrai/gitauto
