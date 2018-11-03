@@ -1,7 +1,7 @@
 #!/bin/bash
 # -*- coding: utf-8 -*-
 #
-#  gitautoinst
+#  gitautoinst.sh
 #  
 #  Copyright 2018 Thomas Castleman <draugeros@gmail.com>
 #  
@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.1
+#VERSION 0.0.2
 home="$1"
 user="$2"
 pass="$3"
@@ -51,13 +51,17 @@ if [ -f Makefile ] || [ -f makefile ]; then
 	read -p "Would you like to run such a file? [y/N]: " ans
 	if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
 		#show a list of files for the user to chose from
-		ls
-		read -p "Which of the above files would you like to run? (Press enter to cancel and continue with running the Makefile. Type 'exit' to exit.): " ans
-		#check to see if $ans is set and NOT to exit, if it is it should be set to a file name
+		ls --color=auto
+		read -p "Which of the above files would you like to run? (Press enter to cancel and continue with running the Makefile. Type 'exit' to exit.): " ans		#check to see if $ans is set and NOT to exit, if it is it should be set to a file name
 		if [[ ! -z $ans ]] && [ "$ans" != "exit" ]; then
+			read -p "Would you like to run this file as root? [y/N]: " ans1
 			#make the designated file executable and run it
 			chmod +x "$ans"
-			su $user -c "./$ans" || ./$ans
+			if [ "$ans1" == "Y" ] || [ "$ans1" == "y" ]; then
+				./$ans
+			else
+				su $user -c "./$ans"
+			fi
 		#check to see if $ans is set to exit
 		elif [ "$ans" == "exit" ]; then
 			#exit
@@ -72,14 +76,6 @@ if [ -f Makefile ] || [ -f makefile ]; then
         make && make install
 	#Back up the Makefile since it might be useful in uninstalling the software
 	su $user -c "( mkdir $gitautocache/$pass1 && cp Makefile $gitautocache/$pass1 ) || ( cd .. && rm -rf $pass1 && exit 1 ) || exit 2"
-	#make a deb as a back up for install/uninstall
-	{
-		checkinstall
-	} && {
-		#back up the deb to $gitautocache/#pass1
-		deb=$(find -type f -name "*.deb")
-		cp "$deb" "$gitautocache"/"$pass1"/"$deb"
-	}
 	echo "ADDRESS=$pass" >> "$gitautocache"/"$pass1"/auto.flag
        #copy Makefile to a directory in a good place in the file system. Name the directory it's in the value of $z
 else
