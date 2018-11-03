@@ -26,7 +26,7 @@ if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
-version="0.5.9-alpha3"
+version="0.6.0-alpha3"
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
@@ -573,7 +573,7 @@ gitmanlist () {
 #clean up
 clean () {
 	{
-		pkexec /etc/mrai/bin/clean.sh
+		pkexec /etc/mrai/bin/clean.sh $user
 	} || {
 		echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit $?
@@ -596,6 +596,8 @@ To Search:
    mrai -S {package-name}
 
 Options:
+-c, --clean		Delete old *.deb files, old config files, and old Github files
+
 -i, --install		Install an app, if none of the below options are given, check in the following order:
 				Github automatic,
 				apt-get,
