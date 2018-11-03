@@ -16,8 +16,6 @@ mrai: Multiple Repository App Installer
   
   `git`
   
-  `checkinstall`
-  
   `make`
   
 # Recommends
