@@ -2,6 +2,8 @@ TODO List for mrai:
 In order of importance
   1. DEBUG DEBUG DEBUG
   2. Add a list installed feature
-  3. Add a clean feature
-  4. Debug some more
-  5. Getting in an existing apt repository or make one for mrai
+  3. Add a install from deb feature
+  4. Add a check for updates feature
+  5. Maybe add support for AppImages?
+  6. Debug some more
+  7. Getting in an existing apt repository or make one for mrai
