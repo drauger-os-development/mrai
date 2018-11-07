@@ -25,6 +25,73 @@
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
+#The below commented out lines are development code for a change later in mrai.
+#If uncommented they will most likely break mrai as is.
+#u=""
+#S=""
+#i=""
+#r=""
+#while getopts 'uSirh' flag; do
+#	case "${flag}"; do
+#		u) 
+#			while getopts 'asfg' flag2; do
+#				case "${flag2}"; do
+#					a) u="$u a" ;;
+#					s) u="$u s" ;;
+#					f) u="$u f" ;;
+#					g) u="$u g" ;;
+#					*) 
+#						if [ "$1" == "-u" ]; then
+#							u="a s f g"
+#						else
+#							echo -e "\nSorry. This option is not recognized.\n"
+#							exit 1
+#						fi
+#						;;
+#				esac
+#			done
+#			;;
+#		S) 
+#			while getopts 'asfg' flag2; do
+#				case "${flag2}"; do
+#					a) S="$S a" ;;
+#					s) S="$S s" ;;
+#					f) S="$S f" ;;
+#					g) S="$S g" ;;
+#					*) 
+#						if [ "$1" == "-S" ]; then
+#							S="a s f g"
+#						else
+#							echo -e "\nSorry. This option is not recognized.\n"
+#							exit 1
+#						fi
+#						;;
+#				esac
+#			done
+#			;;
+#		i) 
+#			while getopts 'asfg' flag2; do
+#				case "${flag2}"; do
+#					a) i="$i a" ;;
+#					s) i="$i s" ;;
+#					f) i="$i f" ;;
+#					g) i="$i g" ;;
+#					*) 
+#						if [ "$1" == "-i" ]; then
+#							i="a s f g"
+#						else
+#							echo -e "\nSorry. This option is not recognized.\n"
+#							exit 1
+#						fi
+#						;;
+#				esac
+#			done
+#			;;
+#		r) r=1 ;;
+#		h) echo -e "\n$h\n"; exit 0 ;;
+#		*) Error out
+#	esac
+#done
 #pre-config
 version="0.6.0-alpha3"
 cache="/etc/mrai"
