@@ -25,75 +25,12 @@
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
-#The below commented out lines are development code for a change later in mrai.
-#If uncommented they will most likely break mrai as is.
-#u=""
-#S=""
-#i=""
-#r=""
-#while getopts 'uSirh' flag; do
-#	case "${flag}"; do
-#		u) 
-#			while getopts 'asfg' flag2; do
-#				case "${flag2}"; do
-#					a) u="$u a" ;;
-#					s) u="$u s" ;;
-#					f) u="$u f" ;;
-#					g) u="$u g" ;;
-#					*) 
-#						if [ "$1" == "-u" ]; then
-#							u="a s f g"
-#						else
-#							echo -e "\nSorry. This option is not recognized.\n"
-#							exit 1
-#						fi
-#						;;
-#				esac
-#			done
-#			;;
-#		S) 
-#			while getopts 'asfg' flag2; do
-#				case "${flag2}"; do
-#					a) S="$S a" ;;
-#					s) S="$S s" ;;
-#					f) S="$S f" ;;
-#					g) S="$S g" ;;
-#					*) 
-#						if [ "$1" == "-S" ]; then
-#							S="a s f g"
-#						else
-#							echo -e "\nSorry. This option is not recognized.\n"
-#							exit 1
-#						fi
-#						;;
-#				esac
-#			done
-#			;;
-#		i) 
-#			while getopts 'asfg' flag2; do
-#				case "${flag2}"; do
-#					a) i="$i a" ;;
-#					s) i="$i s" ;;
-#					f) i="$i f" ;;
-#					g) i="$i g" ;;
-#					*) 
-#						if [ "$1" == "-i" ]; then
-#							i="a s f g"
-#						else
-#							echo -e "\nSorry. This option is not recognized.\n"
-#							exit 1
-#						fi
-#						;;
-#				esac
-#			done
-#			;;
-#		r) r=1 ;;
-#		h) echo -e "\n$h\n"; exit 0 ;;
-#		*) Error out
-#	esac
-#done
 #pre-config
-version="0.6.0-alpha3"
+version="0.6.2-alpha3"
+#if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
+#	echo -e "\n$version\n"
+#	exit 0
+#fi
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
@@ -727,13 +664,102 @@ z="$3"
 w="$4"
 #Great! Variables done. Lets make some code that will run EVERY TIME
 #check if $x is set. if it isn't, print the help dialoge and exit
+#
+#The below commented out lines are development code for a change later in mrai.
+#If uncommented they will most likely break mrai as is.
+#u=""
+#S=""
+#i=""
+#r=""
+#c=""
+#while getopts 'uSirhc' flag; do
+#	case "${flag}"; do
+#		u) 
+#			while getopts 'asfg' flag2; do
+#				case "${flag2}"; do
+#					a) u="$u a" ;;
+#					s) u="$u s" ;;
+#					f) u="$u f" ;;
+#					g) u="$u g" ;;
+#					*) 
+#						if [ "$1" == "-u" ]; then
+#							u="a s f g"
+#						else
+#							echo -e "\nSorry. This option is not recognized.\n"
+#							exit 1
+#						fi
+#						;;
+#				esac
+#			done
+#			;;
+#		S) 
+#			while getopts 'asfg' flag2; do
+#				case "${flag2}"; do
+#					a) S="$S a" ;;
+#					s) S="$S s" ;;
+#					f) S="$S f" ;;
+#					g) 
+#						while getopts 'ma' flag3; do
+#							case "${flag2}"; do
+#								m) S="$S m" ;;
+#								a) S="$S o" ;;
+#								*) S="$S l" ;;
+#							esac
+#						done
+#						;;
+#					*) 
+#						if [ "$1" == "-S" ]; then
+#							S="a s f g"
+#						else
+#							echo -e "\nSorry. This option is not recognized.\n"
+#							exit 1
+#						fi
+#						;;
+#				esac
+#			done
+#			;;
+#		i) 
+#			while getopts 'asfg' flag2; do
+#				case "${flag2}"; do
+#					a) i="a" ;;
+#					s) i="s" ;;
+#					f) i="f" ;;
+#					g) 
+#						while getopts 'ma' flag3; do
+#							case "${flag3}"; do
+#								m) i="gm" ;;
+#								a) i="ga" ;;
+#								*) echo -e "\nError in main function. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"; exit 2 ;;
+#							esac
+#						done
+#						;;
+#					*) 
+#						if [ "$1" == "-i" ]; then
+#							i="all"
+#						else
+#							echo -e "\nSorry. This option is not recognized.\n"
+#							exit 1
+#						fi
+#						;;
+#				esac
+#			done
+#			;;
+#		r) r=1 ;;
+#		c) c=1 ;;
+#		h) echo -e "\n$h\n"; exit 0 ;;
+#		*) Error out
+#	esac
+#done
+#this will be changed to an error checker for the case above
 if [ -z "$x" ]; then
 	echo -e "\n$h\n"
 	exit 1
 else
 	#check for the install flags
+	#if [[ ! -z "$i" ]]; then
 	if [ "$x" == "-i" ] || [ "$x" == "--install" ]; then
 		#check for apt sub-flag
+		#if [ "$i" == "a" ]; then
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
 			#set $pass to $z that way aptinstall can use it
 			pass="$z"
@@ -741,10 +767,12 @@ else
 		#git sub-flag
 		elif [ "$y" == "-g" ] || [ "$y" == "--git" ]; then
 			#manual sub-flag
+			#if [ "$i" == "gm" ]; then
 			if [ "$z" == "-m" ] || [ "$z" == "--manual" ]; then
 				pass="$w"
 				( gitmaninstall && exit 0 ) || exit 2
 			#auto sub-flag
+			#if [ "$i" == "ga" ]; then
 			elif [ "$z" == "-a" ] || [ "$z" == "--auto" ]; then
 				pass="$w"
 				( gitautoinst && exit 0 ) || exit 2
@@ -753,10 +781,12 @@ else
 				( gitautoinst && exit 0 ) || ( gitmaninstall && exit 1 ) || exit 2
 			fi
 		#snap sub-flag
+		#if [ "$i" == "s" ]; then
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			pass="$z"
 			( snapinstall && exit 0 ) || exit 2
 		#flatpak sub-flag
+		#if [ "$i" == "f" ]; then
 		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
 			pass="$z"
 			( flatinstall && exit 0 ) || exit 2
@@ -781,6 +811,7 @@ else
 			}
 		fi
 	#remove / uninstall flag
+	#elif [[ ! -z "$r" ]] && [ "$r" == "1" ]; then
 	elif [ "$x" == "-r" ] || [ "$x" == "--remove" ] || [ "$x" == "--uninstall" ]; then
 		#check the way a certain app is installed so it can be properly removed
 		pass="$y"		
@@ -806,6 +837,35 @@ else
 			exit 2
 		fi
 	#update flag
+#	elif [[ ! -z "$u" ]]; then
+#		for x in "$u"; do
+#			if [ "$x" == "f" ]; then
+#				flatupdate
+#			elif [ "$x" == "g" ]; then
+#				if [[ ! -z "$2" ]]; then 
+#					pass="$2"
+#				else
+#					t=$(gitautolist)
+#					r=$(gitmanlist)
+#					pass="$t $r"
+#				fi
+#				gitupdate
+#			elif [[ "$x" == "a" ]]; then
+#				if $(echo "$u" | grep -q "s"); then
+#					pkexec aptupdate -s
+#				else
+#					pkexec aptupdate
+#				fi
+#			elif [[ "$x" == "s" ]]; then
+#				if $(echo "$u" | grep -q "a"); then
+#					continue
+#				else
+#					snapupdate
+#				fi
+#			else
+#				continue
+#			fi
+#		done
 	elif [ "$x" == "-u" ] || [ "$x" == "--update" ]; then
 		#apt sub-flag
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
@@ -840,29 +900,37 @@ else
 			gitupdate
 		fi
 	#help flag
+	#this will be removed when the update gets applied
 	elif [ "$x" == "-h" ] || [ "$x" == "--help" ]; then
 		echo -e "\n$h\n"
 		exit 0
 	#search flag
+#	elif [[ ! -z "$S" ]]; then
 	elif [ "$x" == "-S" ] || [ "$x" == "--search" ] || [ "$x" == "--find" ]; then
 		#apt sub-flag, only search from apt
+#		if $(echo "$S" | grep -q "a"); then
 		if [ "$y" == "-a" ] || [ "$y" == "--apt" ]; then
 			apt search "$z"
 		#flatpak sub-flag, only search from flatpak
+#		if $(echo "$S" | grep -q "f"); then
 		elif [ "$y" == "-f" ] || [ "$y" == "--flat" ]; then
 			flatpak search "$z"
 		#snap sub-flag, only search from snap
+#		if $(echo "$S" | grep -q "s"); then
 		elif [ "$y" == "-s" ] || [ "$y" == "--snap" ]; then
 			snap search "$z"
 		#Manual GitHub sub-flag, only search apps installed using manual method from GitHub
+#		if $(echo "$S" | grep -q "m"); then
 		elif [ "$y" == "--gm" ]; then
 			list=$(gitmanlist | grep "$z")
 			echo -e "\n$list\n"
 		#Automatic GitHub sub-flag, only search apps installed using automatic method from GitHub
+#		if $(echo "$S" | grep -q "o"); then
 		elif [ "$y" == "--ga" ]; then
 			list=$(gitautolist | grep "$z")
 			echo -e "\n$list\n"
 		#generel GitHub sub-flag, only search apps installed from GitHub, regardless of method
+#		if $(echo "$S" | grep -q "l"); then
 		elif [ "$y" == "--git" ]; then
 			list1=$(gitmanlist | grep "$z")
 			list2=$(gitautolist | grep "$z")
@@ -898,8 +966,10 @@ $list2
 			fi
 		fi
 	#version flag
-	elif [ "$x" == "--version" ]; then
+	#this will be moved
+	elif [ "$1" == "--version" ]; then
 		echo -e "\n$version\n"
+#	elif [[ ! -z "$c" ]]; then
 	elif [ "$x" == "-c" ] || [ "$x" == "--clean" ]; then
 		clean
 	#no recognized flags passed
