@@ -844,7 +844,7 @@ while getopts 'uSirc' flag; do
 							case "${flag}" in
 								m) i="$i gm" ;;
 								a) i="$i ga" ;;
-								*) i="$i gb"
+								*) i="$i gb" ;;
 						done
 						;;
 					*) 
