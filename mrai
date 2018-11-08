@@ -26,7 +26,7 @@ if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
-version="0.6.5-alpha4"
+version="0.6.6-alpha4"
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	echo -e "\n$version\n"
 	exit 0
@@ -661,13 +661,18 @@ clean () {
 		exit $?
 	}
 }
-#Welp. There's all the functions Lets define some variables
 
+#goto function. Cause Windows has it but BASH doesn't \_(*_*)_/
+goto () {
+    label=$1
+    cmd=$(sed -n "/$label:/{:a;n;p;ba};" $0 | grep -v ':$')
+    eval "$cmd"
+    exit
+}
+#Welp. There's all the functions Lets define some variables
 y="$2"
 z="$3"
 w="$4"
-#Great! Variables done. Lets make some code that will run EVERY TIME
-#check if $x is set. if it isn't, print the help dialoge and exit
 #new flag detection system
 #set variables so that they can iterated over without throwing errors
 u=""
@@ -675,7 +680,90 @@ S=""
 i=""
 r=""
 c=""
-#get flags
+if [ "$1" == "--install" ]; then
+	test=2
+	while [ "$test" != "1" ]; do
+		evaluator=${!test}
+		if [ -z $evaluator ]; then
+			test=1
+			goto start
+			exit 0
+		fi
+		if [ "$evaluator" == "--apt" ]; then
+			i="$i a"
+		elif [ "$evaluator" == "--snap ]; then
+			i="$i s"
+		elif [ "$evaluator" == "--flat" ]; then
+			i="$i f"
+		elif [ "$evaluator" == "--gm" ]; then
+			i="$i gm"
+		elif [ "$evaluator" == "--ga" ]; then
+			i="$i ga"
+		elif [ "$evaluator" == "--git" ]; then
+			i="$i gb"
+		else
+			i="l"
+		fi
+		(( test+=1 ))
+	done
+elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; then
+	test=2
+	while [ "$test" != "1" ]; do
+		evaluator=${!test}
+		if [ -z $evaluator ]; then
+			test=1
+			goto start
+			exit 0
+		fi
+		if [ "$evaluator" == "--apt" ]; then
+			S="$S p"
+		elif [ "$evaluator" == "--snap ]; then
+			S="$S s"
+		elif [ "$evaluator" == "--flat" ]; then
+			S="$S f"
+		elif [ "$evaluator" == "--gm" ]; then
+			S="$S m"
+		elif [ "$evaluator" == "--ga" ]; then
+			S="$S o"
+		elif [ "$evaluator" == "--git" ]; then
+			S="$S l"
+		else
+			S="a"
+		fi
+		(( test+=1 ))
+	done
+
+elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
+	test=2
+	while [ "$test" != "1" ]; do
+		evaluator=${!test}
+		if [ -z $evaluator ]; then
+			test=1
+			goto start
+			exit 0
+		fi
+		if [ "$evaluator" == "--apt" ]; then
+			u="$u a"
+		elif [ "$evaluator" == "--snap ]; then
+			u="$u s"
+		elif [ "$evaluator" == "--flat" ]; then
+			u="$u f"
+		elif [ "$evaluator" == "--git" ]; then
+			u="$u g"
+		else
+			u="a s f g"
+		fi
+		(( test+=1 ))
+	done
+elif [ "$1" == "--remove" ] || [ "$1" == "--uninstall" ]; then
+	r=1
+	goto start
+	exit 0
+elif [ "$1" == "--clean" ]; then
+	c=1
+	goto start
+	exit 0
+fi
 while getopts 'uSirc' flag; do
 	case "${flag}" in
 		#update flag
@@ -748,12 +836,15 @@ while getopts 'uSirc' flag; do
 					s) i="s" ;;
 					f) i="f" ;;
 					g) 
+						if [ "$1" == "-ig" ]; then
+							i="$i gb"
+							break
+						fi
 						while getopts 'ma' flag; do
 							case "${flag}" in
-								m) i="gm" ;;
-								a) i="ga" ;;
-								*) echo -e "\nError in main function. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"; exit 2 ;;
-							esac
+								m) i="$i gm" ;;
+								a) i="$i ga" ;;
+								*) i="$i gb"
 						done
 						;;
 					*) 
@@ -775,6 +866,7 @@ while getopts 'uSirc' flag; do
 		*) echo -e "\nError: Option not recognized.\n\n$h\n"
 	esac
 done
+start:
 #check to make sure SOMETHING is set
 if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ]; then
 	echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
@@ -791,14 +883,14 @@ else
 		#git sub-flag
 		elif $(echo "$i" | grep -q "g"); then
 			#manual sub-flag
-			if [ "$i" == "gm" ]; then
+			if $(echo "$i" | grep -q "gm"); then
 				pass="$y"
 				( gitmaninstall && exit 0 ) || exit 2
 			#auto sub-flag
-			elif [ "$i" == "ga" ]; then
+			elif $(echo "$i" | grep -q "ga"); then
 				pass="$y"
 				( gitautoinst && exit 0 ) || exit 2
-			else
+			elif $(echo "$i" | grep -q "gb"); then
 				pass="$y"
 				( gitautoinst && exit 0 ) || ( gitmaninstall && exit 1 ) || exit 2
 			fi
