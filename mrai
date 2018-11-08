@@ -744,7 +744,7 @@ elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
 		fi
 		if [ "$evaluator" == "--apt" ]; then
 			u="$u a"
-		elif [ "$evaluator" == "--snap ]; then
+		elif [ "$evaluator" == "--snap" ]; then
 			u="$u s"
 		elif [ "$evaluator" == "--flat" ]; then
 			u="$u f"
