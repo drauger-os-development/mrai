@@ -704,7 +704,7 @@ if [ "$1" == "--install" ]; then
 		elif [ "$evaluator" == "--git" ]; then
 			i="gb"
 		else
-			i=${i-"l"}
+			i=${i:-"l"}
 			pass="$evaluator"
 		fi
 		(( test+=1 ))
