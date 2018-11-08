@@ -717,7 +717,7 @@ elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; th
 		fi
 		if [ "$evaluator" == "--apt" ]; then
 			S="$S p"
-		elif [ "$evaluator" == "--snap ]; then
+		elif [ "$evaluator" == "--snap" ]; then
 			S="$S s"
 		elif [ "$evaluator" == "--flat" ]; then
 			S="$S f"
