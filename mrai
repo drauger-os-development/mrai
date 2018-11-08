@@ -691,7 +691,7 @@ if [ "$1" == "--install" ]; then
 		fi
 		if [ "$evaluator" == "--apt" ]; then
 			i="$i a"
-		elif [ "$evaluator" == "--snap ]; then
+		elif [ "$evaluator" == "--snap" ]; then
 			i="$i s"
 		elif [ "$evaluator" == "--flat" ]; then
 			i="$i f"
