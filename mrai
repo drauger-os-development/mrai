@@ -690,17 +690,17 @@ if [ "$1" == "--install" ]; then
 			exit 0
 		fi
 		if [ "$evaluator" == "--apt" ]; then
-			i="$i a"
+			i="a"
 		elif [ "$evaluator" == "--snap" ]; then
-			i="$i s"
+			i="s"
 		elif [ "$evaluator" == "--flat" ]; then
-			i="$i f"
+			i="f"
 		elif [ "$evaluator" == "--gm" ]; then
-			i="$i gm"
+			i="gm"
 		elif [ "$evaluator" == "--ga" ]; then
-			i="$i ga"
+			i="ga"
 		elif [ "$evaluator" == "--git" ]; then
-			i="$i gb"
+			i="gb"
 		else
 			i="l"
 		fi
@@ -787,8 +787,7 @@ while getopts 'uSirc' flag; do
 						fi
 						;;
 				esac
-			done
-			;;
+			done ;;
 		#search flag
 		S) 
 			if [ "$1" == "-S" ]; then
@@ -811,19 +810,16 @@ while getopts 'uSirc' flag; do
 								a) S="$S o" ;;
 								*) S="$S l" ;;
 							esac
-						done
-						;;
+						done ;;
 					*) 
 						if [ "$1" == "-S" ]; then
 							S="a"
 						else
 							echo -e "\nSorry. This option is not recognized.\n"
 							exit 1
-						fi
-						;;
+						fi ;;
 				esac
-			done
-			;;
+			done ;;
 		#install flag
 		i) 
 			if [ "$1" == "-i" ]; then
@@ -842,22 +838,19 @@ while getopts 'uSirc' flag; do
 						fi
 						while getopts 'ma' flag; do
 							case "${flag}" in
-								m) i="$i gm" ;;
-								a) i="$i ga" ;;
-								*) i="$i gb" ;;
-						done
-						;;
+								m) i="gm" ;;
+								a) i="ga" ;;
+								*) i="gb" ;;
+						done ;;
 					*) 
 						if [ "$1" == "-i" ]; then
 							i="l"
 						else
 							echo -e "\nSorry. This option is not recognized.\n"
 							exit 1
-						fi
-						;;
+						fi ;;
 				esac
-			done
-			;;
+			done ;;
 		#remove flag
 		r) r=1 ;;
 		#clean flag
