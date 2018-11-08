@@ -26,9 +26,87 @@ if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
-version="0.6.4-alpha4"
+version="0.6.5-alpha4"
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	echo -e "\n$version\n"
+	exit 0
+fi
+h="mrai Package Manager: the Multiple Repo App Installer
+Usage:
+
+To Install:
+   mrai -i {github-username/github-repo-name (or Github URL)} {possible-apt-package-name (or name to be installed under) }
+
+To Remove:
+   mrai -r {name-installed-under}
+
+To Update:
+   mrai -u {github-username/github-repo-name (or Github URL)} {possible-apt-package-name (or name installed under) }
+
+To Search:
+   mrai -S {package-name}
+
+Options:
+-c		Delete old *.deb files, old config files, and old Github files
+
+-i		Install an app, if none of the below options are given, check in the following order:
+				Github automatic,
+				apt-get,
+				snap,
+				flatpak,
+				Github manual
+
+	-a	Install just from apt-get. In which case, usage will be:
+
+				mrai -i -a {apt-package-name}
+
+	-g	Install just from Github, In which case, usage will be:
+			
+				mrai -i -g {/github-username/github-repo-name (or Github URL)}
+				
+			Under this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or
+			automaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your
+			system.
+
+	-s	Install just from snapd, In which case, usage will be:
+
+				mrai -i -s {snap-name}
+	
+	-f	Install as Flatpak, In which case, usage will be:
+
+				mrai -i -f {flatpak-name}
+
+-h		Display this help dialoge and exit.
+
+-r		Uninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,
+			the name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed
+
+-S		Search for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,
+			please vist https://www.github.com
+	
+	-a	Search for an app through apt-get
+
+	-s	Search for an app through snap
+
+	-f	Search for an app through flatpak
+
+	--ga		Search for an app that was installed using GitHub Automatic Method
+
+	--gm		Search for an app that was installed using GitHub Manual Method
+
+	--git		Search for an app installed from GitHub, regardless of method
+
+-u		Update your software. This may or may not work for packages installed from Github.
+
+	-a	Update from only apt-get
+
+	-f	Update from only Flatpak
+
+	-g	Update from only Github
+	
+	-s	Update only installed snaps"
+if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+	echo -e "\n$h\n"
 	exit 0
 fi
 cache="/etc/mrai"
@@ -584,80 +662,7 @@ clean () {
 	}
 }
 #Welp. There's all the functions Lets define some variables
-h="mrai Package Manager: the Multiple Repo App Installer
-Usage:
 
-To Install:
-   mrai -i {github-username/github-repo-name (or Github URL)} {possible-apt-package-name (or name to be installed under) }
-
-To Remove:
-   mrai -r {name-installed-under}
-
-To Update:
-   mrai -u {github-username/github-repo-name (or Github URL)} {possible-apt-package-name (or name installed under) }
-
-To Search:
-   mrai -S {package-name}
-
-Options:
--c		Delete old *.deb files, old config files, and old Github files
-
--i		Install an app, if none of the below options are given, check in the following order:
-				Github automatic,
-				apt-get,
-				snap,
-				flatpak,
-				Github manual
-
-	-a	Install just from apt-get. In which case, usage will be:
-
-				mrai -i -a {apt-package-name}
-
-	-g	Install just from Github, In which case, usage will be:
-			
-				mrai -i -g {/github-username/github-repo-name (or Github URL)}
-				
-			Under this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or
-			automaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your
-			system.
-
-	-s	Install just from snapd, In which case, usage will be:
-
-				mrai -i -s {snap-name}
-	
-	-f	Install as Flatpak, In which case, usage will be:
-
-				mrai -i -f {flatpak-name}
-
--h		Display this help dialoge and exit.
-
--r		Uninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,
-			the name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed
-
--S		Search for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,
-			please vist https://www.github.com
-	
-	-a	Search for an app through apt-get
-
-	-s	Search for an app through snap
-
-	-f	Search for an app through flatpak
-
-	--ga		Search for an app that was installed using GitHub Automatic Method
-
-	--gm		Search for an app that was installed using GitHub Manual Method
-
-	--git		Search for an app installed from GitHub, regardless of method
-
--u		Update your software. This may or may not work for packages installed from Github.
-
-	-a	Update from only apt-get
-
-	-f	Update from only Flatpak
-
-	-g	Update from only Github
-	
-	-s	Update only installed snaps"
 y="$2"
 z="$3"
 w="$4"
@@ -671,7 +676,7 @@ i=""
 r=""
 c=""
 #get flags
-while getopts 'uSirhc' flag; do
+while getopts 'uSirc' flag; do
 	case "${flag}" in
 		#update flag
 		u) 
@@ -766,8 +771,6 @@ while getopts 'uSirhc' flag; do
 		r) r=1 ;;
 		#clean flag
 		c) c=1 ;;
-		#help flag
-		h) echo -e "\n$h\n"; exit 0 ;;
 		#all else
 		*) echo -e "\nError: Option not recognized.\n\n$h\n"
 	esac
