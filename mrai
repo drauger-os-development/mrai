@@ -26,7 +26,7 @@ if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
-version="0.6.6-alpha4"
+version="0.6.8-alpha4"
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	echo -e "\n$version\n"
 	exit 0
@@ -669,6 +669,7 @@ goto () {
     eval "$cmd"
     exit
 }
+
 #Welp. There's all the functions Lets define some variables
 y="$2"
 z="$3"
@@ -680,12 +681,13 @@ S=""
 i=""
 r=""
 c=""
+#install flag
 if [ "$1" == "--install" ]; then
 	test=2
 	while [ "$test" != "1" ]; do
 		evaluator=${!test}
-		if [ -z $evaluator ]; then
-			test=1
+		if [ -z $evaluator ] && [ "$test" != "2" ]; then
+			test=2
 			goto start
 			exit 0
 		fi
@@ -702,16 +704,18 @@ if [ "$1" == "--install" ]; then
 		elif [ "$evaluator" == "--git" ]; then
 			i="gb"
 		else
-			i="l"
+			i=${i-"l"}
+			pass="$evaluator"
 		fi
 		(( test+=1 ))
 	done
+#search flag
 elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; then
 	test=2
 	while [ "$test" != "1" ]; do
 		evaluator=${!test}
-		if [ -z $evaluator ]; then
-			test=1
+		if [ -z $evaluator ] && [ "$test" != "2" ]; then
+			test=2
 			goto start
 			exit 0
 		fi
@@ -728,17 +732,17 @@ elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; th
 		elif [ "$evaluator" == "--git" ]; then
 			S="$S l"
 		else
-			S="a"
+			S=${S:-"a"}
+			pass="$evaluator"
 		fi
 		(( test+=1 ))
 	done
-
+#update flag
 elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
 	test=2
 	while [ "$test" != "1" ]; do
 		evaluator=${!test}
-		if [ -z $evaluator ]; then
-			test=1
+		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			goto start
 			exit 0
 		fi
@@ -751,19 +755,23 @@ elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
 		elif [ "$evaluator" == "--git" ]; then
 			u="$u g"
 		else
-			u="a s f g"
+			u=${u:-"a s f g"}
 		fi
 		(( test+=1 ))
 	done
+#uninstall flag
 elif [ "$1" == "--remove" ] || [ "$1" == "--uninstall" ]; then
 	r=1
+	pass="$2"
 	goto start
 	exit 0
+#clean flag
 elif [ "$1" == "--clean" ]; then
 	c=1
 	goto start
 	exit 0
 fi
+#compound flag managment system
 while getopts 'uSirc' flag; do
 	case "${flag}" in
 		#update flag
@@ -819,6 +827,28 @@ while getopts 'uSirc' flag; do
 							exit 1
 						fi ;;
 				esac
+			done 
+			x=2
+			while [ "$x" != 1 ]; do
+				if [ "$x" == "2" ]; then
+					if [ ${!x} == "" ]; then
+						(( x+=1 ))
+						continue
+					else
+						pass=${!x}
+						(( x+=1 ))
+						break
+					fi
+				else
+					if [ ${!x} == "" ]; then
+						x=1
+						break
+					else
+						pass=${!x}
+						(( x+=1 ))
+						break
+					fi
+				fi
 			done ;;
 		#install flag
 		i) 
@@ -841,6 +871,7 @@ while getopts 'uSirc' flag; do
 								m) i="gm" ;;
 								a) i="ga" ;;
 								*) i="gb" ;;
+							esac
 						done ;;
 					*) 
 						if [ "$1" == "-i" ]; then
@@ -859,7 +890,7 @@ while getopts 'uSirc' flag; do
 		*) echo -e "\nError: Option not recognized.\n\n$h\n"
 	esac
 done
-start:
+#start:
 #check to make sure SOMETHING is set
 if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ]; then
 	echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
@@ -870,7 +901,7 @@ else
 		echo "$i"
 		#check for apt sub-flag
 		if [ "$i" == "a" ]; then
-			#set $pass to $z that way aptinstall can use it
+			#set $pass to $y that way aptinstall can use it
 			pass="$y"
 			( aptinstall && exit 0 ) || exit 2
 		#git sub-flag
@@ -977,29 +1008,34 @@ else
 	elif [[ ! -z "$S" ]]; then
 		#apt sub-flag, only search from apt
 		if $(echo "$S" | grep -q "p"); then
-			apt search "$y"
+			apt search "$pass"
+		fi
 		#flatpak sub-flag, only search from flatpak
-		elif $(echo "$S" | grep -q "f"); then
+		if $(echo "$S" | grep -q "f"); then
 			if [ -f "$cache"/flatpak.flag ]; then
-				flatpak search "$y"
+				flatpak search "$pass"
 			else
 				echo -e "\nFlatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n"
 			fi
+		fi
 		#snap sub-flag, only search from snap
-		elif $(echo "$S" | grep -q "s"); then
-			snap search "$y"
+		if $(echo "$S" | grep -q "s"); then
+			snap search "$pass"
+		fi
 		#Manual GitHub sub-flag, only search apps installed using manual method from GitHub
-		elif $(echo "$S" | grep -q "m"); then
-			list=$(gitmanlist | grep "$y")
+		if $(echo "$S" | grep -q "m"); then
+			list=$(gitmanlist | grep "$pass")
 			echo -e "\nInstalled through Manual Method:\n$list\n"
+		fi
 		#Automatic GitHub sub-flag, only search apps installed using automatic method from GitHub
-		elif $(echo "$S" | grep -q "o"); then
-			list=$(gitautolist | grep "$y")
+		if $(echo "$S" | grep -q "o"); then
+			list=$(gitautolist | grep "$pass")
 			echo -e "\nInstalled through Automatic Method:\n$list\n"
+		fi
 		#generel GitHub sub-flag, only search apps installed from GitHub, regardless of method
-		elif $(echo "$S" | grep -q "l"); then
-			list1=$(gitmanlist | grep "$y")
-			list2=$(gitautolist | grep "$y")
+		if $(echo "$S" | grep -q "l"); then
+			list1=$(gitmanlist | grep "$pass")
+			list2=$(gitautolist | grep "$pass")
 			list="Installed through Manual Method:
 $list1
 
@@ -1009,19 +1045,20 @@ $list2
 
 "
 			echo -e "\n$list\n"
+		fi
 		#search EVERYTHING
-		elif [ "$S" == "a" ]; then
-			list1=$(gitmanlist | grep "$y")
-			list2=$(gitautolist | grep "$y")
+		if [ "$S" == "a" ]; then
+			list1=$(gitmanlist | grep "$pass")
+			list2=$(gitautolist | grep "$pass")
 			echo -e "\nApt packages:\n"
-			apt search "$y"
+			apt search "$pass"
 			if [ -f /etc/mrai/flatpak.flag ]; then
 				echo -e "\nFlatpak Packages:\n"
-				flatpak search "$y"
+				flatpak search "$pass"
 			fi
 			if [ -f /etc/mrai/snapd.flag ]; then
 				echo -e "\nSnap Packages:\n"
-				snap search "$y"
+				snap search "$pass"
 			fi
 			list="Installed through Manual Method:
 $list1
