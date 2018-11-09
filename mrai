@@ -1075,7 +1075,7 @@ $list2
 				echo "$list"
 			fi
 		fi
-	#version flag
+	#clean flag
 	elif [[ ! -z "$c" ]]; then
 		clean
 	#no recognized flags passed
