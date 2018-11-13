@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION: 0.0.3-alpha4
+#VERSION: 0.0.4-alpha4
 set -e
 set -o pipefail
 y=0
@@ -30,8 +30,11 @@ y=0
 #   *) exit 1
 # esac
 #done
-#user="$2"
+#if [ "$y" == "1" ]; then
+# user="$2"
+#else
 user="$1"
+#fi
 echo -e "\nDeleting old *.deb packages . . . \n"
 apt clean
 echo -e "\nDeleting old config files . . . \n"
