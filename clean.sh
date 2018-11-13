@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION: 0.0.2-alpha4
+#VERSION: 0.0.3-alpha4
 set -e
 set -o pipefail
 y=0
@@ -30,11 +30,18 @@ y=0
 #   *) exit 1
 # esac
 #done
+#user="$2"
 user="$1"
 echo -e "\nDeleting old *.deb packages . . . \n"
 apt clean
 echo -e "\nDeleting old config files . . . \n"
-apt purge $(dpkg -l | grep '^rc' | awk '{print $2}') 
+#if [ "$y" == "1" ]; then
+# apt -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+#elif [ "$y" == "0" ]; then
+apt purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+#else
+# exit 2
+#fi
 echo -e "\nCleaning up old GitHub files . . .\n"
 rm -rf /home/$user/.mrai
 mkdir /home/$user/.mrai
