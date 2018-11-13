@@ -20,9 +20,16 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION: 0.0.1
+#VERSION: 0.0.2-alpha4
 set -e
 set -o pipefail
+y=0
+#while getopts 'y' flag; do
+# case "${flag}" in
+#   y) y=1
+#   *) exit 1
+# esac
+#done
 user="$1"
 echo -e "\nDeleting old *.deb packages . . . \n"
 apt clean
