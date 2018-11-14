@@ -81,6 +81,7 @@ elif [ "$y" == "1" ]; then
     apt-fast -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
     #proceed to update snaps, if mrai said to
   fi
+fi
 if [ "$s" == "1" ]; then
   pkexec /bin/snapupdate
 fi
