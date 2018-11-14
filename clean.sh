@@ -20,31 +20,36 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION: 0.0.4-alpha4
+#VERSION: 0.0.5-alpha4
 set -e
 set -o pipefail
 y=0
-#while getopts 'y' flag; do
-# case "${flag}" in
-#   y) y=1
-#   *) exit 1
-# esac
-#done
-#if [ "$y" == "1" ]; then
-# user="$2"
-#else
-user="$1"
-#fi
+while getopts 'y' flag; do
+ case "${flag}" in
+   y) y=1 ;;
+   *) exit 1 ;;
+ esac
+done
+if [ "$y" == "1" ]; then
+    user="$2"
+else
+    user="$1"
+fi
 echo -e "\nDeleting old *.deb packages . . . \n"
 apt clean
-echo -e "\nDeleting old config files . . . \n"
-#if [ "$y" == "1" ]; then
-# apt -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
-#elif [ "$y" == "0" ]; then
-apt purge $(dpkg -l | grep '^rc' | awk '{print $2}')
-#else
-# exit 2
-#fi
+if [ "$y" == "1" ]; then
+    echo -e "\nRemoving old and out dated dependencies . . . \n"
+    apt -y autoremove
+    echo -e "\nDeleting old config files . . . \n" 
+    apt -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+elif [ "$y" == "0" ]; then
+    echo -e "\nRemoving old and out dated dependencies . . . \n"
+    apt autoremove
+    echo -e "\nDeleting old config files . . . \n" 
+    apt purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+else
+    exit 2
+fi
 echo -e "\nCleaning up old GitHub files . . .\n"
 rm -rf /home/$user/.mrai
 mkdir /home/$user/.mrai
