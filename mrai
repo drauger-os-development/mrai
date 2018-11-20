@@ -26,7 +26,7 @@ if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
-version="0.6.9-alpha4"
+version="0.7.0-alpha4"
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	echo -e "\n$version\n"
 	exit 0
@@ -160,7 +160,7 @@ aptinstall () {
 			({
 				#Install software using apt-fast, if available based on the apt-fast.flag
 				#use pkexec to gain root privleges in order to install software
-				if [ "$y" == "1" ]; then
+				if [ "$a" == "1" ]; then
 					pkexec apt-fast -y install "$pass"
 				else
 					pkexec apt-fast install "$pass"
@@ -176,7 +176,7 @@ aptinstall () {
 		else
 			({
 				#install software using apt, due to the unavailability of apt-fast
-				if [ "$y" == "1" ]; then
+				if [ "$a" == "1" ]; then
 					pkexec apt -y install "$pass"
 				else
 					pkexec apt install "$pass"
@@ -241,7 +241,7 @@ flatinstall () {
 					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
 					for entry in $list1; do
 						{
-							if [ "$y" == "1" ]; then
+							if [ "$a" == "1" ]; then
 								flatpak install -y "$entry" "$r"
 							else
 								flatpak install "$entry" "$r"
@@ -267,7 +267,7 @@ flatinstall () {
 					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
 					for entry in $list1; do
 						{
-							if [ "$y" == "1" ]; then
+							if [ "$a" == "1" ]; then
 								flatpak install -y "$entry" "$int"
 							else
 								flatpak install "$entry" "$int"
@@ -413,13 +413,13 @@ gitmaninstall () {
 aptremove () {
 	#remove the software
 	if [ -f /etc/mrai/apt-fast.flag ]; then
-		if [ "$y" == "1" ]; then
+		if [ "$a" == "1" ]; then
 			pkexec apt-fast -y purge "$pass"
 		else
 			pkexec apt-fast purge "$pass"
 		fi
 	else
-		if [ "$y" == "1" ]; then
+		if [ "$a" == "1" ]; then
 			pkexec apt -y purge "$pass"
 		else
 			pkexec apt purge "$pass"
@@ -532,7 +532,7 @@ gitremove () {
 flatremove () {
 	{
 		#flatpak doesn't need root, so not called as such
-		if [ "$y" == "1" ]; then
+		if [ "$a" == "1" ]; then
 			flatpak remove -y "$pass"
 		else
 			flatpak remove "$pass"
@@ -681,7 +681,7 @@ gitmanlist () {
 #clean up
 clean () {
 	{
-		if [ "$y" == "1" ]; then
+		if [ "$a" == "1" ]; then
 			pkexec /etc/mrai/bin/clean.sh -y $user
 		else
 			pkexec /etc/mrai/bin/clean.sh $user
@@ -711,7 +711,7 @@ S=""
 i=""
 r=""
 c=""
-y=0
+a=0
 #install flag
 if [ "$1" == "--install" ]; then
 	test=2
@@ -735,7 +735,7 @@ if [ "$1" == "--install" ]; then
 		elif [ "$evaluator" == "--git" ]; then
 			i="gb"
 		elif [ "$evaluator" == "-y" ] || [ "$evaluator" == "--assume-yes" ]; then
-			y=1
+			a=1
 		else
 			i=${i:-"l"}
 			pass="$evaluator"
@@ -788,7 +788,7 @@ elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
 		elif [ "$evaluator" == "--git" ]; then
 			u="$u g"
 		elif [ "$evaluator" == "-y" ] || [ "$evaluator" == "--assume-yes" ]; then
-			y=1
+			a=1
 		else
 			u=${u:-"a s f g"}
 		fi
@@ -806,7 +806,7 @@ elif [ "$1" == "--remove" ] || [ "$1" == "--uninstall" ]; then
 			exit 0
 		fi
 		if [ "$evaluator" == "--assume-yes" ] || [ "$evaluator" == "-y" ]; then
-			y=1
+			a=1
 		fi
 		(( test+=1 ))
 	done
@@ -823,7 +823,7 @@ elif [ "$1" == "--clean" ]; then
 			exit 0
 		fi
 		if [ "$evaluator" == "--assume-yes" ] || [ "$evaluator" == "-y" ]; then
-			y=1
+			a=1
 		fi
 		(( test+=1 ))
 	done
@@ -948,7 +948,7 @@ while getopts 'uSirc' flag; do
 			while getopts 'ry' flag; do
 				case "${flag}" in
 					r) r=1 ;;
-					y) y=1 ;;
+					y) a=1 ;;
 					*) r=1 ;;
 				esac
 			done ;;
@@ -957,7 +957,7 @@ while getopts 'uSirc' flag; do
 			while getopts 'cy' flag; do
 				case "${flag}" in
 					c) c=1 ;;
-					y) y=1 ;;
+					y) a=1 ;;
 					*) c=1 ;;
 				esac
 			done ;;
@@ -973,7 +973,6 @@ if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ]; then
 else
 	#check for the install flags
 	if [[ ! -z "$i" ]]; then
-		echo "$i"
 		#check for apt sub-flag
 		if [ "$i" == "a" ]; then
 			#set $pass to $y that way aptinstall can use it
