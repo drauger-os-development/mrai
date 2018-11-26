@@ -306,8 +306,7 @@ flatinstall () {
 			#they didn't call it so not as big a deal. Lets just return, not exit.
 			return 2
 		fi
-	fi
-			
+	fi		
 }
 
 #install snap apps
