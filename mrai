@@ -141,61 +141,21 @@ else
 		rm "$cache"/flatpak.flag
 	fi
 fi
-#Start Defining Functions
+
+#Load Modules
 
 #Force update snaps
-snapupdate () {
-	{
-		bash /bin/snapupdate
-	} || {
-		echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
-		exit "$?"
-	}
-}
+snapupdate=$(/etc/mrai/bin/import /lib/mrai/mrai-lib snapupdate)
 
 #Install software from apt
-aptinstall () {
-	if $(apt search "$pass" | grep -q "$pass"); then
-		if [ -f /etc/mrai/apt-fast.flag ]; then
-			({
-				#Install software using apt-fast, if available based on the apt-fast.flag
-				#use pkexec to gain root privleges in order to install software
-				if [ "$a" == "1" ]; then
-					pkexec apt-fast -y install "$pass"
-				else
-					pkexec apt-fast install "$pass"
-				fi
-			} && {
-			#update flags if snapd or flatpak get installed
-				if [ "$pass" == "flatpak" ]; then
-					echo "" >> /etc/mrai/flatpak.flag
-				elif [ "$pass" == "snapd" ]; then
-					echo "" >> /etc/mrai/snapd.flag
-				fi
-			}) || return 2
-		else
-			({
-				#install software using apt, due to the unavailability of apt-fast
-				if [ "$a" == "1" ]; then
-					pkexec apt -y install "$pass"
-				else
-					pkexec apt install "$pass"
-				fi
-			} && {
-			#update flags if snapd, flatpak, or apt-fast get installed
-				if [ "$pass" == "apt-fast" ]; then
-					echo "" >> /etc/mrai/apt-fast.flag
-				elif [ "$pass" == "snapd" ]; then
-					echo "" >> /etc/mrai/snapd.flag
-				elif [ "$pass" == "flatpak" ]; then
-					echo "" >> /etc/mrai/flatpak.flag
-				fi
-			}) || return 2
-		fi
-	else
-		return 1
-	fi
-}
+aptinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib aptinstall)
+
+flatinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib flatinstall)
+
+#install snap apps
+snapinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib snapinstall)
+
+#Start Defining Functions
 
 #install software, using a more automatic method, from GitHub
 gitautoinst () {
@@ -205,145 +165,6 @@ gitautoinst () {
 		echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
-}
-
-flatinstall () {
-	#check that flatpak.flag is in place
-	if [ -f /etc/mrai/flatpak.flag ]; then
-		loop=1
-		while [ "$loop" == "1" ]; do
-			#search for the desired package, to ensure it exists
-			q=$(flatpak search "$pass")
-			r=$(echo "$q" | awk '{print $1}')
-			if [ "$r" == "No matches found" ]; then
-				#see if there are any flatpak repos added, this is a common
-				#issue with people new to flatpak. Checking and adding it for them
-				#then rechecking just saves them the pain
-				list=$(flatpak remotes)
-				if $(echo "$list" | grep -q 'flathub'); then
-					#there are repos added, so the flatpak is at least not in these repos
-					#or just straight up does not exist
-					echo -e "\nNo installation candidates found.\n"
-					exit 1
-				else
-					#no repos where found. Add Flathub and try again.
-					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-					continue
-				fi
-			#check to see if it has one of three known flatpack domains. More domains will be added in the future
-			elif $(echo "$r" | grep -q "org.") || $(echo "$r" | grep -q "com.") || $(echo "$r" | grep -q "ws.") || $(echo "$r" | grep -q "net.") ||  $(echo "$r" | grep -q "io.") ||  $(echo "$r" | grep -q "work.") || $(echo "$r" | grep -q "nl.") || $(echo "$r" | grep -q "im.") || $(echo "$r" | grep -q "fr.") ||  $(echo "$r" | grep -q "cc.") ||  $(echo "$r" | grep -q "info.") ||  $(echo "$r" | grep -q "in.") ||  $(echo "$r" | grep -q "eu.") ||  $(echo "$r" | grep -q "edu.") ||  $(echo "$r" | grep -q "de.") ||  $(echo "$r" | grep -q "cx.") ||  $(echo "$r" | grep -q "us."); then
-				set -- "$r"
-				test="$2"
-				if [ -z "$test" ]; then	
-					#try installing the desired flatpak from each repo
-					list=$(flatpak remotes)
-					list1=$(echo "$list" | awk '{print $1}')
-					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
-					for entry in $list1; do
-						{
-							if [ "$a" == "1" ]; then
-								flatpak install -y "$entry" "$r"
-							else
-								flatpak install "$entry" "$r"
-							fi
-							break
-						} || { 
-							echo -e "\nFlatpak installation from $entry failed.\n"
-						}
-					done
-					loop="0"
-				else
-					#for mutliple installation canditdates, ask which the user wishes to install.
-					echo -e "\nERROR: Multiple Installation Candidates Detected.\n"
-					echo -e "Which package would you like to install?\n$r\n"
-					read -p "Please copy-paste the name of the package here (Type \"exit\", \"break\", or \"end\" to exit): " int
-					#check if the user wants out. If they do, let them out
-					if [ "$int" == "exit" ] || [ "$int" == "break" ] || [ "$int" == "end" ]; then
-						exit 2
-					fi
-					#go through the install process for the designated flatpak package
-					list=$(flatpak remotes)
-					list1=$(echo "$list" | awk '{print $1}')
-					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
-					for entry in $list1; do
-						{
-							if [ "$a" == "1" ]; then
-								flatpak install -y "$entry" "$int"
-							else
-								flatpak install "$entry" "$int"
-							fi
-							break
-						} || { 
-							echo -e "\nFlatpak installation from $entry failed.\n"
-						}
-					done
-					loop="0"
-				fi
-			else
-				#Okay. If we end up having to run the code down here, we have an issue. 
-				#It's minor, but an issue.
-				#This should only run if $r is set to something that EITHER
-				#	A. Isn't "No Matches Found"
-				#		OR
-				#	B. Does not contain the name of a flatpak
-				#In fact, lets print that.
-				echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
-				#There. Bit long, but it was needed. 
-				#Alright. Lets end this puppy.
-				loop="0"
-				exit 1
-			fi
-		done
-	else
-		#Check to see if they called EXPLICITLY to install using flatpak, cause if they did they may not know they don't have it
-		if [ "$z" == "-f" ] || [ "$z" == "--flat" ]; then
-			#Tell them they don't have flatpak
-			#Also, if the user wants to mrai to use flatpak they have to install it through mrai so 
-			#it can make the flag file. Otherwise it won't work.
-			echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -i -a flatpak} to install it.\n"
-			exit 2
-		else
-			#they didn't call it so not as big a deal. Lets just return, not exit.
-			return 2
-		fi
-	fi
-			
-}
-
-#install snap apps
-snapinstall () {
-	#check for the snapd.flag file
-	if [ -f /etc/mrai/snapd.flag ]; then
-		#check for the app we want
-		if $(snap search "$pass" | grep -q "$pass"); then
-			#try to install the snap normally. This is prefered over classic snaps
-			#for security reasons due to it's comperably lacking amount of access to the user's system
-			#as compared to classic snaps
-			snap install "$pass" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
-			if [ ! -z $ans ]; then
-				#check to see if they are cool with the classic snaps, and if so install it. Or at least try to.
-				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-					snap install "$pass" --classic || echo -e "\nSnap installation failed.\n"
-				else
-					return 2
-				fi
-			fi
-		else
-			return 1
-		fi
-	else
-		#Check to see if they called EXPLICITLY to install using snapd, cause if they did they may not know they don't have it
-		if [ "$z" == "-s" ] || [ "$z" == "--snap" ]; then
-			#Tell them they don't have snapd
-			#Also, if the user wants to mrai to use snapd they have to install it through mrai so 
-			#it can make the flag file. Otherwise it won't work.
-			echo -e "\nSorry. Package 'snapd' is not installed. Please run {mrai -i -a snapd} to install it.\n"
-			exit 2
-		else
-			#they didn't call it so not as big a deal. Lets just return, not exit.
-			return 2
-		fi
-	fi
 }
 
 #install from GitHub using manual method
@@ -978,7 +799,7 @@ else
 		if [ "$i" == "a" ]; then
 			#set $pass to $y that way aptinstall can use it
 			pass="$y"
-			( aptinstall && exit 0 ) || exit 2
+			(( eval $aptinstall ) && exit 0 ) || exit 2
 		#git sub-flag
 		elif $(echo "$i" | grep -q "g"); then
 			#manual sub-flag
@@ -996,21 +817,21 @@ else
 		#snap sub-flag
 		elif [ "$i" == "s" ]; then
 			pass="$y"
-			( snapinstall && exit 0 ) || exit 2
+			( ( eval $snapinstall) && exit 0 ) || exit 2
 		#flatpak sub-flag
 		elif [ "$i" == "f" ]; then
 			pass="$y"
-			( flatinstall && exit 0 ) || exit 2
+			( eval $flatinstall ) && exit 0 ) || exit 2
 		#none of the sub-flags where passed, so try ALL install methods until one works
 		elif [ "$i" == "l" ]; then
 			echo -e "\nAttempting to install\n"
 			pass="$z"	
 			{
-				aptinstall
+				eval $aptinstall
 			} || {
-				snapinstall
+				eval $snapinstall
 			} || {
-				flatinstall
+				eval $flatinstall
 			} || {
 				pass="$y"
 				gitautoinst
@@ -1073,7 +894,7 @@ else
 				if $(echo "$u" | grep -q "a"); then
 					continue
 				else
-					snapupdate
+					eval snapupdate
 				fi
 			else
 				continue

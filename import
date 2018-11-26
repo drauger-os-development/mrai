@@ -1,0 +1,59 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+#
+#  import
+#  
+#  Copyright 2018 Thomas Castleman <draugeros@gmail.com>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#
+#first, a programmer will be able to pass 2 values to import:
+#   library path and name
+#       Pass the library name along with the path to it, if it is not in the same directory that import will end up[ working. It is advised to pass the path, to ensure it works properly
+#
+#   module name
+#       modules will be denoted using specific names, which will allow them to be isolated and passed back to the calling function
+#
+#This means usage will be defined as:
+#   var=$(import /path/to/library/foo foobar)
+#
+#Wheras running modules from these libraries will be done as:
+#   input="data to be passed"
+#   eval "$var"
+#Where $foo and $foobar are variables containing some code.
+#Modules will set their output to the OUTPUT variable, followed by order it was generated (OUTPUT0 first, OUTPUT1 second, etc)
+#
+#
+#
+#NOTE
+#   If no module name is passed to import, it will be assumed that the user wants the entire library passed. At which point, it will be. 
+#   It then falls to the user to parse these libraries
+
+#get values needed
+x=$1
+y=$2
+contents=$(cat "$x" | sed -n "/##SOF##/,/##EOF##/{/##SOF##/b;/##EOF##/b;p}")
+
+#check to see if the user asked for a specific module
+if [ -z "$y" ]; then
+    #if not, pass them the while library and quit
+    echo "$contents"
+    exit 0
+fi
+#otherwise, do all this
+output=$(echo "$contents" | sed -n "/##$y/,/##;;##/{/##$y/b;/##;;##/b;p}")
+echo $output
+exit 0

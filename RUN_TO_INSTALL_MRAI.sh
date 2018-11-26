@@ -32,12 +32,18 @@ while [ "$x" == "0" ]; do
     if [[ ! -d /etc/mrai/bin ]]; then
         mkdir /etc/mrai/bin
     fi
+    if [[ ! -d /lib/mrai ]]; then
+        mkdir /lib/mrai
+    fi
     cp mrai /bin/mrai
     cp aptupdate /bin/aptupdate
     cp snapupdate /bin/snapupdate
     cp gitautoinst.sh /etc/mrai/bin/gitautoinst.sh
     cp mrai.1.gz /usr/share/man/man1/mrai.1.gz
     cp clean.sh /etc/mrai/bin/clean.sh
+    cp import /etc/mrai/bin/import
+    cp mrai-lib /lib/mrai/mrai-lib
+    chmod +x /etc/mrai/bin/import
     chmod +x /etc/mrai/bin/clean.sh
     chmod +x /bin/snapupdate
     chmod +x /bin/mrai
