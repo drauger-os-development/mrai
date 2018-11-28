@@ -955,7 +955,7 @@ while getopts 'uSirc' flag; do
 				if [ "$1" == "-ry" ]; then
 					y=1
 				fi
-			fi
+			fi;;
 		#clean flag
 		c)
 			if [ "$1" == "-c" ] || [ "$1" == "-cy" ]; then
@@ -963,7 +963,7 @@ while getopts 'uSirc' flag; do
 				if [ "$1" == "-cy" ]; then
 					y=1
 				fi
-			fi
+			fi;;
 		#all else
 		*) echo -e "\nError: Option not recognized.\n\n$h\n"
 	esac
