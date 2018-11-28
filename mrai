@@ -834,8 +834,11 @@ while getopts 'uSirc' flag; do
 	case "${flag}" in
 		#update flag
 		u) 
-			if [ "$1" == "-u" ]; then
+			if [ "$1" == "-u" ] || [ "$1" == "-uy" ]; then
 				u="a s f g"
+				if [ "$1" == "-uy" ]; then
+					y=1
+				fi
 				break
 			fi
 			while getopts 'asfgy' flag; do
@@ -911,8 +914,11 @@ while getopts 'uSirc' flag; do
 			done ;;
 		#install flag
 		i) 
-			if [ "$1" == "-i" ]; then
+			if [ "$1" == "-i" ] || [ "$1" == "-iy" ]; then
 				i="l"
+				if [ "$1" == "-iy" ]; then
+					y=1
+				fi
 				break
 			fi
 			while getopts 'asfgy' flag; do
@@ -944,23 +950,20 @@ while getopts 'uSirc' flag; do
 			done ;;
 		#remove flag
 		r) 
-			while getopts 'ry' flag; do
-				case "${flag}" in
-					r) r=1 ;;
-					y) a=1 ;;
-					*) r=1 ;;
-				esac
-			done ;;
+			if [ "$1" == "-r" ] || [ "$1" == "-ry" ]; then
+				r=1
+				if [ "$1" == "-ry" ]; then
+					y=1
+				fi
+			fi
 		#clean flag
 		c)
-			c=1
-			while getopts 'cy' flag; do
-				case "${flag}" in
-					c) c=1 ;;
-					y) a=1 ;;
-					*) c=1 ;;
-				esac
-			done ;;
+			if [ "$1" == "-c" ] || [ "$1" == "-cy" ]; then
+				c=1
+				if [ "$1" == "-cy" ]; then
+					y=1
+				fi
+			fi
 		#all else
 		*) echo -e "\nError: Option not recognized.\n\n$h\n"
 	esac
