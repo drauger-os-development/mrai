@@ -142,18 +142,8 @@ else
 	fi
 fi
 
-#Load Modules
-
-#Force update snaps
-snapupdate=$(/etc/mrai/bin/import /lib/mrai/mrai-lib snapupdate)
-
-#Install software from apt
-aptinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib aptinstall)
-
-flatinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib flatinstall)
-
-#install snap apps
-snapinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib snapinstall)
+#goto function. Cause Windows has it but BASH doesn't \_(*_*)_/
+goto=$(/etc/mrai/bin/import /lib/mrai/mrai-lib GOTO)
 
 #Start Defining Functions
 
@@ -513,14 +503,6 @@ clean () {
 	}
 }
 
-#goto function. Cause Windows has it but BASH doesn't \_(*_*)_/
-goto () {
-    label=$1
-    cmd=$(sed -n "/$label:/{:a;n;p;ba};" $0 | grep -v ':$')
-    eval "$cmd"
-    exit
-}
-
 #Welp. There's all the functions Lets define some variables
 y="$2"
 z="$3"
@@ -540,7 +522,8 @@ if [ "$1" == "--install" ]; then
 		evaluator=${!test}
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			test=2
-			goto start
+			input="start"
+			eval goto
 			exit 0
 		fi
 		if [ "$evaluator" == "--apt" ]; then
@@ -570,7 +553,8 @@ elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; th
 		evaluator=${!test}
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			test=2
-			goto start
+			input="start"
+			eval goto
 			exit 0
 		fi
 		if [ "$evaluator" == "--apt" ]; then
@@ -597,7 +581,8 @@ elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
 	while [ "$test" != "1" ]; do
 		evaluator=${!test}
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			goto start
+			input="start"
+			eval goto
 			exit 0
 		fi
 		if [ "$evaluator" == "--apt" ]; then
@@ -623,7 +608,8 @@ elif [ "$1" == "--remove" ] || [ "$1" == "--uninstall" ]; then
 	while [ "$test" != "1" ]; do
 		evaluator=${!test}
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			goto start
+			input="start"
+			eval goto
 			exit 0
 		fi
 		if [ "$evaluator" == "--assume-yes" ] || [ "$evaluator" == "-y" ]; then
@@ -640,7 +626,8 @@ elif [ "$1" == "--clean" ]; then
 	while [ "$test" != "1" ]; do
 		evaluator=${!test}
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			goto start
+			input="start"
+			eval goto
 			exit 0
 		fi
 		if [ "$evaluator" == "--assume-yes" ] || [ "$evaluator" == "-y" ]; then
@@ -797,6 +784,8 @@ else
 	if [[ ! -z "$i" ]]; then
 		#check for apt sub-flag
 		if [ "$i" == "a" ]; then
+			#Install software from apt
+			aptinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib aptinstall)
 			#set $pass to $y that way aptinstall can use it
 			pass="$y"
 			(( eval $aptinstall ) && exit 0 ) || exit 2
@@ -816,14 +805,24 @@ else
 			fi
 		#snap sub-flag
 		elif [ "$i" == "s" ]; then
+			#install snap apps
+			snapinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib snapinstall)
 			pass="$y"
 			( ( eval $snapinstall) && exit 0 ) || exit 2
 		#flatpak sub-flag
 		elif [ "$i" == "f" ]; then
+			flatinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib flatinstall)
 			pass="$y"
 			( eval $flatinstall ) && exit 0 ) || exit 2
 		#none of the sub-flags where passed, so try ALL install methods until one works
 		elif [ "$i" == "l" ]; then
+			#Install software from apt
+			aptinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib aptinstall)
+			#load flatpak Module
+			flatinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib flatinstall)
+			#install snap apps
+			snapinstall=$(/etc/mrai/bin/import /lib/mrai/mrai-lib snapinstall)
+
 			echo -e "\nAttempting to install\n"
 			pass="$z"	
 			{
@@ -872,6 +871,8 @@ else
 		fi
 	#update flag
 	elif [[ ! -z "$u" ]]; then
+		#Force update snaps
+		snapupdate=$(/etc/mrai/bin/import /lib/mrai/mrai-lib snapupdate)
 		for x in $u; do
 			if [ "$x" == "f" ]; then
 				flatupdate
