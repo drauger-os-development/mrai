@@ -34,6 +34,7 @@ fi
 if [ "$1" == "--fix-config" ]; then
 	echo -e "\nAttempting to correct package configuration. Please wait . . . \n"
 	pkexec dpkg --configure -a
+	exit "$?"
 fi
 h="mrai Package Manager: the Multiple Repo App Installer
 Usage:
