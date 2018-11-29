@@ -26,10 +26,14 @@ if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
-version="0.7.2-alpha4"
+version="0.7.4-alpha4"
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	echo -e "\n$version\n"
 	exit 0
+fi
+if [ "$1" == "--fix-config" ]; then
+	echo -e "\nAttempting to correct package configuration. Please wait . . . \n"
+	pkexec dpkg --configure -a
 fi
 h="mrai Package Manager: the Multiple Repo App Installer
 Usage:
