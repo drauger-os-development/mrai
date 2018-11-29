@@ -834,10 +834,10 @@ while getopts 'uSirc' flag; do
 	case "${flag}" in
 		#update flag
 		u) 
-			if [ "$1" == "-u" ] || [ "$1" == "-uy" ]; then
+			if [ "$1" == "-u" ] || [ "$1" == "-uy" ] || [ "$1" == "-yu" ]; then
 				u="a s f g"
-				if [ "$1" == "-uy" ]; then
-					y=1
+				if [ "$1" == "-uy" ] || [ "$1" == "-yu" ]; then
+					a=1
 				fi
 				break
 			fi
@@ -847,7 +847,7 @@ while getopts 'uSirc' flag; do
 					s) u="$u s" ;;
 					f) u="$u f" ;;
 					g) u="$u g" ;;
-					y) y=1 ;;
+					y) a=1 ;;
 					*) 
 						if [ "$1" == "-u" ]; then
 							u="a s f g"
@@ -914,10 +914,10 @@ while getopts 'uSirc' flag; do
 			done ;;
 		#install flag
 		i) 
-			if [ "$1" == "-i" ] || [ "$1" == "-iy" ]; then
+			if [ "$1" == "-i" ] || [ "$1" == "-iy" ] || [ "$1" == "-yi" ]; then
 				i="l"
-				if [ "$1" == "-iy" ]; then
-					y=1
+				if [ "$1" == "-iy" ] || [ "$1" == "-yi" ]; then
+					a=1
 				fi
 				break
 			fi
@@ -926,7 +926,7 @@ while getopts 'uSirc' flag; do
 					a) i="a" ;;
 					s) i="s" ;;
 					f) i="f" ;;
-					y) y=1 ;;
+					y) a=1 ;;
 					g) 
 						if [ "$1" == "-ig" ]; then
 							i="$i gb"
@@ -950,18 +950,18 @@ while getopts 'uSirc' flag; do
 			done ;;
 		#remove flag
 		r) 
-			if [ "$1" == "-r" ] || [ "$1" == "-ry" ]; then
+			if [ "$1" == "-r" ] || [ "$1" == "-ry" ] || [ "$1" == "-yr" ]; then
 				r=1
 				if [ "$1" == "-ry" ]; then
-					y=1
+					a=1
 				fi
 			fi;;
 		#clean flag
 		c)
-			if [ "$1" == "-c" ] || [ "$1" == "-cy" ]; then
+			if [ "$1" == "-c" ] || [ "$1" == "-cy" ] || [ "$1" == "-yc"; then
 				c=1
-				if [ "$1" == "-cy" ]; then
-					y=1
+				if [ "$1" == "-cy" ] || [ "$1" == "-yc" ]; then
+					a=1
 				fi
 			fi;;
 		#all else
