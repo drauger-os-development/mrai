@@ -160,7 +160,9 @@ snapupdate () {
 
 #Install software from apt
 aptinstall () {
-	if $(apt search "$pass" | grep -q "$pass"); then
+	dpkg -l "$pass" | grep -q "ii  $pass"
+	check=$?
+	if [ ! $check ]; then
 		if [ -f /etc/mrai/apt-fast.flag ]; then
 			({
 				#Install software using apt-fast, if available based on the apt-fast.flag
@@ -198,6 +200,7 @@ aptinstall () {
 			}) || return 2
 		fi
 	else
+		echo -e "\nThis package is already installed.\n"
 		return 1
 	fi
 }
