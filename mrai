@@ -166,7 +166,7 @@ snapupdate () {
 
 #Install software from apt
 aptinstall () {
-	dpkg -l "$pass" | grep -q "ii  $pass"
+	dpkg -l | grep -q "ii  $pass"
 	check=$?
 	if [ ! $check ]; then
 		if [ -f /etc/mrai/apt-fast.flag ]; then
