@@ -32,7 +32,7 @@ if [ "$?" == "0" ]; then
     echo -e "\nmrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited.\n"
 	exit 2
 fi
-version="0.7.6-alpha4"
+version="0.7.7-alpha4"
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	echo -e "\n$version\n"
 	exit 0
