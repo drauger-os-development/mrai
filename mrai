@@ -168,7 +168,7 @@ snapupdate () {
 aptinstall () {
 	dpkg -l | grep -q "ii  $pass"
 	check=$?
-	if [ ! $check ]; then
+	if [ "$check" != "0" ]; then
 		if [ -f /etc/mrai/apt-fast.flag ]; then
 			({
 				#Install software using apt-fast, if available based on the apt-fast.flag
