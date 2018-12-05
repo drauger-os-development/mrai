@@ -222,5 +222,339 @@ else
 fi;
 ##;;##
 
-##
+##gitmaninstall
+cd $HOME;
+mkdir .mrai;
+cd .mrai;
+#check the passed URL's syntax
+if $(echo "$pass" | grep -q 'https://github.com/') || $(echo "$pass" | grep -q 'http://github.com/'); then
+		git clone "$pass";
+elif $(echo "$pass" | grep -q 'github.com/'); then
+        git clone https://$pass;
+else 
+        git clone https://github.com/$pass;
+fi;
+pass1=$(echo $pass | sed 's/.*\///');
+cd $pass1;
+echo -e "\n$(ls)\n";
+#get the file the user needs to run to install their software
+read -p "Which of the above files would you like to try to run in order to install $z? (Case-Sensitive) : " run;
+#check if the indicated file needs to run as root. Cause we can do that . . . indirectly.
+read -p "Should this file be run with root privleges? [y/N]: " ans;
+ans=$(echo "$ans" | awk '{print tolower($0)}');
+if [ "$ans" == "y" ]; then
+	#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
+	chmod +x $(pwd)/$run;
+	#run as root
+	pkexec $(pwd)/$run;
+	#back up files that are typically necissaary for updating or removing the software we just attempted to install
+	mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2;
+	#write necissary info into the flag, to keep the number of files down
+	echo "ADDRESS=$pass" >> "$gitmancache"/man.flag;
+	echo "RUN_AS_ROOT=yes" >> "$gitmancache"/man.flag;
+	echo "RUN=$run" >> "$gitmancache"/man.flag;
+elif [ "$ans" == "n" ]; then
+	#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
+	chmod +x $(pwd)/$run;
+	#run it
+	exec $(pwd)/$run;
+	#back up files that are typically necissaary for updating or removing the software we just attempted to install
+	mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2;
+	#write necissary info into the flag, to keep the number of files down
+	echo "ADDRESS=$pass" >> "$gitmancache"/man.flag;
+	echo "RUN_AS_ROOT=no" >> "$gitmancache"/man.flag;
+	echo "RUN=$run" >> "$gitmancache"/man.flag;
+elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
+	echo -e "\nAborting . . .\n";
+else
+	#this will probably happen to someone at some point.
+	#WE DO NOT RUN ANYTHING, I REPEAT, ANYTHING, AS ROOT BY DEFAULT
+	#THIS PRESENTS A SECURITY RISK AND SHOULD NEVER BE DONE
+	echo -e "\nInput not recognized. Running without root privileges\n";
+	#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
+	chmod +x $(pwd)/$run;
+	#run it
+	exec $(pwd)/$run;
+	#back up files that are typically necissaary for updating or removing the software we just attempted to install
+	mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2;
+	#write necissary info into the flag, to keep the number of files down
+	echo "ADDRESS=$pass" >> "$gitmancache"/man.flag;
+	echo "RUN_AS_ROOT=null" >> "$gitmancache"/man.flag;
+	echo "RUN=$run" >> "$gitmancache"/man.flag;
+fi;
+##;;##
+
+##aptremove
+#remove the software
+if [ -f /etc/mrai/apt-fast.flag ]; then
+	if [ "$a" == "1" ]; then
+		pkexec apt-fast -y purge "$pass";
+	else
+		pkexec apt-fast purge "$pass";
+	fi;
+else
+	if [ "$a" == "1" ]; then
+		pkexec apt -y purge "$pass";
+	else
+		pkexec apt purge "$pass";
+	fi;
+fi;
+#check if the software removed was apt-fast, snapd, or flatpak
+if [ "$pass" == "apt-fast" ]; then
+	#remove apt-fast.flag
+	rm /etc/mrai/apt-fast.flag;
+elif [ "$pass" == "snapd" ]; then
+	#remove snapd.flag
+	rm /etc/mrai/snapd.flag;
+elif [ "$pass" == "flatpak" ]; then
+	#remove flatpak.flag
+	rm /etc/mrai/flatpak.flag;
+fi;
+##;;##
+
+##gitremove
+#check if the passed app is a git-auto app
+if $(gitautolist | grep -q "$pass"); then
+	#cd into the appropriate directory
+	cd "$gitautocache"/"$pass";
+	#check for a Makefile
+	if $( echo $(ls) | grep "Makefile"); then
+		#try make uninstall and make remove, cause they sometimes work
+		{
+			make uninstall || make remove
+		} && {
+			#something went right, so remove the files that mrai held on to so that it could
+			#delete or update the app later
+			cd ..;
+			rm -rf "$pass";
+			echo -e "\n$pass has been removed.\n";
+			exit 0;
+		};
+	else
+		echo -e "\nWe're sorry. No Makefile could be found. Therefore, mrai cannot uninstall $z\n";
+	fi;
+#check if the passed app is a git-man app if not a git-auto
+elif $(gitmanlist | grep -q "$pass"); then
+	#cd into the proper directory
+	cd "$gitmancache"/"$pass";
+	#read the *.flag file and parse the info needed from it
+	flag=$(ls | grep "man.flag");
+	root=$(cat $flag | grep "RUN_AS_ROOT=");
+	run=$(cat $flag | grep "RUN=");
+	run=$(echo $run | sed 's/RUN=//');
+	#check if the designated file needs to be run as root
+	if [ "$root" == "RUN_AS_ROOT=yes" ]; then
+		echo -e "\nAttempting to uninstall. Please wait . . .\n";
+		sent=0;
+		num=1;
+		#try different commands to the file indicated in the *.flag file
+		while [ "$sent" == "0" ]; do
+			echo -e "\nTry $num . . .\n";
+			if [ "$num" == "1" ]; then
+				opt="remove";
+			elif [ "$num" == "2" ]; then
+				opt="--remove";
+			elif [ "$num" == "3" ]; then
+				opt="uninstall";
+			elif [ "$num" == "4" ]; then
+				opt="--uninstall";
+			else
+				echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2;
+			fi;
+			#Sleep so the user can read what we just echoed out
+			sleep 3s;
+			#run the file with the designated option as root
+			(( pkexec $(pwd)/"$run" "$opt" ) && ( sent=1 )) || ( ((num+=1)) );
+		done;
+	elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
+		echo -e "\nAttempting to uninstall. Please wait . . .\n";
+		sent=0;
+		num=1;
+		#try different commands to the file indicated in the *.flag file
+		while [ "$sent" == "0" ]; do
+			echo -e "\nTry $num . . .\n";
+			if [ "$num" == "1" ]; then
+				opt="remove";
+			elif [ "$num" == "2" ]; then
+				opt="--remove";
+			elif [ "$num" == "3" ]; then
+				opt="uninstall";
+			elif [ "$num" == "4" ]; then
+				opt="--uninstall";
+			else
+				echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2;
+			fi;
+			#Sleep so the user can read what we just echoed out
+			sleep 3s;
+			#run the file with the designated option, BUT NOT AS ROOT
+			(( exec $(pwd)/"$run" "$opt" ) && ( sent=1 )) || ( ((num+=1)) );
+		done;
+	else
+		#Okay, if we get down here, something fucked up.
+		#The contents of ANY *.flag file made by one of the two git install functions (see gitmaninstall and gitautoinst)
+		#should contain both an "ADDRESS" field and a "RUN_AS_ROOT" feild. RUN_AS_ROOT can only be a "yes", "no", or "null"
+		#if RUN_AS_ROOT is set to anything else, this will be displayed
+		echo -e "\nWe're sorry. The function gitremove has encountered an error. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n" && exit 2;
+	fi;
+else
+	echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2;
+fi;
+##;;##
+
+##flatremove
+{
+	#flatpak doesn't need root, so not called as such
+	if [ "$a" == "1" ]; then
+		flatpak remove -y "$pass";
+	else
+		flatpak remove "$pass";
+	fi;
+} || {
+	echo -e "\nWe're sorry. Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n";
+	exit "$?";
+};
+##;;##
+
+##snapremove
+{
+	#snap elevates itself to root, so not gonna bother calling it as root. That way, more of it runs without root access,
+	#allowing it to be more secure, while also saving space in this file
+	snap remove "$pass";
+} || {
+	echo -e "\nWe're sorry. Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n";
+	exit "$?";
+};
+##;;##
+
+##gitupdate
+#check first to see if gitupdate got passed an empty or null string. Cause why bother if nothing to use?
+if [ "$pass" == " " ] || [ "$pass" == "" ]; then
+	echo -e "\nNo Apps installed from GitHub through mrai.\n";
+	return 0;
+fi;
+cd "$cache";
+#do this for each app installed from GitHub
+for each in $pass; do
+	pass1="$each";
+	if $( ls | grep -q '$z'); then
+		cd "$pass1";
+		#read the *.flag file and parse it for info
+		flag=$(ls | grep ".flag");
+		root=$(cat $flag | grep "RUN_AS_ROOT=");
+		add=$(cat $flag | grep "ADDRESS=");
+		call=$(echo $add | sed 's/ADDRESS=//');
+		run=$(cat $flag | grep "RUN=");
+		run=$(echo $run | sed 's/RUN=//');
+		back=$(pwd);
+		del=$(find -type f -name "*.deb");
+		cd $HOME/.mrai/"$pass1";
+		#"Call home" and get the new software
+		if $(echo "$call" | grep -q 'https://github.com/') || $(echo "$call" | grep -q 'http://github.com/'); then
+			git clone "$call";
+		elif $(echo "$call" | grep -q 'github.com/'); then
+        		git clone https://$call;
+		else
+			git clone https://github.com/$call;
+		fi;
+		#check if $run is set, if it isn't, we are using the Makefile method of doing things
+		if [[ -z $run ]]; then
+			#some Makefiles have an update function. Others you have to reinstall
+			( make update ) || ( make && make install ) || echo -e "\nMakefile update method failed.\n";
+			#clean up
+			rm "$back"/"$del";
+			deb=$(find -type f -name "*.deb");
+			cp "$deb" "$gitautocache"/"$pass1";
+		else
+			#check if we need to run this as root
+			if [ "$root" == "RUN_AS_ROOT=yes" ]; then
+				#run the file as root
+				pkexec $(pwd)/$run $opt;
+				#make a backup *.deb then copy it to the app's archive (or cache. it's both tbh) directory
+				pkexec checkinstall;
+				rm "$back"/"$del";
+				deb=$(find -type f -name "*.deb");
+				cp "$deb" "$gitautocache"/"$pass1";
+			elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
+				#run the designated file, but NOT AS ROOT
+				exec $(pwd)/$run $opt;
+				#if the *.flag file's RUN_AS_ROOT is set to null, ask if the user wants to reset it to either yes or no
+				#none of the *.flag files should have a RUN_AS_ROOT set as null, but it is possible to happen do to the 
+				#complexity of programming it to re-ask if the passed string doesn't match a certain set of criteria
+				if [ "$root" == "RUN_AS_ROOT=null" ]; then
+					#fix the null value
+					read -p "Should this be run as root in the future? [y/N]: " ans;
+					if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+						sed -i 's/RUN_AS_ROOT=null/RUN_AS_ROOT=yes/g' $flag;
+					elif [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
+						sed -i 's/RUN_AS_ROOT=null/RUN_AS_ROOT=no/g' $flag;
+					else
+						echo -e "\nAnswer not recognized. We will ask again next time.\n";
+					fi;
+				fi;
+			fi;
+		fi;
+	else
+		#gotta have some sorta error handling XD
+		echo -e "\nThis app does not appear to be installed from GitHub.\n";
+	fi;
+done;
+##;;##
+
+##flatupdate
+#check if the flatpak.flag file is there, cause why use flatpak if flatpak isn't even installed?
+if [ -f /etc/mrai/flatpak.flag ]; then
+	#update flatpak packages
+	flatpak update;
+fi;
+##;;##
+
+##checkinstalltype
+#check how a given app is installed by checking the list of installed apps in each
+#then grepping over that list and looking for the app
+if $(dpkg -l | grep -q "ii  $pass"); then
+	type=0;
+elif [ -f /etc/mrai/snapd.flag ] && $(snap list | grep -q "$pass"); then
+	type=1;
+elif [ -f /etc/mrai/flatpak.flag ] && $(flatpak list  | grep -q "$pass"); then
+	type=2;
+elif $(ls --group-directories-first "$gitautocache" | grep -q "$pass"); then
+	type=3;
+elif $(ls --group-directories-first "$gitmancache" | grep -q "$pass"); then
+	type=4;
+else
+	type=5;
+fi;
+##;;##
+
+##gitautolist
+{
+	ls --group-directories-first $gitautocache;
+} || {
+	echo -e "\nWe're sorry. Function gitautolist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n";
+	exit "$?";
+};
+##;;##
+
+##gitmanlist
+{
+	ls --group-directories-first $gitmancache;
+} || {
+	echo -e "\nWe're sorry. Function gitmanlist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n";
+	exit "$?";
+};
+##;;##
+
+##clean
+{
+	if [ "$a" == "1" ]; then
+		pkexec /etc/mrai/bin/clean.sh -y $user;
+	else
+		pkexec /etc/mrai/bin/clean.sh $user;
+	fi;
+} || {
+	echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/Batcastle/mrai/issues\n";
+	exit $?;
+};
+##;;##
+
 ##EOF##
