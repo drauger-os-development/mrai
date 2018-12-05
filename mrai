@@ -931,6 +931,7 @@ while getopts 'uSirc' flag; do
 		i) 
 			if [ "$1" == "-i" ] || [ "$1" == "-iy" ] || [ "$1" == "-yi" ]; then
 				i="l"
+				pass="$2"
 				if [ "$1" == "-iy" ] || [ "$1" == "-yi" ]; then
 					a=1
 				fi
@@ -1020,8 +1021,7 @@ else
 			( flatinstall && exit 0 ) || exit 2
 		#none of the sub-flags where passed, so try ALL install methods until one works
 		elif [ "$i" == "l" ]; then
-			echo -e "\nAttempting to install\n"
-			pass="$z"	
+			echo -e "\nAttempting to install\n"	
 			{
 				aptinstall
 			} || {
