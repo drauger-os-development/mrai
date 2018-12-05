@@ -1,10 +1,6 @@
 TODO List for mrai:
 In order of importance
   1. DEBUG DEBUG DEBUG
-      Bugs to squash:
-      1. When throwing a lone -i flag, mrai has a hard time dealing with the $2 var and what / how to install the indicated app
-      2. Add the FlatHub remote if the user uses mrai to install flatpak, that way they can do stuff with it right away
-      3. Add a print out so that if the user tries to do something with snapd or flatpak and it isn't installed they know
   2. Add a list installed feature
   3. Add a install from deb feature
   4. Add a check for updates feature

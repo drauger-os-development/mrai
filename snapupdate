@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.0.3-alpha2"
+version="0.0.4-alpha3"
 if [ "$1" == "--version" ]; then
   echo -e "\n$version\n"
   exit 0
@@ -31,5 +31,6 @@ if [ -f /etc/mrai/snapd.flag ]; then
   echo -e "\nForce Updating Snaps. Please Wait . . .\n"
   snap refresh
 else
+  echo -e "\nWe're sorry. It appears snapd is not installed. Please run { mrai -ia snapd } to install it.\n"
   exit 1
 fi

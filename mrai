@@ -32,7 +32,7 @@ if [ "$?" == "0" ]; then
     echo -e "\nmrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited.\n"
 	exit 2
 fi
-version="0.7.7-alpha4"
+version="0.7.8-alpha4"
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	echo -e "\n$version\n"
 	exit 0
@@ -182,6 +182,7 @@ aptinstall () {
 			#update flags if snapd or flatpak get installed
 				if [ "$pass" == "flatpak" ]; then
 					echo "" >> /etc/mrai/flatpak.flag
+					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 				elif [ "$pass" == "snapd" ]; then
 					echo "" >> /etc/mrai/snapd.flag
 				fi
@@ -202,12 +203,17 @@ aptinstall () {
 					echo "" >> /etc/mrai/snapd.flag
 				elif [ "$pass" == "flatpak" ]; then
 					echo "" >> /etc/mrai/flatpak.flag
+					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 				fi
 			}) || return 2
 		fi
 	else
 		echo -e "\nThis package is already installed.\n"
-		return 1
+		if [ "$1" == "-i" ] || [ "$1" == "--install" ]; then
+			return 1
+		else
+			exit 1
+		fi
 	fi
 }
 
@@ -310,11 +316,11 @@ flatinstall () {
 		done
 	else
 		#Check to see if they called EXPLICITLY to install using flatpak, cause if they did they may not know they don't have it
-		if [ "$z" == "-f" ] || [ "$z" == "--flat" ]; then
+		if [ "$1" == "-if" ] || [ "$2" == "--flat" ]; then
 			#Tell them they don't have flatpak
 			#Also, if the user wants to mrai to use flatpak they have to install it through mrai so 
 			#it can make the flag file. Otherwise it won't work.
-			echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -i -a flatpak} to install it.\n"
+			echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
 			exit 2
 		else
 			#they didn't call it so not as big a deal. Lets just return, not exit.
@@ -350,7 +356,7 @@ snapinstall () {
 			#Tell them they don't have snapd
 			#Also, if the user wants to mrai to use snapd they have to install it through mrai so 
 			#it can make the flag file. Otherwise it won't work.
-			echo -e "\nSorry. Package 'snapd' is not installed. Please run {mrai -i -a snapd} to install it.\n"
+			echo -e "\nSorry. Package 'snapd' is not installed. Please run {mrai -ia snapd} to install it.\n"
 			exit 2
 		else
 			#they didn't call it so not as big a deal. Lets just return, not exit.
@@ -649,6 +655,9 @@ flatupdate () {
 	if [ -f /etc/mrai/flatpak.flag ]; then
 		#update flatpak packages
 		flatpak update
+	elif [ "$1" == "-uf" ] || [ "$2" == "--flat" ]; then
+		echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
+		exit 2
 	fi
 }
 
