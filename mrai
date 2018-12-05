@@ -876,6 +876,7 @@ while getopts 'uSirc' flag; do
 		S) 
 			if [ "$1" == "-S" ]; then
 				S="a"
+				pass="$2"
 				break
 			fi			
 			while getopts 'asfg' flag; do
