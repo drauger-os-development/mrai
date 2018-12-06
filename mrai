@@ -681,7 +681,9 @@ flatupdate () {
 	#check if the flatpak.flag file is there, cause why use flatpak if flatpak isn't even installed?
 	if [ -f "$cache"/flatpak.flag ]; then
 		#update flatpak packages
+		echo -e "\nUpdating Flatpaks. Please wait . . . \n"
 		flatpak update
+		echo ""
 	elif [ "$1" == "-uf" ] || [ "$2" == "--flat" ]; then
 		echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
 		exit 2

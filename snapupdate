@@ -30,6 +30,7 @@ if [ -f /etc/mrai/snapd.flag ]; then
   #force snaps to update
   echo -e "\nForce Updating Snaps. Please Wait . . .\n"
   snap refresh
+  echo ""
 else
   echo -e "\nWe're sorry. It appears snapd is not installed. Please run { mrai -ia snapd } to install it.\n"
   exit 1
