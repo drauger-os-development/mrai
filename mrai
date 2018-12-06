@@ -59,6 +59,10 @@ elif [ "$1" == "--add-repo" ]; then
 			read -p "What would you like to name this repo?: " name
 			flatpak remote-add --if-not-exists "$name" http://"$3" && echo "$name" >> "$cache"/flatpak.flag
 		fi
+	else
+		echo -e "\nERROR: No package manager indicated\n"
+	fi
+fi
 h="mrai Package Manager: the Multiple Repo App Installer
 Usage:
 
