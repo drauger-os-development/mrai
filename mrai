@@ -22,7 +22,7 @@
 #
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want to do this first, in case there are any bugs in the code below
-version="0.7.8-alpha4"
+version="0.7.9-alpha4"
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
