@@ -54,10 +54,10 @@ elif [ "$1" == "--add-repo" ]; then
 	elif [ "$2" == "-f" ] || [ "$2" == "--flat" ]; then
 		if $(echo "$3" | grep -q "http://") || $(echo "$3" | grep -q "https://"); then
 			read -p "What would you like to name this repo?: " name
-			flatpak remote-add --if-not-exists "$name" "$3" && echo "$name" >> "$cache"/flatpak.flag
+			flatpak remote-add --if-not-exists "$name" "$3"
 		else
 			read -p "What would you like to name this repo?: " name
-			flatpak remote-add --if-not-exists "$name" http://"$3" && echo "$name" >> "$cache"/flatpak.flag
+			flatpak remote-add --if-not-exists "$name" http://"$3"
 		fi
 	else
 		echo -e "\nERROR: No package manager indicated\n"
@@ -196,7 +196,7 @@ aptinstall () {
 	dpkg -l | grep -q "ii  $pass"
 	check=$?
 	if [ "$check" != "0" ]; then
-		if [ -f /etc/mrai/apt-fast.flag ]; then
+		if [ -f "$cache"/apt-fast.flag ]; then
 			({
 				#Install software using apt-fast, if available based on the apt-fast.flag
 				#use pkexec to gain root privleges in order to install software
@@ -208,10 +208,10 @@ aptinstall () {
 			} && {
 			#update flags if snapd or flatpak get installed
 				if [ "$pass" == "flatpak" ]; then
-					echo "" >> /etc/mrai/flatpak.flag
+					echo "" >> "$cache"/flatpak.flag
 					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 				elif [ "$pass" == "snapd" ]; then
-					echo "" >> /etc/mrai/snapd.flag
+					echo "" >> "$cache"/snapd.flag
 				fi
 			}) || return 2
 		else
@@ -225,11 +225,11 @@ aptinstall () {
 			} && {
 			#update flags if snapd, flatpak, or apt-fast get installed
 				if [ "$pass" == "apt-fast" ]; then
-					echo "" >> /etc/mrai/apt-fast.flag
+					echo "" >> "$cache"/apt-fast.flag
 				elif [ "$pass" == "snapd" ]; then
-					echo "" >> /etc/mrai/snapd.flag
+					echo "" >> "$cache"/snapd.flag
 				elif [ "$pass" == "flatpak" ]; then
-					echo "" >> /etc/mrai/flatpak.flag
+					echo "" >> "$cache"/flatpak.flag
 					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 				fi
 			}) || return 2
@@ -247,7 +247,7 @@ aptinstall () {
 #install software, using a more automatic method, from GitHub
 gitautoinst () {
 	{
-		pkexec /etc/mrai/bin/gitautoinst.sh "$HOME" "$user" "$pass"
+		pkexec "$cache"/bin/gitautoinst.sh "$HOME" "$user" "$pass"
 	} || {
 		echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
@@ -256,7 +256,7 @@ gitautoinst () {
 
 flatinstall () {
 	#check that flatpak.flag is in place
-	if [ -f /etc/mrai/flatpak.flag ]; then
+	if [ -f "$cache"/flatpak.flag ]; then
 		loop=1
 		while [ "$loop" == "1" ]; do
 			#search for the desired package, to ensure it exists
@@ -359,7 +359,7 @@ flatinstall () {
 #install snap apps
 snapinstall () {
 	#check for the snapd.flag file
-	if [ -f /etc/mrai/snapd.flag ]; then
+	if [ -f "$cache"/snapd.flag ]; then
 		#check for the app we want
 		if $(snap search "$pass" | grep -q "$pass"); then
 			#try to install the snap normally. This is prefered over classic snaps
@@ -458,7 +458,7 @@ gitmaninstall () {
 #remove apt packages
 aptremove () {
 	#remove the software
-	if [ -f /etc/mrai/apt-fast.flag ]; then
+	if [ -f "$cache"/apt-fast.flag ]; then
 		if [ "$a" == "1" ]; then
 			pkexec apt-fast -y purge "$pass"
 		else
@@ -474,13 +474,13 @@ aptremove () {
 	#check if the software removed was apt-fast, snapd, or flatpak
 	if [ "$pass" == "apt-fast" ]; then
 		#remove apt-fast.flag
-		rm /etc/mrai/apt-fast.flag
+		rm "$cache"/apt-fast.flag
 	elif [ "$pass" == "snapd" ]; then
 		#remove snapd.flag
-		rm /etc/mrai/snapd.flag
+		rm "$cache"/snapd.flag
 	elif [ "$pass" == "flatpak" ]; then
 		#remove flatpak.flag
-		rm /etc/mrai/flatpak.flag
+		rm "$cache"/flatpak.flag
 	fi
 }
 
@@ -679,7 +679,7 @@ gitupdate () {
 #update flatpaks
 flatupdate () {
 	#check if the flatpak.flag file is there, cause why use flatpak if flatpak isn't even installed?
-	if [ -f /etc/mrai/flatpak.flag ]; then
+	if [ -f "$cache"/flatpak.flag ]; then
 		#update flatpak packages
 		flatpak update
 	elif [ "$1" == "-uf" ] || [ "$2" == "--flat" ]; then
@@ -694,9 +694,9 @@ checkinstalltype () {
 	#then grepping over that list and looking for the app
 	if $(dpkg -l | grep -q "ii  $pass"); then
 		type=0
-	elif [ -f /etc/mrai/snapd.flag ] && $(snap list | grep -q "$pass"); then
+	elif [ -f "$cache"/snapd.flag ] && $(snap list | grep -q "$pass"); then
 		type=1
-	elif [ -f /etc/mrai/flatpak.flag ] && $(flatpak list  | grep -q "$pass"); then
+	elif [ -f "$cache"/flatpak.flag ] && $(flatpak list  | grep -q "$pass"); then
 		type=2
 	elif $(ls --group-directories-first "$gitautocache" | grep -q "$pass"); then
 		type=3
@@ -731,9 +731,9 @@ gitmanlist () {
 clean () {
 	{
 		if [ "$a" == "1" ]; then
-			pkexec /etc/mrai/bin/clean.sh -y $user
+			pkexec "$cache"/bin/clean.sh -y $user
 		else
-			pkexec /etc/mrai/bin/clean.sh $user
+			pkexec "$cache"/bin/clean.sh $user
 		fi
 	} || {
 		echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/Batcastle/mrai/issues\n"
@@ -1180,11 +1180,11 @@ $list2
 			list2=$(gitautolist | grep "$pass")
 			echo -e "\nApt packages:\n"
 			apt search "$pass"
-			if [ -f /etc/mrai/flatpak.flag ]; then
+			if [ -f "$cache"/flatpak.flag ]; then
 				echo -e "\nFlatpak Packages:\n"
 				flatpak search "$pass"
 			fi
-			if [ -f /etc/mrai/snapd.flag ]; then
+			if [ -f "$cache"/snapd.flag ]; then
 				echo -e "\nSnap Packages:\n"
 				snap search "$pass"
 			fi
