@@ -22,26 +22,43 @@
 #
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want to do this first, in case there are any bugs in the code below
+version="0.7.8-alpha4"
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
 #check if mrai is already running
 pidof -x -o "$$" "mrai" > /dev/null
-if [ "$?" == "0" ]; then
+if [ "$?" == "0" ] && [ "$1" != "--version" ] && [ "$1" != "-v" ]; then
     echo -e "\nmrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited.\n"
 	exit 2
 fi
-version="0.7.8-alpha4"
+cache="/etc/mrai"
+gitautocache="/etc/mrai/gitauto"
+gitmancache="/etc/mrai/gitman"
+user=$(whoami)
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	echo -e "\n$version\n"
 	exit 0
-fi
-if [ "$1" == "--fix-config" ]; then
+elif [ "$1" == "--fix-config" ]; then
 	echo -e "\nAttempting to correct package configuration. Please wait . . . \n"
 	pkexec dpkg --configure -a
 	exit "$?"
-fi
+elif [ "$1" == "--add-repo" ]; then
+	if [ "$2" == "-a" ] || [ "$2" == "--apt" ]; then
+		if $(echo "$3" | grep -q "ppa:"); then
+			pkexec add-apt-repository "$3"
+		else
+			pkexec add-apt-repository ppa:"$3"
+		fi
+	elif [ "$2" == "-f" ] || [ "$2" == "--flat" ]; then
+		if $(echo "$3" | grep -q "http://") || $(echo "$3" | grep -q "https://"); then
+			read -p "What would you like to name this repo?: " name
+			flatpak remote-add --if-not-exists "$name" "$3" && echo "$name" >> "$cache"/flatpak.flag
+		else
+			read -p "What would you like to name this repo?: " name
+			flatpak remote-add --if-not-exists "$name" http://"$3" && echo "$name" >> "$cache"/flatpak.flag
+		fi
 h="mrai Package Manager: the Multiple Repo App Installer
 Usage:
 
@@ -58,72 +75,78 @@ To Search:
    mrai -S {package-name}
 
 Options:
--c		Delete old *.deb files, old config files, and old Github files
+-c, --clean		Delete old *.deb files, old config files, and old Github files
 
--i		Install an app, if none of the below options are given, check in the following order:
-				Github automatic,
-				apt-get,
-				snap,
-				flatpak,
-				Github manual
+-i,				Install an app, if none of the below options are given, check in the following order:
+--install				Github automatic,
+						apt-get,
+						snap,
+						flatpak,
+						Github manual
 
-	-a	Install just from apt-get. In which case, usage will be:
+	-a, ---apt		Install just from apt-get. In which case, usage will be:
 
-				mrai -i -a {apt-package-name}
+						mrai -i -a {apt-package-name}
 
-	-g	Install just from Github, In which case, usage will be:
-			
-				mrai -i -g {/github-username/github-repo-name (or Github URL)}
+	-g, --git,		Install just from Github, In which case, usage will be:
+	--gm, --ga		
+						mrai -i -g {/github-username/github-repo-name (or Github URL)}
 				
-			Under this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or
-			automaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your
-			system.
+					Under this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or
+					automaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your
+					system.
 
-	-s	Install just from snapd, In which case, usage will be:
+	-s, --snap		Install just from snapd, In which case, usage will be:
 
-				mrai -i -s {snap-name}
+						mrai -i -s {snap-name}
 	
-	-f	Install as Flatpak, In which case, usage will be:
+	-f, --flat		Install as Flatpak, In which case, usage will be:
 
-				mrai -i -f {flatpak-name}
+						mrai -i -f {flatpak-name}
 
--h		Display this help dialoge and exit.
+-h, --help		Display this help dialogue and exit.
 
--r		Uninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,
-			the name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed
+-r, --remove	Uninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,
+--uninstall		the name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed
 
--S		Search for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,
-			please vist https://www.github.com
+-S, --search,	Search for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,
+--query, --find				please vist https://www.github.com
 	
-	-a	Search for an app through apt-get
+	-a, --apt		Search for an app through apt-get
 
-	-s	Search for an app through snap
+	-s, --snap		Search for an app through snap
 
-	-f	Search for an app through flatpak
+	-f, --flat		Search for an app through flatpak
 
-	--ga		Search for an app that was installed using GitHub Automatic Method
+	--ga			Search for an app that was installed using GitHub Automatic Method
 
-	--gm		Search for an app that was installed using GitHub Manual Method
+	--gm			Search for an app that was installed using GitHub Manual Method
 
-	--git		Search for an app installed from GitHub, regardless of method
+	--git			Search for an app installed from GitHub, regardless of method
 
--u		Update your software. This may or may not work for packages installed from Github.
+-u, --update,	Update your software. This may or may not work for packages installed from Github.
+--upgrade
+	-a, --apt		Update from only apt-get
 
-	-a	Update from only apt-get
+	-f, --flat		Update from only Flatpak
 
-	-f	Update from only Flatpak
-
-	-g	Update from only Github
+	-g, --git		Update from only Github
 	
-	-s	Update only installed snaps"
+	-s, --snap		Update only installed snaps
+
+-v, --version	Print Current Version and exit
+
+--fix-config	Essentially this runs 'sudo dpkg --configure -a', to fix package management issues
+
+--add-repo		Add a repository, MUST BE FOLLOWED BY ONE OF THE FOLLOWING OPTIONS
+
+	-a, --apt		adds a new PPA
+	
+	-f, --flat		adds a new Flatpak Remote"
 if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
 	echo -e "\n$h\n"
 	exit 0
 fi
-cache="/etc/mrai"
-gitautocache="/etc/mrai/gitauto"
-gitmancache="/etc/mrai/gitman"
-user=$(whoami)
 #check for apt-fast, snapd, and flatpak and update the flags
 if $(dpkg -l | grep -q "ii  apt-fast"); then
 	if [[ ! -f "$cache"/apt-fast.flag ]]; then
