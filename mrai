@@ -764,7 +764,6 @@ i=""
 r=""
 c=""
 a=0
-LIST=0
 #install flag
 if [ "$1" == "--install" ]; then
 	test=2
@@ -1031,7 +1030,7 @@ while getopts 'uSircl' flag; do
 done
 #start:
 #check to make sure SOMETHING is set
-if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ]; then
+if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ]; then
 	echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
 	exit 2
 else
