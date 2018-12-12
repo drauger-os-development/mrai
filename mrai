@@ -21,8 +21,8 @@
 #  MA 02110-1301, USA.
 #
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
-#we want to do this first, in case there are any bugs in the code below
-version="0.7.9-alpha4"
+#we want todo this first, in case there are any bugs in the code below
+version="0.8.0-alpha5"
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -146,7 +146,8 @@ Options:
 
 	-a, --apt		adds a new PPA
 	
-	-f, --flat		adds a new Flatpak Remote"
+	-f, --flat		adds a new Flatpak Remote
+-l, --list		List installed apps, pass a package name after this flag to search for an installed app"
 if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
 	echo -e "\n$h\n"
 	exit 0
@@ -763,6 +764,7 @@ i=""
 r=""
 c=""
 a=0
+LIST=0
 #install flag
 if [ "$1" == "--install" ]; then
 	test=2
@@ -880,9 +882,13 @@ elif [ "$1" == "--clean" ]; then
 	done
 	goto start
 	exit 0
+elif [ "$1" == "--list" ]; then
+	LIST=1
+	goto start
+	exit 0
 fi
 #compound flag managment system
-while getopts 'uSirc' flag; do
+while getopts 'uSircl' flag; do
 	case "${flag}" in
 		#update flag
 		u) 
@@ -1018,6 +1024,7 @@ while getopts 'uSirc' flag; do
 					a=1
 				fi
 			fi;;
+		l) LIST=1;;
 		#all else
 		*) echo -e "\nError: Option not recognized.\n\n$h\n"
 	esac
@@ -1208,6 +1215,58 @@ $list2
 	#clean flag
 	elif [[ ! -z "$c" ]]; then
 		clean
+	elif [[ "$LIST" == "1" ]]; then
+		if [[ ! -z "$2" ]]; then
+			echo -e "\nApt:\n"
+			dpkg -l "$2"
+			if [ -f "$cache"/snapd.flag ]; then
+				echo -e "\nSnaps:\n"
+				snap list "$2"
+			fi
+			if [ -f "$cache"/flatpak.flag ]; then
+				echo -e "\nFlatpaks:\n"
+				flatpak list -a | grep "$2"
+			fi
+			list1=$(gitmanlist | grep "$2")
+			list2=$(gitautolist | grep "$2")
+			list="Installed through Manual Method:
+$list1
+
+Installed through Automatic Method:
+
+$list2
+
+"
+			echo -e "\nInstalled GitHub Apps:\n"
+			echo "$list"
+		else
+			echo -e "\nApt:\n"
+			dpkg -l
+			if [ -f "$cache"/snapd.flag ]; then
+				echo -e "\nSnaps:\n"
+				snap list
+			fi
+			if [ -f "$cache"/flatpak.flag ]; then
+				echo -e "\nFlatpaks:\n"
+				flatpak list -a
+			fi
+			list1=$(gitmanlist)
+			list2=$(gitautolist)
+			list="Installed through Manual Method:
+$list1
+
+Installed through Automatic Method:
+
+$list2
+
+"
+			echo -e "\nInstalled GitHub Apps:\n"
+			if [ "$list" == "Installed through Manual Method: Installed through Automatic Method:" ]; then
+				echo -e "No GitHub Apps Installed.\n"
+			else
+				echo "$list"
+			fi
+		fi
 	#no recognized flags passed
 	else
 		echo -e "\n$h\n"

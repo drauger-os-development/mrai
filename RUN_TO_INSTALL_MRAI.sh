@@ -1,6 +1,32 @@
 #!/bin/bash
+# -*- coding: utf-8 -*-
+#
+#  RUN_TO_INSTALL_MRAI.sh
+#  
+#  Copyright 2018 Thomas Castleman <draugeros@gmail.com>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#
+if $(echo "$(lsb_release -i)" | grep -q "Solus"); then
+    echo -e "\nWe're sorry. mrai does not support Solus at current time due to it using\n'eopkg' and not 'apt' for it's package manager.\n"
+    exit 2
+fi
 if [[ "$EUID" != "0" ]]; then
-    echo -e "\nPlease run RUN_TO_INSTALL_MRAI.sh with root privleges.\n" && exit 2
+    echo -e "\nPlease run RUN_TO_INSTALL_MRAI.sh with root privleges.\n"
+    exit 2
 fi
 if [ "$1" == "remove" ]; then
     rm /bin/mrai /bin/aptupdate
@@ -16,9 +42,9 @@ while [ "$x" == "0" ]; do
         su $(users) -c 'git pull https://github.com/Batcastle/mrai'
     fi
     echo -e "\nUpdating the system . . .\n"
-    ( apt-get update && apt-get -y upgrade ) || ( echo -e "\nWe encountered an error updating your system. Are you hooked up to the interent?\n" && exit 1 )
+    ( apt update && apt-get -y upgrade ) || ( echo -e "\nWe encountered an error updating your system. Are you hooked up to the interent?\n" && exit 1 )
     echo -e "\nInstalling dependencies . . .\n"
-    apt-get install git make
+    apt install git make
     echo -e "\nInstalling mrai . . .\n"
     if [[ ! -d /etc/mrai ]]; then
         mkdir /etc/mrai
@@ -54,9 +80,9 @@ while [ "$x" == "0" ]; do
     fi
     chown -R $(users):$(users) /etc/mrai
     echo -e "\nRemoving old dependencies . . .\n"
-    apt-get -y autoremove
+    apt -y autoremove
     echo -e "\nCleaning up . . .\n"
-    apt-get clean && apt-get -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+    apt clean && apt -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
     echo -e "\nIntallation is complete!\n"
     x=1
   else
