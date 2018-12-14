@@ -64,31 +64,17 @@ elif [ "$1" == "--add-repo" ]; then
 	fi
 fi
 h="mrai Package Manager: the Multiple Repo App Installer
-Usage:
 
-To Install:
-   mrai -i {github-username/github-repo-name (or Github URL)} {possible-apt-package-name (or name to be installed under) }
-
-To Remove:
-   mrai -r {name-installed-under}
-
-To Update:
-   mrai -u {github-username/github-repo-name (or Github URL)} {possible-apt-package-name (or name installed under) }
-
-To Search:
-   mrai -S {package-name}
-
-Options:
 -c, --clean		Delete old *.deb files, old config files, and old Github files
 
 -i,				Install an app, if none of the below options are given, check in the following order:
---install				Github automatic,
-						apt-get,
+--install				apt,
 						snap,
 						flatpak,
-						Github manual
+						Github manual,
+						Github automatic
 
-	-a, ---apt		Install just from apt-get. In which case, usage will be:
+	-a, ---apt		Install just from apt. In which case, usage will be:
 
 						mrai -i -a {apt-package-name}
 
@@ -116,7 +102,7 @@ Options:
 -S, --search,	Search for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,
 --query, --find				please vist https://www.github.com
 	
-	-a, --apt		Search for an app through apt-get
+	-a, --apt		Search for an app through apt
 
 	-s, --snap		Search for an app through snap
 
@@ -130,7 +116,7 @@ Options:
 
 -u, --update,	Update your software. This may or may not work for packages installed from Github.
 --upgrade
-	-a, --apt		Update from only apt-get
+	-a, --apt		Update from only apt
 
 	-f, --flat		Update from only Flatpak
 
