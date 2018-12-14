@@ -51,13 +51,7 @@ To uninstall, run the following code:
 
   If installed from GitHub repo:
   
-  `sudo rm /bin/mrai`
-  
-  `sudo rm /bin/aptupdate`
-  
-  `sudo rm /bin/snapupdate`
-  
-  `sudo rm /usr/share/man/man1/mrai.1.gz`
+  `sudo rm /bin/mrai /bin/aptupdate /bin/snapupdate /usr/share/man/man1/mrai.1.gz`
   
   `sudo rm -rf /etc/mrai`
   
