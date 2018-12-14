@@ -29,7 +29,7 @@ if [[ "$EUID" != "0" ]]; then
     exit 2
 fi
 if [ "$1" == "remove" ]; then
-    rm /bin/mrai /bin/aptupdate
+    rm /bin/mrai /bin/aptupdate /bin/snapupdate /usr/share/man/man1/mrai.1.gz
     rm -rf /etc/mrai
     echo -e "\nmrai has been uninstalled.\n"
     exit 0
