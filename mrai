@@ -76,11 +76,11 @@ h="mrai Package Manager: the Multiple Repo App Installer
 
 	-a, ---apt		Install just from apt. In which case, usage will be:
 
-						mrai -i -a {apt-package-name}
+						mrai -ia {apt-package-name}
 
 	-g, --git,		Install just from Github, In which case, usage will be:
 	--gm, --ga		
-						mrai -i -g {/github-username/github-repo-name (or Github URL)}
+						mrai -ig {/github-username/github-repo-name (or Github URL)}
 				
 					Under this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or
 					automaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your
@@ -88,11 +88,11 @@ h="mrai Package Manager: the Multiple Repo App Installer
 
 	-s, --snap		Install just from snapd, In which case, usage will be:
 
-						mrai -i -s {snap-name}
+						mrai -is {snap-name}
 	
 	-f, --flat		Install as Flatpak, In which case, usage will be:
 
-						mrai -i -f {flatpak-name}
+						mrai -if {flatpak-name}
 
 -h, --help		Display this help dialogue and exit.
 
