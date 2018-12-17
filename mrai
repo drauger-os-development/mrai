@@ -352,7 +352,7 @@ snapinstall () {
 			#try to install the snap normally. This is prefered over classic snaps
 			#for security reasons due to it's comperably lacking amount of access to the user's system
 			#as compared to classic snaps
-			snap install "$pass" || read "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
+			snap install "$pass" || read -p "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ ! -z $ans ]; then
 				#check to see if they are cool with the classic snaps, and if so install it. Or at least try to.
 				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
