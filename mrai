@@ -478,7 +478,7 @@ gitremove () {
 		#cd into the appropriate directory
 		cd "$gitautocache"/"$pass"
 		#check for a Makefile
-		if $( echo $(ls) | grep "Makefile"); then
+		if $(echo "$(ls)" | grep -q "Makefile"); then
 			#try make uninstall and make remove, cause they sometimes work
 			{
 				make uninstall || make remove
