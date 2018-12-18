@@ -22,7 +22,7 @@
 #
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.8.0-alpha5"
+version="0.8.1-alpha5"
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -1111,10 +1111,18 @@ else
 				fi
 				gitupdate
 			elif [[ "$x" == "a" ]]; then
-				if $(echo "$u" | grep -q "s"); then
-					pkexec aptupdate -s
-				else
-					pkexec aptupdate
+				if [ "$y" == "0" ]; then
+					if $(echo "$u" | grep -q "s"); then
+						pkexec aptupdate -s
+					else
+						pkexec aptupdate
+					fi
+				elif [ "$y" == "1" ]; then
+					if $(echo "$u" | grep -q "s"); then
+						pkexec aptupdate -sy
+					else
+						pkexec aptupdate -y
+					fi
 				fi
 			elif [[ "$x" == "s" ]]; then
 				if $(echo "$u" | grep -q "a"); then
