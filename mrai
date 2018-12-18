@@ -1111,18 +1111,21 @@ else
 				fi
 				gitupdate
 			elif [[ "$x" == "a" ]]; then
-				if [ "$y" == "0" ]; then
+				if [ "$a" == "0" ]; then
 					if $(echo "$u" | grep -q "s"); then
 						pkexec aptupdate -s
 					else
 						pkexec aptupdate
 					fi
-				elif [ "$y" == "1" ]; then
+				elif [ "$a" == "1" ]; then
 					if $(echo "$u" | grep -q "s"); then
 						pkexec aptupdate -sy
 					else
 						pkexec aptupdate -y
 					fi
+				else
+					echo -e "\n We're sorry. An error has occured in the implementation of the assume-yes flag.\nPlease report this bug to\nhttps://github.com/Batcastle/mrai/issues\n"
+					exit 2
 				fi
 			elif [[ "$x" == "s" ]]; then
 				if $(echo "$u" | grep -q "a"); then
