@@ -1011,7 +1011,9 @@ while getopts 'uSircl' flag; do
 			fi;;
 		l) LIST=1;;
 		#all else
-		*) echo -e "\nError: Option not recognized.\n\n$h\n"
+		*)
+			echo -e "\nError: Option not recognized.\n\n$h\n"
+			exit 2;;
 	esac
 done
 #start:
