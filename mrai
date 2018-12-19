@@ -22,7 +22,7 @@
 #
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.8.1-alpha5"
+version="0.8.2-alpha5"
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -180,17 +180,37 @@ snapupdate () {
 
 #Install software from apt
 aptinstall () {
-	dpkg -l | grep -q "ii  $pass"
+	for each in $pass; do
+		if $(dpkg -l | grep -q "ii  $each"); then
+			continue
+		else
+			new="$new $each"
+		fi
+	done
+	for each in $pass; do
+		if $(echo "$new" | grep -q "$each"); then
+			verify="$verify 1"
+		else
+			continue
+		fi
+	done
+	echo "$verify" | grep -q "1"
 	check=$?
 	if [ "$check" != "0" ]; then
+		echo -e "\nAll passed packages are already installed.\n"
+		exit 1
+	else
+			pass="$new"
+	fi
+	if [ "$check" == "0" ]; then
 		if [ -f "$cache"/apt-fast.flag ]; then
 			({
 				#Install software using apt-fast, if available based on the apt-fast.flag
 				#use pkexec to gain root privleges in order to install software
 				if [ "$a" == "1" ]; then
-					pkexec apt-fast -y install "$pass"
+					pkexec apt-fast -y install $pass
 				else
-					pkexec apt-fast install "$pass"
+					pkexec apt-fast install $pass
 				fi
 			} && {
 			#update flags if snapd or flatpak get installed
@@ -205,9 +225,9 @@ aptinstall () {
 			({
 				#install software using apt, due to the unavailability of apt-fast
 				if [ "$a" == "1" ]; then
-					pkexec apt -y install "$pass"
+					pkexec apt -y install $pass
 				else
-					pkexec apt install "$pass"
+					pkexec apt install $pass
 				fi
 			} && {
 			#update flags if snapd, flatpak, or apt-fast get installed
@@ -325,7 +345,7 @@ flatinstall () {
 				#There. Bit long, but it was needed. 
 				#Alright. Lets end this puppy.
 				loop="0"
-				exit 1
+				return 1
 			fi
 		done
 	else
@@ -348,15 +368,38 @@ snapinstall () {
 	#check for the snapd.flag file
 	if [ -f "$cache"/snapd.flag ]; then
 		#check for the app we want
-		if $(snap search "$pass" | grep -q "$pass"); then
+		for each in $pass; do
+			list=$(snap list)
+			if $(echo "$list" | grep -q "$each"); then
+				continue
+			else
+				new="$new $each"
+			fi
+		done
+		for each in $pass; do
+			if $(echo "$new" | grep -q "$each"); then
+				verify="$verify 1"
+			else
+				continue
+			fi
+		done
+		echo "$verify" | grep -q "1"
+		check=$?
+		if [ "$check" != "0" ]; then
+			echo -e "\nAll passed packages are already installed.\n"
+			exit 1
+		else
+			pass="$new"
+		fi
+		if [ "$check" == "0" ]; then
 			#try to install the snap normally. This is prefered over classic snaps
 			#for security reasons due to it's comperably lacking amount of access to the user's system
 			#as compared to classic snaps
-			snap install "$pass" || read -p "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
+			snap install $pass || read -p "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ ! -z $ans ]; then
 				#check to see if they are cool with the classic snaps, and if so install it. Or at least try to.
 				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-					snap install "$pass" --classic || echo -e "\nSnap installation failed.\n"
+					snap install $pass --classic || echo -e "\nSnap installation failed.\n"
 				else
 					return 2
 				fi
@@ -1028,6 +1071,7 @@ else
 		if [ "$i" == "a" ]; then
 			#set $pass to $y that way aptinstall can use it
 			pass="$y"
+			pass=$(echo "$pass" | sed 's/,/\ /')
 			( aptinstall && exit 0 ) || exit 2
 		#git sub-flag
 		elif $(echo "$i" | grep -q "g"); then
@@ -1045,7 +1089,8 @@ else
 			fi
 		#snap sub-flag
 		elif [ "$i" == "s" ]; then
-			pass="$y"
+			pass="$2"
+			pass=$(echo "$pass" | sed 's/,/\ /')
 			( snapinstall && exit 0 ) || exit 2
 		#flatpak sub-flag
 		elif [ "$i" == "f" ]; then
