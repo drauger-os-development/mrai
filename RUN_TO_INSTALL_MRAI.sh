@@ -28,9 +28,10 @@ if [[ "$EUID" != "0" ]]; then
     echo -e "\nPlease run RUN_TO_INSTALL_MRAI.sh with root privleges.\n"
     exit 2
 fi
+cache="/etc/mrai"
 if [ "$1" == "remove" ]; then
     rm /bin/mrai /bin/aptupdate /bin/snapupdate /usr/share/man/man1/mrai.1.gz
-    rm -rf /etc/mrai
+    rm -rf "$cache"
     echo -e "\nmrai has been uninstalled.\n"
     exit 0
 fi
@@ -79,6 +80,21 @@ while [ "$x" == "0" ]; do
         echo "" >> /etc/mrai/apt-fast.flag
     fi
     chown -R $(users):$(users) /etc/mrai
+    if [[ -f "$cache"/wsl-yes.flag ]]; then
+        sed -i 's/pkexec/sudo/g' /bin/mrai
+        sed -i 's/pkexec/sudo/g' /bin/aptupdate
+    elif [[ -f "$cache"/wsl-no.flag ]]; then
+        continue
+    else
+        read -p "Are you running a Windows Subsystem for Linux Environment? (If unsure, select no) [y/N]: " ans
+        if [[ "$ans" == "y" ]] || [[ "$ans" == "Y" ]]; then
+            touch "$cache"/wsl-yes.flag
+            sed -i 's/pkexec/sudo/g' /bin/mrai
+            sed -i 's/pkexec/sudo/g' /bin/aptupdate
+        else
+            touch "$cache"/wsl-no.flag
+        fi
+    fi
     echo -e "\nRemoving old dependencies . . .\n"
     apt -y autoremove
     echo -e "\nCleaning up . . .\n"
