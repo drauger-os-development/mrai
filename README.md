@@ -46,6 +46,8 @@ If installing the \*.deb, after downloading it:
 
 `sudo apt install /path/to/deb/file/mrai_x.x.x_all.deb`
 
+Drauger OS users can install it by running `sudo apt install mrai`
+
 # Uninstalling
 To uninstall, run the following code:
 
@@ -59,6 +61,6 @@ To uninstall, run the following code:
   
   `sudo ./RUN_TO_INSTALL_MRAI.sh remove`
   
-  If installed from the .deb package:
+  If installed from the .deb package or `apt`:
   
   `sudo apt purge mrai`
