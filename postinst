@@ -1,0 +1,17 @@
+#!/bin/bash
+if [[ ! -d /etc/mrai/gitauto ]]; then
+	mkdir /etc/mrai/gitauto
+fi
+if [[ ! -d /etc/mrai/gitman ]]; then
+	mkdir /etc/mrai/gitman
+fi
+if $(dpkg -l | grep -q "ii  flatpak"); then
+	echo "" >> /etc/mrai/flatpak.flag
+fi
+if $(dpkg -l | grep -q "ii  snapd"); then
+	echo "" >> /etc/mrai/snapd.flag
+fi
+if $(dpkg -l | grep -q "ii  apt-fast"); then
+	echo "" >> /etc/mrai/apt-fast.flag
+fi
+chown -R $(users):$(users) /etc/mrai
