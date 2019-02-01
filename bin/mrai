@@ -3,7 +3,7 @@
 #
 #  mrai
 #  
-#  Copyright 2018 Thomas Castleman <draugeros@gmail.com>
+#  Copyright 2019 Thomas Castleman <draugeros@gmail.com>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.8.2-alpha5"
+version="0.8.5-alpha5"
 if [[ "$EUID" == "0" ]]; then
     echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -724,17 +724,23 @@ flatupdate () {
 checkinstalltype () {
 	#check how a given app is installed by checking the list of installed apps in each
 	#then grepping over that list and looking for the app
+	type=""
 	if $(dpkg -l | grep -q "ii  $pass"); then
 		type=0
-	elif [ -f "$cache"/snapd.flag ] && $(snap list | grep -q "$pass"); then
-		type=1
-	elif [ -f "$cache"/flatpak.flag ] && $(flatpak list  | grep -q "$pass"); then
-		type=2
-	elif $(ls --group-directories-first "$gitautocache" | grep -q "$pass"); then
-		type=3
-	elif $(ls --group-directories-first "$gitmancache" | grep -q "$pass"); then
-		type=4
-	else
+	fi
+	if [ -f "$cache"/snapd.flag ] && $(snap list | grep -q "$pass"); then
+		type="$type 1"
+	fi
+	if [ -f "$cache"/flatpak.flag ] && $(flatpak list  | grep -q "$pass"); then
+		type="$type 2"
+	fi
+	if $(ls --group-directories-first "$gitautocache" | grep -q "$pass"); then
+		type="$type 3"
+	fi
+	if $(ls --group-directories-first "$gitmancache" | grep -q "$pass"); then
+		type="$type 4"
+	fi
+	if [ "$type" == "" ]; then
 		type=5
 	fi
 }
@@ -1123,19 +1129,57 @@ else
 		#check the way a certain app is installed so it can be properly removed
 		pass="$y"		
 		checkinstalltype
-		#since $pass is already set to the package name, no need to set it so that the package will be removed
-		if [ "$type" == "0" ]; then
+		if $(echo "$type" | grep -q " "); then
+			if [ "$type" == " 1" ]; then
+				snapremove
+			elif [ "$type" == " 2" ]; then
+				flatremove
+			elif [ "$type" == " 3" ] || [ "$type" == " 4" ]; then
+				gitremove
+			else
+				#make a case, set a variable containing text equal to methods an app is installed by
+				for each in $type; do
+					case "$each" in
+						0) show="apt"; input=" 1 for apt"; check="1" ;;
+						1) show="$show snap"; input="$input 2 for snap"; check="$check 2" ;;
+						2) show="$show flatpak"; input="$input 3 for flatpak"; check="$check 3" ;;
+						3) show="$show Github_Automatic" ;;
+						4) show="$show Github_Manual" ;;
+						*) echo "There is an unrecognized value in \$type variable. Error in checkinstalltype"; exit 2 ;;
+					esac
+				done
+				if $(echo "$show" | grep -q "Github"); then
+					input="$input 4 for Github Manual OR Automatic"
+					check="$check 4"
+				fi
+				echo -e "\nThere are mutliple apps which fit the package name passed installer.\n\nThese are installed through: $show\n\nFrom which package manager would you like to uninstall?"
+				read -p "$input. Select ONE: " ans
+				while [ ! -z $ans ]; do
+					if [ "$ans" == "1" ] && $(echo "$check" | grep -q "1"); then
+						aptremove
+						exit 0
+					elif [ "$ans" == "2" ] && $(echo "$check" | grep -q "2"); then
+						snapremove
+						exit 0
+					elif [ "$ans" == "3" ] && $(echo "$check" | grep -q "3"); then
+						flatremove
+						exit 0
+					elif [ "$ans" == "4" ] && $(echo "$check" | grep -q "4"); then
+						gitremove
+						exit 0
+					elif [ "$ans" == "exit" ] || [ "$ans" == "cancel" ] || [ "$ans" == "EXIT" ] || [ "$ans" == "CANCEL" ]; then
+						echo -e "\nExiting . . .\n"
+						exit 0
+					else
+						echo -e "\nUnrecognized Input passed. Please try again.\n"
+						echo -e "\nThere are mutliple apps which fit the package name passed installer.\n\nThese are installed through: $show\n\nFrom which package manager would you like to uninstall?"
+						read -p "$input. Select ONE: " ans
+					fi
+				done
+			fi
+		elif [ "$type" == "0" ]; then
 			aptremove
-		elif [ "$type" == "1" ]; then
-			snapremove
-		elif [ "$type" == "2" ]; then
-			flatremove
-		elif [ "$type" == "3" ]; then
-			gitremove
-		elif [ "$type" == "4" ]; then
-			gitremove
 		elif [ "$type" == "5" ]; then
-			#error handling
 			echo -e "\nAccording to all our databases, this app is not installed.\n"
 			exit 1
 		else
