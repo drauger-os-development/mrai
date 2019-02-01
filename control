@@ -1,0 +1,18 @@
+Package: mrai
+Version: 0.8.5-alpha6
+Installed-Size: 124
+Maintainer: Thomas Castleman <draugeros@gmail.com>
+Section: admin
+Homepage: https://github.com/Batcastle/mrai
+Architecture: all
+Priority: optional
+Suggests: apt-fast (>=1.9.5-1~ubuntu18.04.1)
+Depends: apt (>=1.6.3ubuntu0.1), git (>=2.17.1), make (>=4.1)
+Recommends: snapd (>=2.35.4), flatpak (>=1.0.1)
+Description: Multiple Repo App Installer
+ mrai (Short for "Multiple Repository Application Installer") is a program inspired by the AUR helpers such as yaourt and yay from Arch Linux and it's derivatives.
+ .
+  mrai provides a front end for apt-get/apt-fast, snapd, flatpak, and git simultaneously. When trying to install software, it will try each of these methods, in this order, until it finds an appropriate method.
+ .
+  Users can also specify which of these methods they wish mrai to use.
+
