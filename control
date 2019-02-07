@@ -1,7 +1,7 @@
 Package: mrai
-Version: 0.8.5-alpha6
+Version: 0.8.6-alpha6
 Installed-Size: 124
-Maintainer: Thomas Castleman <draugeros@gmail.com>
+Maintainer: Thomas Castleman <contact@draugeros.ml>
 Section: admin
 Homepage: https://github.com/Batcastle/mrai
 Architecture: all
