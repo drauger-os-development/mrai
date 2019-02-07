@@ -3,7 +3,7 @@
 #
 #  snapupdate
 #  
-#  Copyright 2018 Thomas Castleman <draugeros@gmail.com>
+#  Copyright 2019 Thomas Castleman <draugeros@gmail.com>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,18 +20,18 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.0.4-alpha3"
+version="0.0.5-alpha4"
 if [ "$1" == "--version" ]; then
-  echo -e "\n$version\n"
+  /bin/echo -e "\n$version\n"
   exit 0
 fi
 #check for /etc/mrai/snapd.flag
 if [ -f /etc/mrai/snapd.flag ]; then
   #force snaps to update
-  echo -e "\nForce Updating Snaps. Please Wait . . .\n"
-  snap refresh
+  /bin/echo -e "\nForce Updating Snaps. Please Wait . . .\n"
+  /usr/bin/snap refresh
   echo ""
 else
-  echo -e "\nWe're sorry. It appears snapd is not installed. Please run { mrai -ia snapd } to install it.\n"
+  /bin/echo -e "\nWe're sorry. It appears snapd is not installed. Please run { mrai -ia snapd } to install it.\n"
   exit 1
 fi

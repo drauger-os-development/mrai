@@ -20,9 +20,9 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.0.8-alpha4"
+version="0.0.9-alpha5"
 if [ "$1" == "--version" ]; then
-  echo -e "\n$version\n"
+  /bin/echo -e "\n$version\n"
   exit 0
 fi
 s=0
@@ -34,54 +34,54 @@ while getopts 'sy' flag; do
     *) exit 2 ;;
   esac
 done
-echo -e "\nUpdating installed software . . . \n"
+/bin/echo -e "\nUpdating installed software . . . \n"
 if [ "$y" == "0" ]; then
   #updating apt cache then updating install apt packages
   if [[ ! -f /etc/mrai/apt-fast.flag ]]; then
-    apt update && apt upgrade && apt full-upgrade
-    echo -e "\nRemoving old dependencies . . . \n"
+    /usr/bin/apt update && /usr/bin/apt upgrade && /usr/bin/apt full-upgrade
+    /bin/echo -e "\nRemoving old dependencies . . . \n"
     #removing unneeded dependencies
-    apt autoremove
-    echo -e "\nCleaning up . . . \n"
+    /usr/bin/apt autoremove
+    /bin/echo -e "\nCleaning up . . . \n"
     #cleaning up
-    apt-get clean
-    apt purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+    /usr/bin/apt-get clean
+    /usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
     #proceed to update snaps, if mrai said to
   else
-    apt-fast update && apt-fast upgrade && apt-fast dist-upgrade
-    echo -e "\nRemoving old dependencies . . . \n"
+    /usr/sbin/apt update && /usr/sbin/apt upgrade && /usr/sbin/apt dist-upgrade
+    /bin/echo -e "\nRemoving old dependencies . . . \n"
     #removing unneeded dependencies
-    apt-fast autoremove
-    echo -e "\nCleaning up . . . \n"
+    /usr/sbin/apt autoremove
+    /bin/echo -e "\nCleaning up . . . \n"
     #cleaning up
-    apt-fast clean
-    apt-fast purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+    /usr/sbin/apt clean
+    /usr/sbin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
     #proceed to update snaps, if mrai said to
   fi
 elif [ "$y" == "1" ]; then
    #updating apt cache then updating install apt packages
   if [[ ! -f /etc/mrai/apt-fast.flag ]]; then
-    apt update && apt -y upgrade && apt -y full-upgrade
-    echo -e "\nRemoving old dependencies . . . \n"
+    /usr/bin/apt update && /usr/bin/apt -y upgrade && /usr/bin/apt -y full-upgrade
+    /bin/echo -e "\nRemoving old dependencies . . . \n"
     #removing unneeded dependencies
-    apt -y autoremove
-    echo -e "\nCleaning up . . . \n"
+    /usr/bin/apt -y autoremove
+    /bin/echo -e "\nCleaning up . . . \n"
     #cleaning up
-    apt-get clean
-    apt -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+    /usr/bin/apt-get clean
+    /usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
     #proceed to update snaps, if mrai said to
   else
-    apt-fast update && apt-fast -y upgrade && apt-fast -y dist-upgrade
-    echo -e "\nRemoving old dependencies . . . \n"
+    /usr/sbin/apt update && /usr/sbin/apt -y upgrade && /usr/sbin/apt -y dist-upgrade
+    /bin/echo -e "\nRemoving old dependencies . . . \n"
     #removing unneeded dependencies
-    apt-fast -y autoremove
-    echo -e "\nCleaning up . . . \n"
+    /usr/sbin/apt -y autoremove
+    /bin/echo -e "\nCleaning up . . . \n"
     #cleaning up
-    apt-fast clean
-    apt-fast -y purge $(dpkg -l | grep '^rc' | awk '{print $2}')
+    /usr/sbin/apt clean
+    /usr/sbin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
     #proceed to update snaps, if mrai said to
   fi
 fi
 if [ "$s" == "1" ]; then
-  pkexec /bin/snapupdate
+  /usr/bin/pkexec /bin/snapupdate
 fi

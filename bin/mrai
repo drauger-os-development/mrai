@@ -22,45 +22,45 @@
 #
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.8.5-alpha6"
+version="0.8.6-alpha6"
 if [[ "$EUID" == "0" ]]; then
-    echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
+    /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
 #check if mrai is already running
-pidof -x -o "$$" "mrai" > /dev/null
+/bin/pidof -x -o "$$" "mrai" > /dev/null
 if [ "$?" == "0" ] && [ "$1" != "--version" ] && [ "$1" != "-v" ]; then
-    echo -e "\nmrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited.\n"
+    /bin/echo -e "\nmrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited.\n"
 	exit 2
 fi
 cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
-user=$(whoami)
+user=$(/usr/bin/whoami)
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
-	echo -e "\n$version\n"
+	/bin/echo -e "\n$version\n"
 	exit 0
 elif [ "$1" == "--fix-config" ]; then
-	echo -e "\nAttempting to correct package configuration. Please wait . . . \n"
-	pkexec dpkg --configure -a
+	/bin/echo -e "\nAttempting to correct package configuration. Please wait . . . \n"
+	/usr/bin/pkexec /usr/bin/dpkg --configure -a
 	exit "$?"
 elif [ "$1" == "--add-repo" ]; then
 	if [ "$2" == "-a" ] || [ "$2" == "--apt" ]; then
-		if $(echo "$3" | grep -q "ppa:"); then
-			pkexec add-apt-repository "$3"
+		if $(/bin/echo "$3" | /bin/grep -q "ppa:"); then
+			/usr/bin/pkexec /usr/bin/add-apt-repository "$3"
 		else
-			pkexec add-apt-repository ppa:"$3"
+			/usr/bin/pkexec /usr/bin/add-apt-repository ppa:"$3"
 		fi
 	elif [ "$2" == "-f" ] || [ "$2" == "--flat" ]; then
-		if $(echo "$3" | grep -q "http://") || $(echo "$3" | grep -q "https://"); then
+		if $(/bin/echo "$3" | /bin/grep -q "http://") || $(/bin/echo "$3" | /bin/grep -q "https://"); then
 			read -p "What would you like to name this repo?: " name
-			flatpak remote-add --if-not-exists "$name" "$3"
+			/usr/bin/flatpak remote-add --if-not-exists "$name" "$3"
 		else
 			read -p "What would you like to name this repo?: " name
-			flatpak remote-add --if-not-exists "$name" http://"$3"
+			/usr/bin/flatpak remote-add --if-not-exists "$name" http://"$3"
 		fi
 	else
-		echo -e "\nERROR: No package manager indicated\n"
+		/bin/echo -e "\nERROR: No package manager indicated\n"
 	fi
 fi
 h="mrai Package Manager: the Multiple Repo App Installer
@@ -135,35 +135,35 @@ h="mrai Package Manager: the Multiple Repo App Installer
 	-f, --flat		adds a new Flatpak Remote
 -l, --list		List installed apps, pass a package name after this flag to search for an installed app"
 if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
-	echo -e "\n$h\n"
+	/bin/echo -e "\n$h\n"
 	exit 0
 fi
 #check for apt-fast, snapd, and flatpak and update the flags
-if $(dpkg -l | grep -q "ii  apt-fast"); then
+if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
 	if [[ ! -f "$cache"/apt-fast.flag ]]; then
-		echo "" >> "$cache"/apt-fast.flag
+		/bin/echo "" >> "$cache"/apt-fast.flag
 	fi
 else
 	if [[ -f "$cache"/apt-fast.flag ]]; then
-		rm "$cache"/apt-fast.flag
+		/bin/rm "$cache"/apt-fast.flag
 	fi
 fi
-if $(dpkg -l | grep -q "ii  snapd"); then
+if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
 	if [[ ! -f "$cache"/snapd.flag ]]; then
-		echo "" >> "$cache"/snapd.flag
+		/bin/echo "" >> "$cache"/snapd.flag
 	fi
 else
 	if [[ -f "$cache"/snapd.flag ]]; then
-		rm "$cache"/snapd.flag
+		/bin/rm "$cache"/snapd.flag
 	fi
 fi
-if $(dpkg -l | grep -q "ii  flatpak"); then
+if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
 	if [[ ! -f "$cache"/flatpak.flag ]]; then
-		echo "" >> "$cache"/flatpak.flag
+		/bin/echo "" >> "$cache"/flatpak.flag
 	fi
 else
 	if [[ -f "$cache"/flatpak.flag ]]; then
-		rm "$cache"/flatpak.flag
+		/bin/rm "$cache"/flatpak.flag
 	fi
 fi
 #Start Defining Functions
@@ -171,9 +171,9 @@ fi
 #Force update snaps
 snapupdate () {
 	{
-		bash /bin/snapupdate
+		/bin/bash /bin/snapupdate
 	} || {
-		echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -181,23 +181,23 @@ snapupdate () {
 #Install software from apt
 aptinstall () {
 	for each in $pass; do
-		if $(dpkg -l | grep -q "ii  $each"); then
+		if $(/usr/bin/dpkg -l | /bin/grep -q "ii  $each"); then
 			continue
 		else
 			new="$new $each"
 		fi
 	done
 	for each in $pass; do
-		if $(echo "$new" | grep -q "$each"); then
+		if $(/bin/echo "$new" | /bin/grep -q "$each"); then
 			verify="$verify 1"
 		else
 			continue
 		fi
 	done
-	echo "$verify" | grep -q "1"
+	/bin/echo "$verify" | /bin/grep -q "1"
 	check=$?
 	if [ "$check" != "0" ]; then
-		echo -e "\nAll passed packages are already installed.\n"
+		/bin/echo -e "\nAll passed packages are already installed.\n"
 		exit 1
 	else
 			pass="$new"
@@ -206,43 +206,43 @@ aptinstall () {
 		if [ -f "$cache"/apt-fast.flag ]; then
 			({
 				#Install software using apt-fast, if available based on the apt-fast.flag
-				#use pkexec to gain root privleges in order to install software
+				#use /usr/bin/pkexec to gain root privleges in order to install software
 				if [ "$a" == "1" ]; then
-					pkexec apt-fast -y install $pass
+					/usr/bin/pkexec /usr/sbin/apt-fast -y install $pass
 				else
-					pkexec apt-fast install $pass
+					/usr/bin/pkexec /usr/sbin/apt-fast install $pass
 				fi
 			} && {
 			#update flags if snapd or flatpak get installed
 				if [ "$pass" == "flatpak" ]; then
-					echo "" >> "$cache"/flatpak.flag
-					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+					/bin/echo "" >> "$cache"/flatpak.flag
+					/usr/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 				elif [ "$pass" == "snapd" ]; then
-					echo "" >> "$cache"/snapd.flag
+					/bin/echo "" >> "$cache"/snapd.flag
 				fi
 			}) || return 2
 		else
 			({
 				#install software using apt, due to the unavailability of apt-fast
 				if [ "$a" == "1" ]; then
-					pkexec apt -y install $pass
+					/usr/bin/pkexec /usr/bin/apt -y install $pass
 				else
-					pkexec apt install $pass
+					/usr/bin/pkexec /usr/bin/apt install $pass
 				fi
 			} && {
 			#update flags if snapd, flatpak, or apt-fast get installed
 				if [ "$pass" == "apt-fast" ]; then
-					echo "" >> "$cache"/apt-fast.flag
+					/bin/echo "" >> "$cache"/apt-fast.flag
 				elif [ "$pass" == "snapd" ]; then
-					echo "" >> "$cache"/snapd.flag
+					/bin/echo "" >> "$cache"/snapd.flag
 				elif [ "$pass" == "flatpak" ]; then
-					echo "" >> "$cache"/flatpak.flag
-					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+					/bin/echo "" >> "$cache"/flatpak.flag
+					/usr/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 				fi
 			}) || return 2
 		fi
 	else
-		echo -e "\nThis package is already installed.\n"
+		/bin/echo -e "\nThis package is already installed.\n"
 		if [ "$1" == "-i" ] || [ "$1" == "--install" ]; then
 			return 1
 		else
@@ -254,9 +254,9 @@ aptinstall () {
 #install software, using a more automatic method, from GitHub
 gitautoinst () {
 	{
-		pkexec "$cache"/bin/gitautoinst.sh "$HOME" "$user" "$pass"
+		/usr/bin/pkexec "$cache"/bin/gitautoinst.sh "$HOME" "$user" "$pass"
 	} || {
-		echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -267,68 +267,68 @@ flatinstall () {
 		loop=1
 		while [ "$loop" == "1" ]; do
 			#search for the desired package, to ensure it exists
-			q=$(flatpak search "$pass")
-			r=$(echo "$q" | awk '{print $1}')
+			q=$(/usr/bin/flatpak search "$pass")
+			r=$(/bin/echo "$q" | /usr/bin/awk '{print $1}')
 			if [ "$r" == "No matches found" ]; then
 				#see if there are any flatpak repos added, this is a common
 				#issue with people new to flatpak. Checking and adding it for them
 				#then rechecking just saves them the pain
-				list=$(flatpak remotes)
-				if $(echo "$list" | grep -q 'flathub'); then
+				list=$(/usr/bin/flatpak remotes)
+				if $(/bin/echo "$list" | /bin/grep -q 'flathub'); then
 					#there are repos added, so the flatpak is at least not in these repos
 					#or just straight up does not exist
-					echo -e "\nNo installation candidates found.\n"
+					/bin/echo -e "\nNo installation candidates found.\n"
 					exit 1
 				else
 					#no repos where found. Add Flathub and try again.
-					flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+					/usr/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 					continue
 				fi
 			#check to see if it has one of three known flatpack domains. More domains will be added in the future
-			elif $(echo "$r" | grep -q "org.") || $(echo "$r" | grep -q "com.") || $(echo "$r" | grep -q "ws.") || $(echo "$r" | grep -q "net.") ||  $(echo "$r" | grep -q "io.") ||  $(echo "$r" | grep -q "work.") || $(echo "$r" | grep -q "nl.") || $(echo "$r" | grep -q "im.") || $(echo "$r" | grep -q "fr.") ||  $(echo "$r" | grep -q "cc.") ||  $(echo "$r" | grep -q "info.") ||  $(echo "$r" | grep -q "in.") ||  $(echo "$r" | grep -q "eu.") ||  $(echo "$r" | grep -q "edu.") ||  $(echo "$r" | grep -q "de.") ||  $(echo "$r" | grep -q "cx.") ||  $(echo "$r" | grep -q "us."); then
+			elif $(/bin/echo "$r" | /bin/grep -q "org.") || $(/bin/echo "$r" | /bin/grep -q "com.") || $(/bin/echo "$r" | /bin/grep -q "ws.") || $(/bin/echo "$r" | /bin/grep -q "net.") ||  $(/bin/echo "$r" | /bin/grep -q "io.") ||  $(/bin/echo "$r" | /bin/grep -q "work.") || $(/bin/echo "$r" | /bin/grep -q "nl.") || $(/bin/echo "$r" | /bin/grep -q "im.") || $(/bin/echo "$r" | /bin/grep -q "fr.") ||  $(/bin/echo "$r" | /bin/grep -q "cc.") ||  $(/bin/echo "$r" | /bin/grep -q "info.") ||  $(/bin/echo "$r" | /bin/grep -q "in.") ||  $(/bin/echo "$r" | /bin/grep -q "eu.") ||  $(/bin/echo "$r" | /bin/grep -q "edu.") ||  $(/bin/echo "$r" | /bin/grep -q "de.") ||  $(/bin/echo "$r" | /bin/grep -q "cx.") ||  $(/bin/echo "$r" | /bin/grep -q "us."); then
 				set -- "$r"
 				test="$2"
 				if [ -z "$test" ]; then	
 					#try installing the desired flatpak from each repo
-					list=$(flatpak remotes)
-					list1=$(echo "$list" | awk '{print $1}')
-					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
+					list=$(/usr/bin/flatpak remotes)
+					list1=$(/bin/echo "$list" | /usr/bin/awk '{print $1}')
+					/bin/echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
 					for entry in $list1; do
 						{
 							if [ "$a" == "1" ]; then
-								flatpak install -y "$entry" "$r"
+								/usr/bin/flatpak install -y "$entry" "$r"
 							else
-								flatpak install "$entry" "$r"
+								/usr/bin/flatpak install "$entry" "$r"
 							fi
 							break
 						} || { 
-							echo -e "\nFlatpak installation from $entry failed.\n"
+							/bin/echo -e "\nFlatpak installation from $entry failed.\n"
 						}
 					done
 					loop="0"
 				else
 					#for mutliple installation canditdates, ask which the user wishes to install.
-					echo -e "\nERROR: Multiple Installation Candidates Detected.\n"
-					echo -e "Which package would you like to install?\n$r\n"
+					/bin/echo -e "\nERROR: Multiple Installation Candidates Detected.\n"
+					/bin/echo -e "Which package would you like to install?\n$r\n"
 					read -p "Please copy-paste the name of the package here (Type \"exit\", \"break\", or \"end\" to exit): " int
 					#check if the user wants out. If they do, let them out
 					if [ "$int" == "exit" ] || [ "$int" == "break" ] || [ "$int" == "end" ]; then
 						exit 2
 					fi
 					#go through the install process for the designated flatpak package
-					list=$(flatpak remotes)
-					list1=$(echo "$list" | awk '{print $1}')
-					echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
+					list=$(/usr/bin/flatpak remotes)
+					list1=$(/bin/echo "$list" | /usr/bin/awk '{print $1}')
+					/bin/echo -e "\nAttempting to install $r as a Flatpak. Please wait . . . \n"
 					for entry in $list1; do
 						{
 							if [ "$a" == "1" ]; then
-								flatpak install -y "$entry" "$int"
+								/usr/bin/flatpak install -y "$entry" "$int"
 							else
-								flatpak install "$entry" "$int"
+								/usr/bin/flatpak install "$entry" "$int"
 							fi
 							break
 						} || { 
-							echo -e "\nFlatpak installation from $entry failed.\n"
+							/bin/echo -e "\nFlatpak installation from $entry failed.\n"
 						}
 					done
 					loop="0"
@@ -341,7 +341,7 @@ flatinstall () {
 				#		OR
 				#	B. Does not contain the name of a flatpak
 				#In fact, lets print that.
-				echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+				/bin/echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 				#There. Bit long, but it was needed. 
 				#Alright. Lets end this puppy.
 				loop="0"
@@ -354,7 +354,7 @@ flatinstall () {
 			#Tell them they don't have flatpak
 			#Also, if the user wants to mrai to use flatpak they have to install it through mrai so 
 			#it can make the flag file. Otherwise it won't work.
-			echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
+			/bin/echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
 			exit 2
 		else
 			#they didn't call it so not as big a deal. Lets just return, not exit.
@@ -369,24 +369,24 @@ snapinstall () {
 	if [ -f "$cache"/snapd.flag ]; then
 		#check for the app we want
 		for each in $pass; do
-			list=$(snap list)
-			if $(echo "$list" | grep -q "$each"); then
+			list=$(/usr/bin/snap list)
+			if $(/bin/echo "$list" | /bin/grep -q "$each"); then
 				continue
 			else
 				new="$new $each"
 			fi
 		done
 		for each in $pass; do
-			if $(echo "$new" | grep -q "$each"); then
+			if $(/bin/echo "$new" | /bin/grep -q "$each"); then
 				verify="$verify 1"
 			else
 				continue
 			fi
 		done
-		echo "$verify" | grep -q "1"
+		/bin/echo "$verify" | /bin/grep -q "1"
 		check=$?
 		if [ "$check" != "0" ]; then
-			echo -e "\nAll passed packages are already installed.\n"
+			/bin/echo -e "\nAll passed packages are already installed.\n"
 			exit 1
 		else
 			pass="$new"
@@ -395,11 +395,11 @@ snapinstall () {
 			#try to install the snap normally. This is prefered over classic snaps
 			#for security reasons due to it's comperably lacking amount of access to the user's system
 			#as compared to classic snaps
-			snap install $pass || read -p "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
+			/usr/bin/snap install $pass || read -p "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ ! -z $ans ]; then
 				#check to see if they are cool with the classic snaps, and if so install it. Or at least try to.
 				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-					snap install $pass --classic || echo -e "\nSnap installation failed.\n"
+					/usr/bin/snap install $pass --classic || /bin/echo -e "\nSnap installation failed.\n"
 				else
 					return 2
 				fi
@@ -413,7 +413,7 @@ snapinstall () {
 			#Tell them they don't have snapd
 			#Also, if the user wants to mrai to use snapd they have to install it through mrai so 
 			#it can make the flag file. Otherwise it won't work.
-			echo -e "\nSorry. Package 'snapd' is not installed. Please run {mrai -ia snapd} to install it.\n"
+			/bin/echo -e "\nSorry. Package 'snapd' is not installed. Please run {mrai -ia snapd} to install it.\n"
 			exit 2
 		else
 			#they didn't call it so not as big a deal. Lets just return, not exit.
@@ -425,63 +425,63 @@ snapinstall () {
 #install from GitHub using manual method
 gitmaninstall () {
 	cd $HOME
-	mkdir .mrai
+	/bin/mkdir .mrai
 	cd .mrai
 	#check the passed URL's syntax
-	if $(echo "$pass" | grep -q 'https://github.com/') || $(echo "$pass" | grep -q 'http://github.com/'); then
+	if $(/bin/echo "$pass" | /bin/grep -q 'https://github.com/') || $(/bin/echo "$pass" | /bin/grep -q 'http://github.com/'); then
         	git clone "$pass"
-	elif $(echo "$pass" | grep -q 'github.com/'); then
+	elif $(/bin/echo "$pass" | /bin/grep -q 'github.com/'); then
 	        git clone https://$pass
 	else 
 	        git clone https://github.com/$pass
 	fi
-	pass1=$(echo $pass | sed 's/.*\///')
+	pass1=$(/bin/echo $pass | /bin/sed 's/.*\///')
 	cd $pass1
-	echo -e "\n$(ls)\n"
+	/bin/echo -e "\n$(/bin/ls)\n"
 	#get the file the user needs to run to install their software
 	read -p "Which of the above files would you like to try to run in order to install $z? (Case-Sensitive) : " run
 	#check if the indicated file needs to run as root. Cause we can do that . . . indirectly.
 	read -p "Should this file be run with root privleges? [y/N]: " ans
-	ans=$(echo "$ans" | awk '{print tolower($0)}')
+	ans=$(/bin/echo "$ans" | /usr/bin/awk '{print tolower($0)}')
 	if [ "$ans" == "y" ]; then
 		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
-		chmod +x $(pwd)/$run
+		/bin/chmod +x $(/bin/pwd)/$run
 		#run as root
-		pkexec $(pwd)/$run
+		/usr/bin/pkexec $(/bin/pwd)/$run
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
-		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
+		/bin/mkdir "$gitmancache"/"$pass1" && /bin/cp "$run" "$gitmancache"/"$pass1" || return 2
 		#write necissary info into the flag, to keep the number of files down
-		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
-		echo "RUN_AS_ROOT=yes" >> "$gitmancache"/man.flag
-		echo "RUN=$run" >> "$gitmancache"/man.flag
+		/bin/echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
+		/bin/echo "RUN_AS_ROOT=yes" >> "$gitmancache"/man.flag
+		/bin/echo "RUN=$run" >> "$gitmancache"/man.flag
 	elif [ "$ans" == "n" ]; then
 		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
-		chmod +x $(pwd)/$run
+		/bin/chmod +x $(/bin/pwd)/$run
 		#run it
-		exec $(pwd)/$run
+		exec $(/bin/pwd)/$run
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
-		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
+		/bin/mkdir "$gitmancache"/"$pass1" && /bin/cp "$run" "$gitmancache"/"$pass1" || return 2
 		#write necissary info into the flag, to keep the number of files down
-		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
-		echo "RUN_AS_ROOT=no" >> "$gitmancache"/man.flag
-		echo "RUN=$run" >> "$gitmancache"/man.flag
+		/bin/echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
+		/bin/echo "RUN_AS_ROOT=no" >> "$gitmancache"/man.flag
+		/bin/echo "RUN=$run" >> "$gitmancache"/man.flag
 	elif [ "$ans" == "cancel" ] || [ "$ans" == "exit" ] || [ "$ans" == "end" ]; then
-		echo -e "\nAborting . . .\n"
+		/bin/echo -e "\nAborting . . .\n"
 	else
 		#this will probably happen to someone at some point.
 		#WE DO NOT RUN ANYTHING, I REPEAT, ANYTHING, AS ROOT BY DEFAULT
 		#THIS PRESENTS A SECURITY RISK AND SHOULD NEVER BE DONE
-		echo -e "\nInput not recognized. Running without root privileges\n"
+		/bin/echo -e "\nInput not recognized. Running without root privileges\n"
 		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
-		chmod +x $(pwd)/$run
+		/bin/chmod +x $(/bin/pwd)/$run
 		#run it
-		exec $(pwd)/$run
+		exec $(/bin/pwd)/$run
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
-		mkdir "$gitmancache"/"$pass1" && cp "$run" "$gitmancache"/"$pass1" || return 2
+		/bin/mkdir "$gitmancache"/"$pass1" && /bin/cp "$run" "$gitmancache"/"$pass1" || return 2
 		#write necissary info into the flag, to keep the number of files down
-		echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
-		echo "RUN_AS_ROOT=null" >> "$gitmancache"/man.flag
-		echo "RUN=$run" >> "$gitmancache"/man.flag
+		/bin/echo "ADDRESS=$pass" >> "$gitmancache"/man.flag
+		/bin/echo "RUN_AS_ROOT=null" >> "$gitmancache"/man.flag
+		/bin/echo "RUN=$run" >> "$gitmancache"/man.flag
 	fi
 }
 
@@ -490,69 +490,69 @@ aptremove () {
 	#remove the software
 	if [ -f "$cache"/apt-fast.flag ]; then
 		if [ "$a" == "1" ]; then
-			pkexec apt-fast -y purge "$pass"
+			/usr/bin/pkexec /usr/sbin/apt-fast -y purge "$pass"
 		else
-			pkexec apt-fast purge "$pass"
+			/usr/bin/pkexec /usr/sbin/apt-fast purge "$pass"
 		fi
 	else
 		if [ "$a" == "1" ]; then
-			pkexec apt -y purge "$pass"
+			/usr/bin/pkexec /usr/bin/apt -y purge "$pass"
 		else
-			pkexec apt purge "$pass"
+			/usr/bin/pkexec /usr/bin/apt purge "$pass"
 		fi
 	fi
 	#check if the software removed was apt-fast, snapd, or flatpak
 	if [ "$pass" == "apt-fast" ]; then
 		#remove apt-fast.flag
-		rm "$cache"/apt-fast.flag
+		/bin/rm "$cache"/apt-fast.flag
 	elif [ "$pass" == "snapd" ]; then
 		#remove snapd.flag
-		rm "$cache"/snapd.flag
+		/bin/rm "$cache"/snapd.flag
 	elif [ "$pass" == "flatpak" ]; then
 		#remove flatpak.flag
-		rm "$cache"/flatpak.flag
+		/bin/rm "$cache"/flatpak.flag
 	fi
 }
 
 #remove apps installed through GitHub
 gitremove () {
 	#check if the passed app is a git-auto app
-	if $(gitautolist | grep -q "$pass"); then
+	if $(gitautolist | /bin/grep -q "$pass"); then
 		#cd into the appropriate directory
 		cd "$gitautocache"/"$pass"
 		#check for a Makefile
-		if $(echo "$(ls)" | grep -q "Makefile"); then
+		if $(/bin/echo "$(/bin/ls)" | /bin/grep -q "Makefile"); then
 			#try make uninstall and make remove, cause they sometimes work
 			{
-				make uninstall || make remove
+				/usr/bin/make uninstall || /usr/bin/make remove
 			} && {
 				#something went right, so remove the files that mrai held on to so that it could
 				#delete or update the app later
 				cd ..
-				rm -rf "$pass"
-				echo -e "\n$pass has been removed.\n"
+				/bin/rm -rf "$pass"
+				/bin/echo -e "\n$pass has been removed.\n"
 				exit 0
 			}
 		else
-			echo -e "\nWe're sorry. No Makefile could be found. Therefore, mrai cannot uninstall $z\n"
+			/bin/echo -e "\nWe're sorry. No Makefile could be found. Therefore, mrai cannot uninstall $z\n"
 		fi
 	#check if the passed app is a git-man app if not a git-auto
-	elif $(gitmanlist | grep -q "$pass"); then
+	elif $(gitmanlist | /bin/grep -q "$pass"); then
 		#cd into the proper directory
 		cd "$gitmancache"/"$pass"
 		#read the *.flag file and parse the info needed from it
-		flag=$(ls | grep "man.flag")
-		root=$(cat $flag | grep "RUN_AS_ROOT=")
-		run=$(cat $flag | grep "RUN=")
-		run=$(echo $run | sed 's/RUN=//')
+		flag=$(/bin/ls | /bin/grep "man.flag")
+		root=$(/bin/cat $flag | /bin/grep "RUN_AS_ROOT=")
+		run=$(/bin/cat $flag | /bin/grep "RUN=")
+		run=$(/bin/echo $run | /bin/sed 's/RUN=//')
 		#check if the designated file needs to be run as root
 		if [ "$root" == "RUN_AS_ROOT=yes" ]; then
-			echo -e "\nAttempting to uninstall. Please wait . . .\n"
+			/bin/echo -e "\nAttempting to uninstall. Please wait . . .\n"
 			sent=0
 			num=1
 			#try different commands to the file indicated in the *.flag file
 			while [ "$sent" == "0" ]; do
-				echo -e "\nTry $num . . .\n"
+				/bin/echo -e "\nTry $num . . .\n"
 				if [ "$num" == "1" ]; then
 					opt="remove"
 				elif [ "$num" == "2" ]; then
@@ -562,20 +562,20 @@ gitremove () {
 				elif [ "$num" == "4" ]; then
 					opt="--uninstall"
 				else
-					echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2
+					/bin/echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2
 				fi
-				#Sleep so the user can read what we just echoed out
-				sleep 3s
+				#Sleep so the user can read what we just /bin/echoed out
+				/bin/sleep 3s
 				#run the file with the designated option as root
-				(( pkexec $(pwd)/"$run" "$opt" ) && ( sent=1 )) || ( ((num+=1)) )
+				(( /usr/bin/pkexec $(/bin/pwd)/"$run" "$opt" ) && ( sent=1 )) || ( ((num+=1)) )
 			done
 		elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
-			echo -e "\nAttempting to uninstall. Please wait . . .\n"
+			/bin/echo -e "\nAttempting to uninstall. Please wait . . .\n"
 			sent=0
 			num=1
 			#try different commands to the file indicated in the *.flag file
 			while [ "$sent" == "0" ]; do
-				echo -e "\nTry $num . . .\n"
+				/bin/echo -e "\nTry $num . . .\n"
 				if [ "$num" == "1" ]; then
 					opt="remove"
 				elif [ "$num" == "2" ]; then
@@ -585,22 +585,22 @@ gitremove () {
 				elif [ "$num" == "4" ]; then
 					opt="--uninstall"
 				else
-					echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2
+					/bin/echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2
 				fi
-				#Sleep so the user can read what we just echoed out
-				sleep 3s
+				#Sleep so the user can read what we just /bin/echoed out
+				/bin/sleep 3s
 				#run the file with the designated option, BUT NOT AS ROOT
-				(( exec $(pwd)/"$run" "$opt" ) && ( sent=1 )) || ( ((num+=1)) )
+				(( exec $(/bin/pwd)/"$run" "$opt" ) && ( sent=1 )) || ( ((num+=1)) )
 			done
 		else
 			#Okay, if we get down here, something fucked up.
 			#The contents of ANY *.flag file made by one of the two git install functions (see gitmaninstall and gitautoinst)
 			#should contain both an "ADDRESS" field and a "RUN_AS_ROOT" feild. RUN_AS_ROOT can only be a "yes", "no", or "null"
 			#if RUN_AS_ROOT is set to anything else, this will be displayed
-			echo -e "\nWe're sorry. The function gitremove has encountered an error. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n" && exit 2
+			/bin/echo -e "\nWe're sorry. The function gitremove has encountered an error. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n" && exit 2
 		fi
 	else
-		echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2
+		/bin/echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2
 	fi		
 }
 
@@ -609,12 +609,12 @@ flatremove () {
 	{
 		#flatpak doesn't need root, so not called as such
 		if [ "$a" == "1" ]; then
-			flatpak remove -y "$pass"
+			/usr/bin/flatpak remove -y "$pass"
 		else
-			flatpak remove "$pass"
+			/usr/bin/flatpak remove "$pass"
 		fi
 	} || {
-		echo -e "\nWe're sorry. Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -624,9 +624,9 @@ snapremove () {
 	{
 		#snap elevates itself to root, so not gonna bother calling it as root. That way, more of it runs without root access,
 		#allowing it to be more secure, while also saving space in this file
-		snap remove "$pass"
+		/usr/bin/snap remove "$pass"
 	} || {
-		echo -e "\nWe're sorry. Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -635,29 +635,29 @@ snapremove () {
 gitupdate () {
 	#check first to see if gitupdate got passed an empty or null string. Cause why bother if nothing to use?
 	if [ "$pass" == " " ] || [ "$pass" == "" ]; then
-		echo -e "\nNo Apps installed from GitHub through mrai.\n"
+		/bin/echo -e "\nNo Apps installed from GitHub through mrai.\n"
 		return 0
 	fi
 	cd "$cache"
 	#do this for each app installed from GitHub
 	for each in $pass; do
 		pass1="$each"
-		if $( ls | grep -q '$z'); then
+		if $( /bin/ls | /bin/grep -q '$z'); then
 			cd "$pass1"
 			#read the *.flag file and parse it for info
-			flag=$(ls | grep ".flag")
-			root=$(cat $flag | grep "RUN_AS_ROOT=")
-			add=$(cat $flag | grep "ADDRESS=")
-			call=$(echo $add | sed 's/ADDRESS=//')
-			run=$(cat $flag | grep "RUN=")
-			run=$(echo $run | sed 's/RUN=//')
-			back=$(pwd)
-			del=$(find -type f -name "*.deb")
+			flag=$(/bin/ls | /bin/grep ".flag")
+			root=$(/bin/cat $flag | /bin/grep "RUN_AS_ROOT=")
+			add=$(/bin/cat $flag | /bin/grep "ADDRESS=")
+			call=$(/bin/echo $add | /bin/sed 's/ADDRESS=//')
+			run=$(/bin/cat $flag | /bin/grep "RUN=")
+			run=$(/bin/echo $run | /bin/sed 's/RUN=//')
+			back=$(/bin/pwd)
+			del=$(/usr/bin/find -type f -name "*.deb")
 			cd $HOME/.mrai/"$pass1"
 			#"Call home" and get the new software
-			if $(echo "$call" | grep -q 'https://github.com/') || $(echo "$call" | grep -q 'http://github.com/'); then
+			if $(/bin/echo "$call" | /bin/grep -q 'https://github.com/') || $(/bin/echo "$call" | /bin/grep -q 'http://github.com/'); then
 				git clone "$call"
-			elif $(echo "$call" | grep -q 'github.com/'); then
+			elif $(/bin/echo "$call" | /bin/grep -q 'github.com/'); then
 	        		git clone https://$call
 			else
 				git clone https://github.com/$call
@@ -665,24 +665,19 @@ gitupdate () {
 			#check if $run is set, if it isn't, we are using the Makefile method of doing things
 			if [[ -z $run ]]; then
 				#some Makefiles have an update function. Others you have to reinstall
-				( make update ) || ( make && make install ) || echo -e "\nMakefile update method failed.\n"
+				( /usr/bin/make update ) || ( /usr/bin/make && /usr/bin/make install ) || /bin/echo -e "\nMakefile update method failed.\n"
 				#clean up
-				rm "$back"/"$del"
-				deb=$(find -type f -name "*.deb")
-				cp "$deb" "$gitautocache"/"$pass1"
+				/bin/rm "$back"/"$del"
+				deb=$(/usr/bin/find -type f -name "*.deb")
+				/bin/cp "$deb" "$gitautocache"/"$pass1"
 			else
 				#check if we need to run this as root
 				if [ "$root" == "RUN_AS_ROOT=yes" ]; then
 					#run the file as root
-					pkexec $(pwd)/$run $opt
-					#make a backup *.deb then copy it to the app's archive (or cache. it's both tbh) directory
-					pkexec checkinstall
-					rm "$back"/"$del"
-					deb=$(find -type f -name "*.deb")
-					cp "$deb" "$gitautocache"/"$pass1"
+					/usr/bin/pkexec $(/bin/pwd)/$run $opt
 				elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
 					#run the designated file, but NOT AS ROOT
-					exec $(pwd)/$run $opt
+					exec $(/bin/pwd)/$run $opt
 					#if the *.flag file's RUN_AS_ROOT is set to null, ask if the user wants to reset it to either yes or no
 					#none of the *.flag files should have a RUN_AS_ROOT set as null, but it is possible to happen do to the 
 					#complexity of programming it to re-ask if the passed string doesn't match a certain set of criteria
@@ -690,18 +685,18 @@ gitupdate () {
 						#fix the null value
 						read -p "Should this be run as root in the future? [y/N]: " ans
 						if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-							sed -i 's/RUN_AS_ROOT=null/RUN_AS_ROOT=yes/g' $flag
+							/bin/sed -i 's/RUN_AS_ROOT=null/RUN_AS_ROOT=yes/g' $flag
 						elif [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
-							sed -i 's/RUN_AS_ROOT=null/RUN_AS_ROOT=no/g' $flag
+							/bin/sed -i 's/RUN_AS_ROOT=null/RUN_AS_ROOT=no/g' $flag
 						else
-							echo -e "\nAnswer not recognized. We will ask again next time.\n"
+							/bin/echo -e "\nAnswer not recognized. We will ask again next time.\n"
 						fi
 					fi
 				fi
 			fi
 		else
 			#gotta have some sorta error handling XD
-			echo -e "\nThis app does not appear to be installed from GitHub.\n"
+			/bin/echo -e "\nThis app does not appear to be installed from GitHub.\n"
 		fi
 	done
 }
@@ -711,11 +706,11 @@ flatupdate () {
 	#check if the flatpak.flag file is there, cause why use flatpak if flatpak isn't even installed?
 	if [ -f "$cache"/flatpak.flag ]; then
 		#update flatpak packages
-		echo -e "\nUpdating Flatpaks. Please wait . . . \n"
-		flatpak update
-		echo ""
+		/bin/echo -e "\nUpdating Flatpaks. Please wait . . . \n"
+		/usr/bin/flatpak update
+		/bin/echo ""
 	elif [ "$1" == "-uf" ] || [ "$2" == "--flat" ]; then
-		echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
+		/bin/echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
 		exit 2
 	fi
 }
@@ -723,21 +718,21 @@ flatupdate () {
 #figure out how a specific app is installed
 checkinstalltype () {
 	#check how a given app is installed by checking the list of installed apps in each
-	#then grepping over that list and looking for the app
+	#then /bin/grepping over that list and looking for the app
 	type=""
-	if $(dpkg -l | grep -q "ii  $pass"); then
+	if $(/usr/bin/dpkg -l | /bin/grep -q "ii  $pass"); then
 		type=0
 	fi
-	if [ -f "$cache"/snapd.flag ] && $(snap list | grep -q "$pass"); then
+	if [ -f "$cache"/snapd.flag ] && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
 		type="$type 1"
 	fi
-	if [ -f "$cache"/flatpak.flag ] && $(flatpak list  | grep -q "$pass"); then
+	if [ -f "$cache"/flatpak.flag ] && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
 		type="$type 2"
 	fi
-	if $(ls --group-directories-first "$gitautocache" | grep -q "$pass"); then
+	if $(/bin/ls --group-directories-first "$gitautocache" | /bin/grep -q "$pass"); then
 		type="$type 3"
 	fi
-	if $(ls --group-directories-first "$gitmancache" | grep -q "$pass"); then
+	if $(/bin/ls --group-directories-first "$gitmancache" | /bin/grep -q "$pass"); then
 		type="$type 4"
 	fi
 	if [ "$type" == "" ]; then
@@ -748,9 +743,9 @@ checkinstalltype () {
 #list apps installed from GitHub that where installed using automatic method
 gitautolist () {
 	{
-		ls --group-directories-first $gitautocache
+		/bin/ls --group-directories-first $gitautocache
 	} || {
-		echo -e "\nWe're sorry. Function gitautolist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. Function gitautolist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -758,9 +753,9 @@ gitautolist () {
 #list apps installed from GitHub that where installed using manual method
 gitmanlist () {
 	{
-		ls --group-directories-first $gitmancache
+		/bin/ls --group-directories-first $gitmancache
 	} || {
-		echo -e "\nWe're sorry. Function gitmanlist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. Function gitmanlist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -769,12 +764,12 @@ gitmanlist () {
 clean () {
 	{
 		if [ "$a" == "1" ]; then
-			pkexec "$cache"/bin/clean.sh -y $user
+			/usr/bin/pkexec "$cache"/bin/clean.sh -y $user
 		else
-			pkexec "$cache"/bin/clean.sh $user
+			/usr/bin/pkexec "$cache"/bin/clean.sh $user
 		fi
 	} || {
-		echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/Batcastle/mrai/issues\n"
 		exit $?
 	}
 }
@@ -782,7 +777,7 @@ clean () {
 #goto function. Cause Windows has it but BASH doesn't \_(*_*)_/
 goto () {
     label=$1
-    cmd=$(sed -n "/$label:/{:a;n;p;ba};" $0 | grep -v ':$')
+    cmd=$(/bin/sed -n "/$label:/{:a;n;p;ba};" $0 | /bin/grep -v ':$')
     eval "$cmd"
     exit
 }
@@ -944,7 +939,7 @@ while getopts 'uSircl' flag; do
 						if [ "$1" == "-u" ]; then
 							u="a s f g"
 						else
-							echo -e "\nSorry. This option is not recognized.\n"
+							/bin/echo -e "\nSorry. This option is not recognized.\n"
 							exit 1
 						fi
 						;;
@@ -978,7 +973,7 @@ while getopts 'uSircl' flag; do
 						if [ "$1" == "-S" ]; then
 							S="a"
 						else
-							echo -e "\nSorry. This option is not recognized.\n"
+							/bin/echo -e "\nSorry. This option is not recognized.\n"
 							exit 1
 						fi ;;
 				esac
@@ -1037,7 +1032,7 @@ while getopts 'uSircl' flag; do
 						if [ "$1" == "-i" ]; then
 							i="l"
 						else
-							echo -e "\nSorry. This option is not recognized.\n"
+							/bin/echo -e "\nSorry. This option is not recognized.\n"
 							exit 1
 						fi ;;
 				esac
@@ -1061,14 +1056,14 @@ while getopts 'uSircl' flag; do
 		l) LIST=1;;
 		#all else
 		*)
-			echo -e "\nError: Option not recognized.\n\n$h\n"
+			/bin/echo -e "\nError: Option not recognized.\n\n$h\n"
 			exit 2;;
 	esac
 done
 #start:
 #check to make sure SOMETHING is set
 if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ]; then
-	echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
+	/bin/echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
 	exit 2
 else
 	#check for the install flags
@@ -1077,26 +1072,26 @@ else
 		if [ "$i" == "a" ]; then
 			#set $pass to $y that way aptinstall can use it
 			pass="$y"
-			pass=$(echo "$pass" | sed 's/,/\ /')
+			pass=$(/bin/echo "$pass" | /bin/sed 's/,/\ /')
 			( aptinstall && exit 0 ) || exit 2
 		#git sub-flag
-		elif $(echo "$i" | grep -q "g"); then
+		elif $(/bin/echo "$i" | /bin/grep -q "g"); then
 			#manual sub-flag
-			if $(echo "$i" | grep -q "gm"); then
+			if $(/bin/echo "$i" | /bin/grep -q "gm"); then
 				pass="$y"
 				( gitmaninstall && exit 0 ) || exit 2
 			#auto sub-flag
-			elif $(echo "$i" | grep -q "ga"); then
+			elif $(/bin/echo "$i" | /bin/grep -q "ga"); then
 				pass="$y"
 				( gitautoinst && exit 0 ) || exit 2
-			elif $(echo "$i" | grep -q "gb"); then
+			elif $(/bin/echo "$i" | /bin/grep -q "gb"); then
 				pass="$y"
 				( gitautoinst && exit 0 ) || ( gitmaninstall && exit 1 ) || exit 2
 			fi
 		#snap sub-flag
 		elif [ "$i" == "s" ]; then
 			pass="$2"
-			pass=$(echo "$pass" | sed 's/,/\ /')
+			pass=$(/bin/echo "$pass" | /bin/sed 's/,/\ /')
 			( snapinstall && exit 0 ) || exit 2
 		#flatpak sub-flag
 		elif [ "$i" == "f" ]; then
@@ -1104,7 +1099,7 @@ else
 			( flatinstall && exit 0 ) || exit 2
 		#none of the sub-flags where passed, so try ALL install methods until one works
 		elif [ "$i" == "l" ]; then
-			echo -e "\nAttempting to install\n"	
+			/bin/echo -e "\nAttempting to install\n"	
 			{
 				aptinstall
 			} || {
@@ -1117,11 +1112,11 @@ else
 			} || {
 				gitmaninstall
 			} || {
-				echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n"
+				/bin/echo -e "\nWe're sorry. All installation methods failed.\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n"
 				exit 2
 			}
 		else
-			echo -e "\nAn error has occured in main function. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
+			/bin/echo -e "\nAn error has occured in main function. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
 			exit 2
 		fi
 	#remove / uninstall flag
@@ -1129,7 +1124,7 @@ else
 		#check the way a certain app is installed so it can be properly removed
 		pass="$y"		
 		checkinstalltype
-		if $(echo "$type" | grep -q " "); then
+		if $(/bin/echo "$type" | /bin/grep -q " "); then
 			if [ "$type" == " 1" ]; then
 				snapremove
 			elif [ "$type" == " 2" ]; then
@@ -1145,34 +1140,34 @@ else
 						2) show="$show flatpak"; input="$input 3 for flatpak"; check="$check 3" ;;
 						3) show="$show Github_Automatic" ;;
 						4) show="$show Github_Manual" ;;
-						*) echo "There is an unrecognized value in \$type variable. Error in checkinstalltype"; exit 2 ;;
+						*) /bin/echo "There is an unrecognized value in \$type variable. Error in checkinstalltype"; exit 2 ;;
 					esac
 				done
-				if $(echo "$show" | grep -q "Github"); then
+				if $(/bin/echo "$show" | /bin/grep -q "Github"); then
 					input="$input 4 for Github Manual OR Automatic"
 					check="$check 4"
 				fi
-				echo -e "\nThere are mutliple apps which fit the package name passed installer.\n\nThese are installed through: $show\n\nFrom which package manager would you like to uninstall?"
+				/bin/echo -e "\nThere are mutliple apps which fit the package name passed installer.\n\nThese are installed through: $show\n\nFrom which package manager would you like to uninstall?"
 				read -p "$input. Select ONE: " ans
 				while [ ! -z $ans ]; do
-					if [ "$ans" == "1" ] && $(echo "$check" | grep -q "1"); then
+					if [ "$ans" == "1" ] && $(/bin/echo "$check" | /bin/grep -q "1"); then
 						aptremove
 						exit 0
-					elif [ "$ans" == "2" ] && $(echo "$check" | grep -q "2"); then
+					elif [ "$ans" == "2" ] && $(/bin/echo "$check" | /bin/grep -q "2"); then
 						snapremove
 						exit 0
-					elif [ "$ans" == "3" ] && $(echo "$check" | grep -q "3"); then
+					elif [ "$ans" == "3" ] && $(/bin/echo "$check" | /bin/grep -q "3"); then
 						flatremove
 						exit 0
-					elif [ "$ans" == "4" ] && $(echo "$check" | grep -q "4"); then
+					elif [ "$ans" == "4" ] && $(/bin/echo "$check" | /bin/grep -q "4"); then
 						gitremove
 						exit 0
 					elif [ "$ans" == "exit" ] || [ "$ans" == "cancel" ] || [ "$ans" == "EXIT" ] || [ "$ans" == "CANCEL" ]; then
-						echo -e "\nExiting . . .\n"
+						/bin/echo -e "\nExiting . . .\n"
 						exit 0
 					else
-						echo -e "\nUnrecognized Input passed. Please try again.\n"
-						echo -e "\nThere are mutliple apps which fit the package name passed installer.\n\nThese are installed through: $show\n\nFrom which package manager would you like to uninstall?"
+						/bin/echo -e "\nUnrecognized Input passed. Please try again.\n"
+						/bin/echo -e "\nThere are mutliple apps which fit the package name passed installer.\n\nThese are installed through: $show\n\nFrom which package manager would you like to uninstall?"
 						read -p "$input. Select ONE: " ans
 					fi
 				done
@@ -1180,11 +1175,11 @@ else
 		elif [ "$type" == "0" ]; then
 			aptremove
 		elif [ "$type" == "5" ]; then
-			echo -e "\nAccording to all our databases, this app is not installed.\n"
+			/bin/echo -e "\nAccording to all our databases, this app is not installed.\n"
 			exit 1
 		else
 			#if we get something other than a value from 1 and 5 set to $type, we have a SERIOUS issue. Please submit a bug report in this instance
-			echo -e "\nmrai has encountered an error in function {checkinstalltype}.\nPlease submit a bug report at https://github.com/Batcastle/mrai/issues.\n"
+			/bin/echo -e "\nmrai has encountered an error in function {checkinstalltype}.\nPlease submit a bug report at https://github.com/Batcastle/mrai/issues.\n"
 			exit 2
 		fi
 	#update flag
@@ -1203,26 +1198,26 @@ else
 				gitupdate
 			elif [[ "$x" == "a" ]]; then
 				if [ "$a" == "0" ]; then
-					if $(echo "$u" | grep -q "s"); then
-						pkexec aptupdate -s
+					if $(/bin/echo "$u" | /bin/grep -q "s"); then
+						/usr/bin/pkexec /bin/aptupdate -s
 					else
-						pkexec aptupdate
+						/usr/bin/pkexec /bin/aptupdate
 					fi
 				elif [ "$a" == "1" ]; then
-					if $(echo "$u" | grep -q "s"); then
-						pkexec aptupdate -sy
+					if $(/bin/echo "$u" | /bin/grep -q "s"); then
+						/usr/bin/pkexec /bin/aptupdate -sy
 					else
-						pkexec aptupdate -y
+						/usr/bin/pkexec /bin/aptupdate -y
 					fi
 				else
-					echo -e "\n We're sorry. An error has occured in the implementation of the assume-yes flag.\nPlease report this bug to\nhttps://github.com/Batcastle/mrai/issues\n"
+					/bin/echo -e "\n We're sorry. An error has occured in the implementation of the assume-yes flag.\nPlease report this bug to\nhttps://github.com/Batcastle/mrai/issues\n"
 					exit 2
 				fi
 			elif [[ "$x" == "s" ]]; then
-				if $(echo "$u" | grep -q "a"); then
+				if $(/bin/echo "$u" | /bin/grep -q "a"); then
 					continue
 				else
-					snapupdate
+					/bin/snapupdate
 				fi
 			else
 				continue
@@ -1231,35 +1226,35 @@ else
 	#search flag
 	elif [[ ! -z "$S" ]]; then
 		#apt sub-flag, only search from apt
-		if $(echo "$S" | grep -q "p"); then
-			apt search "$pass"
+		if $(/bin/echo "$S" | /bin/grep -q "p"); then
+			/usr/bin/apt search "$pass"
 		fi
 		#flatpak sub-flag, only search from flatpak
-		if $(echo "$S" | grep -q "f"); then
+		if $(/bin/echo "$S" | /bin/grep -q "f"); then
 			if [ -f "$cache"/flatpak.flag ]; then
-				flatpak search "$pass"
+				/usr/bin/flatpak search "$pass"
 			else
-				echo -e "\nFlatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n"
+				/bin/echo -e "\nFlatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n"
 			fi
 		fi
 		#snap sub-flag, only search from snap
-		if $(echo "$S" | grep -q "s"); then
-			snap search "$pass"
+		if $(/bin/echo "$S" | /bin/grep -q "s"); then
+			/usr/bin/snap search "$pass"
 		fi
 		#Manual GitHub sub-flag, only search apps installed using manual method from GitHub
-		if $(echo "$S" | grep -q "m"); then
-			list=$(gitmanlist | grep "$pass")
-			echo -e "\nInstalled through Manual Method:\n$list\n"
+		if $(/bin/echo "$S" | /bin/grep -q "m"); then
+			list=$(gitmanlist | /bin/grep "$pass")
+			/bin/echo -e "\nInstalled through Manual Method:\n$list\n"
 		fi
 		#Automatic GitHub sub-flag, only search apps installed using automatic method from GitHub
-		if $(echo "$S" | grep -q "o"); then
-			list=$(gitautolist | grep "$pass")
-			echo -e "\nInstalled through Automatic Method:\n$list\n"
+		if $(/bin/echo "$S" | /bin/grep -q "o"); then
+			list=$(gitautolist | /bin/grep "$pass")
+			/bin/echo -e "\nInstalled through Automatic Method:\n$list\n"
 		fi
 		#generel GitHub sub-flag, only search apps installed from GitHub, regardless of method
-		if $(echo "$S" | grep -q "l"); then
-			list1=$(gitmanlist | grep "$pass")
-			list2=$(gitautolist | grep "$pass")
+		if $(/bin/echo "$S" | /bin/grep -q "l"); then
+			list1=$(gitmanlist | /bin/grep "$pass")
+			list2=$(gitautolist | /bin/grep "$pass")
 			list="Installed through Manual Method:
 $list1
 
@@ -1268,21 +1263,21 @@ Installed through Automatic Method:
 $list2
 
 "
-			echo -e "\n$list\n"
+			/bin/echo -e "\n$list\n"
 		fi
 		#search EVERYTHING
 		if [ "$S" == "a" ]; then
-			list1=$(gitmanlist | grep "$pass")
-			list2=$(gitautolist | grep "$pass")
-			echo -e "\nApt packages:\n"
-			apt search "$pass"
+			list1=$(gitmanlist | /bin/grep "$pass")
+			list2=$(gitautolist | /bin/grep "$pass")
+			/bin/echo -e "\nApt packages:\n"
+			/usr/bin/apt search "$pass"
 			if [ -f "$cache"/flatpak.flag ]; then
-				echo -e "\nFlatpak Packages:\n"
-				flatpak search "$pass"
+				/bin/echo -e "\nFlatpak Packages:\n"
+				/usr/bin/flatpak search "$pass"
 			fi
 			if [ -f "$cache"/snapd.flag ]; then
-				echo -e "\nSnap Packages:\n"
-				snap search "$pass"
+				/bin/echo -e "\nSnap Packages:\n"
+				/usr/bin/snap search "$pass"
 			fi
 			list="Installed through Manual Method:
 $list1
@@ -1292,11 +1287,11 @@ Installed through Automatic Method:
 $list2
 
 "
-			echo -e "\nInstalled GitHub Apps:\n"
+			/bin/echo -e "\nInstalled GitHub Apps:\n"
 			if [ "$list" == " " ]; then
-				echo -e "No matching GitHub Apps Installed.\n"
+				/bin/echo -e "No matching GitHub Apps Installed.\n"
 			else
-				echo "$list"
+				/bin/echo "$list"
 			fi
 		fi
 	#clean flag
@@ -1304,18 +1299,18 @@ $list2
 		clean
 	elif [[ "$LIST" == "1" ]]; then
 		if [[ ! -z "$2" ]]; then
-			echo -e "\nApt:\n"
-			dpkg -l "$2"
+			/bin/echo -e "\nApt:\n"
+			/usr/bin/dpkg -l "$2"
 			if [ -f "$cache"/snapd.flag ]; then
-				echo -e "\nSnaps:\n"
-				snap list "$2"
+				/bin/echo -e "\nSnaps:\n"
+				/usr/bin/snap list "$2"
 			fi
 			if [ -f "$cache"/flatpak.flag ]; then
-				echo -e "\nFlatpaks:\n"
-				flatpak list -a | grep "$2"
+				/bin/echo -e "\nFlatpaks:\n"
+				/usr/bin/flatpak list -a | /bin/grep "$2"
 			fi
-			list1=$(gitmanlist | grep "$2")
-			list2=$(gitautolist | grep "$2")
+			list1=$(gitmanlist | /bin/grep "$2")
+			list2=$(gitautolist | /bin/grep "$2")
 			list="Installed through Manual Method:
 $list1
 
@@ -1324,18 +1319,18 @@ Installed through Automatic Method:
 $list2
 
 "
-			echo -e "\nInstalled GitHub Apps:\n"
-			echo "$list"
+			/bin/echo -e "\nInstalled GitHub Apps:\n"
+			/bin/echo "$list"
 		else
-			echo -e "\nApt:\n"
-			dpkg -l
+			/bin/echo -e "\nApt:\n"
+			/usr/bin/dpkg -l
 			if [ -f "$cache"/snapd.flag ]; then
-				echo -e "\nSnaps:\n"
-				snap list
+				/bin/echo -e "\nSnaps:\n"
+				/usr/bin/snap list
 			fi
 			if [ -f "$cache"/flatpak.flag ]; then
-				echo -e "\nFlatpaks:\n"
-				flatpak list -a
+				/bin/echo -e "\nFlatpaks:\n"
+				/usr/bin/flatpak list -a
 			fi
 			list1=$(gitmanlist)
 			list2=$(gitautolist)
@@ -1347,15 +1342,15 @@ Installed through Automatic Method:
 $list2
 
 "
-			echo -e "\nInstalled GitHub Apps:\n"
+			/bin/echo -e "\nInstalled GitHub Apps:\n"
 			if [ "$list" == "Installed through Manual Method: Installed through Automatic Method:" ]; then
-				echo -e "No GitHub Apps Installed.\n"
+				/bin/echo -e "No GitHub Apps Installed.\n"
 			else
-				echo "$list"
+				/bin/echo "$list"
 			fi
 		fi
 	#no recognized flags passed
 	else
-		echo -e "\n$h\n"
+		/bin/echo -e "\n$h\n"
 	fi
 fi
