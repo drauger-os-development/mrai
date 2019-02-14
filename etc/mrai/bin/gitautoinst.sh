@@ -3,7 +3,7 @@
 #
 #  gitautoinst.sh
 #  
-#  Copyright 2018 Thomas Castleman <draugeros@gmail.com>
+#  Copyright 2018 Thomas Castleman <contact@draugeros.ml>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

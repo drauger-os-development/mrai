@@ -3,7 +3,7 @@
 #
 #  aptupdate
 #  
-#  Copyright 2018 Thomas Castleman <draugeros@gmail.com>
+#  Copyright 2019 Thomas Castleman <contact@draugeros.ml>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.0.9-alpha5"
+version="0.1.0-alpha5"
 if [ "$1" == "--version" ]; then
   /bin/echo -e "\n$version\n"
   exit 0
@@ -38,7 +38,7 @@ done
 if [ "$y" == "0" ]; then
   #updating apt cache then updating install apt packages
   if [[ ! -f /etc/mrai/apt-fast.flag ]]; then
-    /usr/bin/apt update && /usr/bin/apt upgrade && /usr/bin/apt full-upgrade
+    /usr/bin/apt update && /usr/bin/apt full-upgrade
     /bin/echo -e "\nRemoving old dependencies . . . \n"
     #removing unneeded dependencies
     /usr/bin/apt autoremove
@@ -48,14 +48,14 @@ if [ "$y" == "0" ]; then
     /usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
     #proceed to update snaps, if mrai said to
   else
-    /usr/sbin/apt update && /usr/sbin/apt upgrade && /usr/sbin/apt dist-upgrade
+    /usr/sbin/apt-fast update && /usr/sbin/apt-fast dist-upgrade
     /bin/echo -e "\nRemoving old dependencies . . . \n"
     #removing unneeded dependencies
-    /usr/sbin/apt autoremove
+    /usr/bin/apt autoremove
     /bin/echo -e "\nCleaning up . . . \n"
     #cleaning up
-    /usr/sbin/apt clean
-    /usr/sbin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
+    /usr/bin/apt clean
+    /usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
     #proceed to update snaps, if mrai said to
   fi
 elif [ "$y" == "1" ]; then
@@ -71,14 +71,14 @@ elif [ "$y" == "1" ]; then
     /usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
     #proceed to update snaps, if mrai said to
   else
-    /usr/sbin/apt update && /usr/sbin/apt -y upgrade && /usr/sbin/apt -y dist-upgrade
+    /usr/sbin/apt-fast update && /usr/sbin/apt-fast -y dist-upgrade
     /bin/echo -e "\nRemoving old dependencies . . . \n"
     #removing unneeded dependencies
-    /usr/sbin/apt -y autoremove
+    /usr/bin/apt -y autoremove
     /bin/echo -e "\nCleaning up . . . \n"
     #cleaning up
-    /usr/sbin/apt clean
-    /usr/sbin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
+    /usr/bin/apt clean
+    /usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
     #proceed to update snaps, if mrai said to
   fi
 fi
