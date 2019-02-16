@@ -22,7 +22,7 @@
 #
 #first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.8.6-alpha6"
+version="0.8.7-alpha6"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -51,6 +51,7 @@ elif [ "$1" == "--add-repo" ]; then
 		else
 			/usr/bin/pkexec /usr/bin/add-apt-repository ppa:"$3"
 		fi
+		exit $?
 	elif [ "$2" == "-f" ] || [ "$2" == "--flat" ]; then
 		if $(/bin/echo "$3" | /bin/grep -q "http://") || $(/bin/echo "$3" | /bin/grep -q "https://"); then
 			read -p "What would you like to name this repo?: " name
@@ -59,6 +60,7 @@ elif [ "$1" == "--add-repo" ]; then
 			read -p "What would you like to name this repo?: " name
 			/usr/bin/flatpak remote-add --if-not-exists "$name" http://"$3"
 		fi
+		exit $?
 	else
 		/bin/echo -e "\nERROR: No package manager indicated\n"
 	fi
@@ -173,7 +175,7 @@ snapupdate () {
 	{
 		/bin/bash /bin/snapupdate
 	} || {
-		/bin/echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -256,7 +258,7 @@ gitautoinst () {
 	{
 		/usr/bin/pkexec "$cache"/bin/gitautoinst.sh "$HOME" "$user" "$pass"
 	} || {
-		/bin/echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -341,7 +343,7 @@ flatinstall () {
 				#		OR
 				#	B. Does not contain the name of a flatpak
 				#In fact, lets print that.
-				/bin/echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+				/bin/echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 				#There. Bit long, but it was needed. 
 				#Alright. Lets end this puppy.
 				loop="0"
@@ -487,31 +489,16 @@ gitmaninstall () {
 
 #remove apt packages
 aptremove () {
-	#remove the software
-	if [ -f "$cache"/apt-fast.flag ]; then
+	{
 		if [ "$a" == "1" ]; then
-			/usr/bin/pkexec /usr/sbin/apt-fast -y purge "$pass"
+			/usr/bin/pkexec "$cache"/bin/aptremove.sh 1 "$pass" "$user"
 		else
-			/usr/bin/pkexec /usr/sbin/apt-fast purge "$pass"
+			/usr/bin/pkexec "$cache"/bin/aptremove.sh "$pass" "$user"
 		fi
-	else
-		if [ "$a" == "1" ]; then
-			/usr/bin/pkexec /usr/bin/apt -y purge "$pass"
-		else
-			/usr/bin/pkexec /usr/bin/apt purge "$pass"
-		fi
-	fi
-	#check if the software removed was apt-fast, snapd, or flatpak
-	if [ "$pass" == "apt-fast" ]; then
-		#remove apt-fast.flag
-		/bin/rm "$cache"/apt-fast.flag
-	elif [ "$pass" == "snapd" ]; then
-		#remove snapd.flag
-		/bin/rm "$cache"/snapd.flag
-	elif [ "$pass" == "flatpak" ]; then
-		#remove flatpak.flag
-		/bin/rm "$cache"/flatpak.flag
-	fi
+	} || {
+		/bin/echo -e "\nWe're sorry. aptremove.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
+		exit $?
+	}
 }
 
 #remove apps installed through GitHub
@@ -597,7 +584,7 @@ gitremove () {
 			#The contents of ANY *.flag file made by one of the two git install functions (see gitmaninstall and gitautoinst)
 			#should contain both an "ADDRESS" field and a "RUN_AS_ROOT" feild. RUN_AS_ROOT can only be a "yes", "no", or "null"
 			#if RUN_AS_ROOT is set to anything else, this will be displayed
-			/bin/echo -e "\nWe're sorry. The function gitremove has encountered an error. Please fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n" && exit 2
+			/bin/echo -e "\nWe're sorry. The function gitremove has encountered an error. Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" && exit 2
 		fi
 	else
 		/bin/echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2
@@ -614,7 +601,7 @@ flatremove () {
 			/usr/bin/flatpak remove "$pass"
 		fi
 	} || {
-		/bin/echo -e "\nWe're sorry. Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -626,7 +613,7 @@ snapremove () {
 		#allowing it to be more secure, while also saving space in this file
 		/usr/bin/snap remove "$pass"
 	} || {
-		/bin/echo -e "\nWe're sorry. Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -745,7 +732,7 @@ gitautolist () {
 	{
 		/bin/ls --group-directories-first $gitautocache
 	} || {
-		/bin/echo -e "\nWe're sorry. Function gitautolist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. Function gitautolist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -755,7 +742,7 @@ gitmanlist () {
 	{
 		/bin/ls --group-directories-first $gitmancache
 	} || {
-		/bin/echo -e "\nWe're sorry. Function gitmanlist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. Function gitmanlist has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -769,7 +756,7 @@ clean () {
 			/usr/bin/pkexec "$cache"/bin/clean.sh $user
 		fi
 	} || {
-		/bin/echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/Batcastle/mrai/issues\n"
+		/bin/echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit $?
 	}
 }
@@ -1063,7 +1050,7 @@ done
 #start:
 #check to make sure SOMETHING is set
 if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ]; then
-	/bin/echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
+	/bin/echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"
 	exit 2
 else
 	#check for the install flags
@@ -1116,7 +1103,7 @@ else
 				exit 2
 			}
 		else
-			/bin/echo -e "\nAn error has occured in main function. Please file a bug report at https://github.com/Batcastle/mrai/issues\n"
+			/bin/echo -e "\nAn error has occured in main function. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"
 			exit 2
 		fi
 	#remove / uninstall flag
@@ -1179,7 +1166,7 @@ else
 			exit 1
 		else
 			#if we get something other than a value from 1 and 5 set to $type, we have a SERIOUS issue. Please submit a bug report in this instance
-			/bin/echo -e "\nmrai has encountered an error in function {checkinstalltype}.\nPlease submit a bug report at https://github.com/Batcastle/mrai/issues.\n"
+			/bin/echo -e "\nmrai has encountered an error in function {checkinstalltype}.\nPlease submit a bug report at https://github.com/drauger-os-development/mrai/issues.\n"
 			exit 2
 		fi
 	#update flag
@@ -1210,7 +1197,7 @@ else
 						/usr/bin/pkexec /bin/aptupdate -y
 					fi
 				else
-					/bin/echo -e "\n We're sorry. An error has occured in the implementation of the assume-yes flag.\nPlease report this bug to\nhttps://github.com/Batcastle/mrai/issues\n"
+					/bin/echo -e "\n We're sorry. An error has occured in the implementation of the assume-yes flag.\nPlease report this bug to\nhttps://github.com/drauger-os-development/mrai/issues\n"
 					exit 2
 				fi
 			elif [[ "$x" == "s" ]]; then
