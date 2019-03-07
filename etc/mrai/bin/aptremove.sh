@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.2-alpha7
+#VERSION 0.0.3-alpha8
 #make sure we have the right permissions, exit if we don't
 #it won't work anyways if we don't have the right permissions
 if [[ "$EUID" != "0" ]]; then
@@ -30,15 +30,37 @@ fi
 cache="/etc/mrai"
 if [ -f "$cache"/apt-fast.flag ]; then
 	if [ "$1" == "1" ]; then
-		/usr/sbin/apt-fast -y purge "$2"
+		{
+			/usr/sbin/apt-fast -y purge "$2"
+		} && {
+			/usr/sbin/apt-fast -y autoremove
+		}
 	else
-		/usr/sbin/apt-fast purge "$2"
+		{ 
+			/usr/sbin/apt-fast purge "$2"
+		} && {
+			read -p "Would you like mrai to clean up left-over, unused dependencies? [y/N]: " ans
+			if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
+				/usr/sbin/apt-fast autoremove
+			fi
+		}
 	fi
 else
 	if [ "$1" == "1" ]; then
-		/usr/bin/apt -y purge "$2"
+		{
+			/usr/bin/apt -y purge "$2"
+		} && {
+			/usr/bin/apt -y autoremove
+		}
 	else
-		/usr/bin/apt purge "$2"
+		{
+			/usr/bin/apt purge "$2"
+		} && (
+			read -p "Would you like mrai to clean up left-over, unused dependencies? [y/N]: " ans
+			if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
+				/usr/bin/apt autoremove
+			fi
+		)
 	fi
 fi
 #check if the software removed was apt-fast, snapd, or flatpak
