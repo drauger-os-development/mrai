@@ -20,9 +20,9 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#first off, mrai should not be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
+#first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.8.8-alpha6"
+version="0.8.9-alpha6"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -900,6 +900,32 @@ elif [ "$1" == "--clean" ]; then
 	exit 0
 elif [ "$1" == "--list" ]; then
 	LIST=1
+	test="2"
+	while [ "$test" != "1" ]; do
+		evaluator=${!test}
+		if [ -z $evaluator ] && [ "$test" != "2" ]; then
+			test=2
+			goto start
+			exit 0
+		fi
+		if [ "$evaluator" == "--apt" ]; then
+			L="$L p"
+		elif [ "$evaluator" == "--snap" ]; then
+			L="$L s"
+		elif [ "$evaluator" == "--flat" ]; then
+			L="$L f"
+		elif [ "$evaluator" == "--gm" ]; then
+			L="$L gm"
+		elif [ "$evaluator" == "--ga" ]; then
+			L="$L ga"
+		elif [ "$evaluator" == "--git" ]; then
+			L="$L gb"
+		else
+			L=${L:-"a"}
+			pass="$evaluator"
+		fi
+		(( test+=1 ))
+	done
 	goto start
 	exit 0
 fi
@@ -1040,7 +1066,26 @@ while getopts 'uSircl' flag; do
 					a=1
 				fi
 			fi;;
-		l) LIST=1;;
+		l) LIST=1
+			while getopts 'asfg' flag; do
+				case "${flag}" in
+					a) L="p" ;;
+					s) L="s" ;;
+					f) L="f" ;;
+					g) 
+						if [ "$1" == "-lg" ]; then
+							L="$L gb"
+							break
+						fi
+						while getopts 'ma' flag; do
+							case "${flag}" in
+								m) L="gm" ;;
+								a) L="ga" ;;
+								*) L="gb" ;;
+							esac
+						done ;;
+				esac
+			done;;
 		#all else
 		*)
 			/bin/echo -e "\nError: Option not recognized.\n\n$h\n"
@@ -1286,28 +1331,46 @@ $list2
 		clean
 	elif [[ "$LIST" == "1" ]]; then
 		if [[ ! -z "$2" ]]; then
-			/bin/echo -e "\nApt:\n"
-			/usr/bin/dpkg -l "$2"
-			if [ -f "$cache"/snapd.flag ]; then
-				/bin/echo -e "\nSnaps:\n"
-				/usr/bin/snap list "$2"
+			if $(/bin/echo "$L" | /bin/grep -q 'p'); then
+				/bin/echo -e "\nApt:\n"
+				/usr/bin/dpkg -l "$2"
+				/bin/echo ""
 			fi
-			if [ -f "$cache"/flatpak.flag ]; then
-				/bin/echo -e "\nFlatpaks:\n"
-				/usr/bin/flatpak list -a | /bin/grep "$2"
+			if $(/bin/echo "$L" | /bin/grep -q 's'); then
+				if [ -f "$cache"/snapd.flag ]; then
+					/bin/echo -e "\nSnaps:\n"
+					/usr/bin/snap list "$2"
+					/bin/echo ""
+				else
+					/bin/echo -e "\nWe're sorry. Snapd is not available. Install it with \"mrai -ia snapd\"\n"
+				fi
 			fi
-			list1=$(gitmanlist | /bin/grep "$2")
-			list2=$(gitautolist | /bin/grep "$2")
-			list="Installed through Manual Method:
-$list1
-
-Installed through Automatic Method:
-
-$list2
-
-"
-			/bin/echo -e "\nInstalled GitHub Apps:\n"
-			/bin/echo "$list"
+			if $(/bin/echo "$L" | /bin/grep -q 'f'); then
+				if [ -f "$cache"/flatpak.flag ]; then
+					/bin/echo -e "\nFlatpaks:\n"
+					/usr/bin/flatpak list -a | /bin/grep "$2"
+					/bin/echo ""
+				else
+					/bin/echo -e "\nWe're sorry. Flatpak is not available. Install it with \"mrai -ia flatpak\"\n"
+				fi
+			fi
+			if $(/bin/echo "$L" | /bin/grep -q 'gm'); then
+				list1=$(gitmanlist | /bin/grep "$2")
+				/bin/echo -e "\nInstalled GitHub Apps:\nInstalled through Manual Method:\n$list1\n"
+			fi
+			if $(/bin/echo "$L" | /bin/grep -q 'ga'); then
+				list2=$(gitautolist | /bin/grep "$2")
+				/bin/echo -e "\nInstalled GitHub Apps:\nInstalled through Automatic Method:\n$list2\n"
+			fi
+			if $(/bin/echo "$L" | /bin/grep -q 'gb') && [ ! $(/bin/echo "$L" | /bin/grep -q 'ga') ] && [ ! $(/bin/echo "$L" | /bin/grep -q 'gm') ]; then
+				list1=$(gitmanlist | /bin/grep "$2")
+				list2=$(gitautolist | /bin/grep "$2")
+				/bin/echo -e "\nInstalled GitHub Apps:\nInstalled through Manual Method:\n$list1\n\nInstalled through Automatic Method:\n\n$list2\n\n"
+			elif $(/bin/echo "$L" | /bin/grep -q 'gb'); then
+				if $(/bin/echo "$L" | /bin/grep -q 'ga') || $(/bin/echo "$L" | /bin/grep -q 'gm'); then
+					/bin/echo -e "\nWe're sorry. You already specified either the manual only, or automatic only flags.\nPlease do not use the manual only, automatic only, or unspecified flags in conjunction\n"
+				fi
+			fi
 		else
 			/bin/echo -e "\nApt:\n"
 			/usr/bin/dpkg -l
