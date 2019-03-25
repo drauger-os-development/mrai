@@ -1,9 +1,8 @@
 Package: mrai
-Version: 0.8.6-alpha6
-Installed-Size: 124
-Maintainer: Thomas Castleman <contact@draugeros.ml>
+Version: 0.9.0-alpha7
+Maintainer: Thomas Castleman <contact@draugeros.org>
 Section: admin
-Homepage: https://github.com/Batcastle/mrai
+Homepage: https://github.com/drauger-os-development/mrai
 Architecture: all
 Priority: optional
 Suggests: apt-fast (>=1.9.5-1~ubuntu18.04.1)
