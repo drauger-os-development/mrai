@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.9.3-alpha7"
+version="0.9.4-alpha7"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -815,7 +815,7 @@ if [ "$1" == "--install" ]; then
 elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; then
 	test=2
 	while [ "$test" != "1" ]; do
-		evaluator=${!test}
+		evaluator="${!test}"
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			test=2
 			goto start
@@ -843,7 +843,7 @@ elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; th
 elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
 	test=2
 	while [ "$test" != "1" ]; do
-		evaluator=${!test}
+		evaluator="${!test}"
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			goto start
 			exit 0
@@ -869,7 +869,7 @@ elif [ "$1" == "--remove" ] || [ "$1" == "--uninstall" ]; then
 	pass="$2"
 	test=2
 	while [ "$test" != "1" ]; do
-		evaluator=${!test}
+		evaluator="${!test}"
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			goto start
 			exit 0
@@ -886,7 +886,7 @@ elif [ "$1" == "--clean" ]; then
 	c=1
 	test=2
 	while [ "$test" != "1" ]; do
-		evaluator=${!test}
+		evaluator="${!test}"
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			goto start
 			exit 0
@@ -902,7 +902,7 @@ elif [ "$1" == "--list" ]; then
 	LIST=1
 	test="2"
 	while [ "$test" != "1" ]; do
-		evaluator=${!test}
+		evaluator="${!test}"
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			test=2
 			goto start
