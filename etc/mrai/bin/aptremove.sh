@@ -20,9 +20,9 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.3-alpha8
+#VERSION 0.0.5-alpha9
 #make sure we have the right permissions, exit if we don't
-#it won't work anyways if we don't have the right permissions
+#this entire script won't work anyways if we don't have the right permissions
 if [[ "$EUID" != "0" ]]; then
     /bin/echo -e "\naptremove.sh has failed with fatal error: Not running with correct permission set.\nPlease file a bug report at https://github.com/drauger-os-development/mrai/issues\n" && exit 2
 fi
@@ -30,47 +30,25 @@ fi
 cache="/etc/mrai"
 if [ -f "$cache"/apt-fast.flag ]; then
 	if [ "$1" == "1" ]; then
-		{
-			/usr/sbin/apt-fast -y purge "$2"
-		} && {
-			/usr/sbin/apt-fast -y autoremove
-		}
+		/usr/sbin/apt-fast -y purge "$2"
 	else
-		{ 
-			/usr/sbin/apt-fast purge "$2"
-		} && {
-			read -p "Would you like mrai to clean up left-over, unused dependencies? [y/N]: " ans
-			if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-				/usr/sbin/apt-fast autoremove
-			fi
-		}
+		/usr/sbin/apt-fast purge "$1"
 	fi
 else
 	if [ "$1" == "1" ]; then
-		{
-			/usr/bin/apt -y purge "$2"
-		} && {
-			/usr/bin/apt -y autoremove
-		}
+		/usr/bin/apt -y purge "$2"
 	else
-		{
-			/usr/bin/apt purge "$2"
-		} && (
-			read -p "Would you like mrai to clean up left-over, unused dependencies? [y/N]: " ans
-			if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-				/usr/bin/apt autoremove
-			fi
-		)
+		/usr/bin/apt purge "$1"
 	fi
 fi
 #check if the software removed was apt-fast, snapd, or flatpak
-if [ "$2" == "apt-fast" ]; then
+if [ "$2" == "apt-fast" ] || [ "$1" == "apt-fast" ]; then
 	#remove apt-fast.flag
 	/bin/rm "$cache"/apt-fast.flag
-elif [ "$2" == "snapd" ]; then
+elif [ "$2" == "snapd" ] || [ "$1" == "snapd" ]; then
 	#remove snapd.flag
 	/bin/rm "$cache"/snapd.flag
-elif [ "$2" == "flatpak" ]; then
+elif [ "$2" == "flatpak" ] || [ "$1" == "flatpak" ]; then
 	#remove flatpak.flag
 	/bin/rm "$cache"/flatpak.flag
 fi
@@ -79,7 +57,10 @@ fi
 	if [ "$1" == "1" ]; then
 		"$cache"/bin/clean.sh -y $3
 	else
-		"$cache"/bin/clean.sh $3
+		read -p "Would you like mrai to clean up left-over, unused dependencies? [y/N]: " ans
+		if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
+			"$cache"/bin/clean.sh $2
+		fi
 	fi
 } || {
 	/bin/echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
