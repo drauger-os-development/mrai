@@ -1,8 +1,8 @@
 ## **mrai** ##
 #### By: Thomas Castleman 
 #### Lead Dev, Drauger OS
-#### <contact@draugeros.ml>
-#### https://draugeros.ml
+#### <contact@draugeros.org>
+#### https://draugeros.org
 ---
 mrai (meer-eye) 
 
