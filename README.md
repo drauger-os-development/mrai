@@ -39,12 +39,9 @@ If installing it from the GitHub repo, we suggest running:
 
 `cd mrai`
 
-`sudo ./RUN_TO_INSTALL_MRAI.sh`
+`./build.sh
 
-
-If installing the \*.deb, after downloading it:
-
-`sudo apt install /path/to/deb/file/mrai_x.x.x_all.deb`
+This will generate a \*.deb file in the parent directory which you can then install.
 
 Drauger OS users can install it by running `sudo apt install mrai`
 
