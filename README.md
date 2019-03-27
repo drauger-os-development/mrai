@@ -46,18 +46,6 @@ This will generate a \*.deb file in the parent directory which you can then inst
 Drauger OS users can install it by running `sudo apt install mrai`
 
 # Uninstalling
-To uninstall, run the following code:
+To uninstall, run:
 
-  If installed from GitHub repo:
-  
-  `sudo rm /bin/mrai /bin/aptupdate /bin/snapupdate /usr/share/man/man1/mrai.1.gz`
-  
-  `sudo rm -rf /etc/mrai`
-  
-  or run:
-  
-  `sudo ./RUN_TO_INSTALL_MRAI.sh remove`
-  
-  If installed from the .deb package or `apt`:
-  
   `sudo apt purge mrai`
