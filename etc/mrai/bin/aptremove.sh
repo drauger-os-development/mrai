@@ -53,6 +53,9 @@ elif [ "$2" == "flatpak" ] || [ "$1" == "flatpak" ]; then
 	/bin/rm "$cache"/flatpak.flag
 fi
 #clean up after ourselves
+if [ "$1" == "mrai" ] || [ "$2" == "mrai" ]; then
+	exit
+fi
 {
 	if [ "$1" == "1" ]; then
 		"$cache"/bin/clean.sh -y $3
