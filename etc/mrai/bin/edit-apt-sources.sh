@@ -30,10 +30,12 @@ int=0
 while [ "$int" == "0" ]; do
     if [ -f /home/$usr/.selected_editor ] || [ -f $cache/selected_editor.conf ]; then
         if [ ! -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
-            editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
+            #editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
+            eval $cache/selected_editor.conf
 
         elif [ -f /home/$usr/.selected_editor ] && [ ! -f $cache/selected_editor.conf ]; then
-            editor=$(/bin/grep /home/$usr/.selected_editor | /bin/sed 's/SELECTED_EDITOR=//g')
+            #editor=$(/bin/grep /home/$usr/.selected_editor | /bin/sed 's/SELECTED_EDITOR=//g')
+            eval $cache/selected_editor.conf
             /bin/cp /home/$usr/.selected_editor $cache/selected_editor.conf
             /bin/chown "$usr":"$usr" $cache/selected_editor.conf
         else
