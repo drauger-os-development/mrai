@@ -64,7 +64,7 @@ elif [ "$1" == "--add-repo" ]; then
 	else
 		/bin/echo -e "\nERROR: No package manager indicated\n"
 	fi
-elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos"] || [ "$1" == "--edit-apt-repos" ]; then
+elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--edit-apt-repos" ]; then
 	/bin/echo -e "\nTo enable an apt repo, remove the \"# \" (including the space) from the beginning of the line.\nTo disable a repo, just add the \"# \" back to the beginning of the line.\n\nLines beginning with \"deb-src\" are for source code.\n"
 	if [ -d /etc/apt/sources.list.d ]; then
 		sld=$(/bin/ls /etc/apt/sources.list.d)
