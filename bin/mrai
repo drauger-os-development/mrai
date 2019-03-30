@@ -1160,8 +1160,6 @@ while getopts 'uSircl' flag; do
 done
 #start:
 #check to make sure SOMETHING is set
-echo "$VERBOSE"
-echo "$S"
 if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ]; then
 	/bin/echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"
 	exit 2
