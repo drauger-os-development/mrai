@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.9.4-alpha7"
+version="0.9.5-alpha7"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -63,6 +63,45 @@ elif [ "$1" == "--add-repo" ]; then
 		exit $?
 	else
 		/bin/echo -e "\nERROR: No package manager indicated\n"
+	fi
+elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos"] || [ "$1" == "--edit-apt-repos" ]; then
+	/bin/echo -e "\nTo enable an apt repo, remove the \"# \" (including the space) from the beginning of the line.\nTo disable a repo, just add the \"# \" back to the beginning of the line.\n\nLines beginning with \"deb-src\" are for source code.\n"
+	if [ -d /etc/apt/sources.list.d ]; then
+		sld=$(/bin/ls /etc/apt/sources.list.d)
+		if [ "$sld" == "" ] || [ "$sld" == " " ]; then
+			/usr/bin/pkexec $cache/bin/edit-apt-sources.sh "/etc/apt/sources.list"
+		else
+			/bin/echo -e "\nYour sources.list.d directroy has config files in it as well.\n"
+			/bin/echo "1 /etc/apt/sources.list"
+			int=2
+			for each in $sld; do
+				/bin/echo "$int /etc/apt/sources.list.d/$each"
+				int=$((int+1))
+			done
+			read -p "Give the number of the file you would like to edit: [1-$int]: " choice
+			int=1
+			for each in $sld; do
+				if [ "$int" == "$choice" ]; then
+					if [ "$choice" == "1" ]; then
+						file="/etc/apt/sources.list"
+					else
+						file="/etc/apt/sources.list.d/$each"
+					fi
+					break
+				else
+					int=$((int=1))
+				fi
+			done
+			{
+				/usr/bin/pkexec $cache/bin/edit-apt-sources.sh "$file"
+			} && {
+				exit 0
+			} || {
+				exit $?
+			}
+		fi
+	else
+		/usr/bin/pkexec $cache/bin/edit-apt-sources.sh "/etc/apt/sources.list"
 	fi
 fi
 h="mrai Package Manager: the Multiple Repo App Installer
