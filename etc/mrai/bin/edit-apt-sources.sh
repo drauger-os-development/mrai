@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.5-alpha1
+#VERSION 0.1.0-alpha2
 set -e
 set -o pipefail
 file="$1"
@@ -51,7 +51,7 @@ while [ "$int" == "0" ]; do
     fi
 done
 {
-    /bin/cp $file "$file.back_up_mrai"
+    /bin/cp "$file" "$file.back_up_mrai"
     eval "$editor $file"
 } && {
     /bin/echo -e "\nUpdating Apt Repository Cache . . .\n"
