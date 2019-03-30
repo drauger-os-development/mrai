@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.1.0-alpha2
+#VERSION 0.1.1-alpha2
 set -e
 set -o pipefail
 file="$1"
@@ -30,18 +30,15 @@ int=0
 while [ "$int" == "0" ]; do
     if [ -f /home/$usr/.selected_editor ] || [ -f $cache/selected_editor.conf ]; then
         if [ ! -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
-            #editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
-            eval $cache/selected_editor.conf
+            editor=$(cat $cache/selected_editor.conf | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')
             int="1"
         elif [ -f /home/$usr/.selected_editor ] && [ ! -f $cache/selected_editor.conf ]; then
-            #editor=$(/bin/grep /home/$usr/.selected_editor | /bin/sed 's/SELECTED_EDITOR=//g')
-            eval /home/$usr/.selected_editor
+            editor=$(cat /home/$usr/.selected_editor | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')
             /bin/cp /home/$usr/.selected_editor $cache/selected_editor.conf
             /bin/chown "$usr":"$usr" $cache/selected_editor.conf
             int="1"
         elif [ -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
-            #editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
-            eval $cache/selected_editor.conf
+            editor=$(cat $cache/selected_editor.conf | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')
             int="1"
         else
             exit 2
