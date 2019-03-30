@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.3-alpha1
+#VERSION 0.0.5-alpha1
 set -e
 set -o pipefail
 file="$1"
@@ -30,14 +30,16 @@ int=0
 while [ "$int" == "0" ]; do
     if [ -f /home/$usr/.selected_editor ] || [ -f $cache/selected_editor.conf ]; then
         if [ ! -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
-            #editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
-            eval $cache/selected_editor.conf
+            editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
+            #eval $cache/selected_editor.conf
 
         elif [ -f /home/$usr/.selected_editor ] && [ ! -f $cache/selected_editor.conf ]; then
-            #editor=$(/bin/grep /home/$usr/.selected_editor | /bin/sed 's/SELECTED_EDITOR=//g')
-            eval $cache/selected_editor.conf
+            editor=$(/bin/grep /home/$usr/.selected_editor | /bin/sed 's/SELECTED_EDITOR=//g')
+            #eval $cache/selected_editor.conf
             /bin/cp /home/$usr/.selected_editor $cache/selected_editor.conf
             /bin/chown "$usr":"$usr" $cache/selected_editor.conf
+        elif [ -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
+            editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
         else
             exit 2
         fi
@@ -48,7 +50,7 @@ while [ "$int" == "0" ]; do
 done
 {
     /bin/cp $file "$file.back_up_mrai"
-    $editor $file
+    eval "$editor $file"
 } && {
     /bin/echo -e "\nUpdating Apt Repository Cache . . .\n"
     /usr/bin/apt update
