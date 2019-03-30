@@ -22,14 +22,14 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="0.9.9-alpha7"
+version="1.0.0-beta1"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
 #pre-config
 #check if mrai is already running
 /bin/pidof -x -o "$$" "mrai" > /dev/null
-if [ "$?" == "0" ] && [ "$1" != "--version" ] && [ "$1" != "-v" ]; then
+if [ "$?" == "0" ] && [ "$1" != "--version" ] && [ "$1" != "-v" ] && [ "$(/bin/echo "$1" | /bin/grep -q '-S')" != 0 ] && [ "$(/bin/echo "$1" | /bin/grep -q '--search')" != 0 ] && [ "$(/bin/echo "$1" | /bin/grep -q '--find')" != 0 ] && [ "$(/bin/echo "$1" | /bin/grep -q '--query')" != 0 ]; then
     /bin/echo -e "\nmrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited.\n"
 	exit 2
 fi
@@ -63,6 +63,7 @@ elif [ "$1" == "--add-repo" ]; then
 		exit $?
 	else
 		/bin/echo -e "\nERROR: No package manager indicated\n"
+		exit 2
 	fi
 elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--edit-apt-repos" ]; then
 	/bin/echo -e "\nTo enable an apt repo, remove the \"# \" (including the space) from the beginning of the line.\nTo disable a repo, just add the \"# \" back to the beginning of the line.\n\nLines beginning with \"deb-src\" are for source code.\n"
@@ -102,6 +103,7 @@ elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--
 		fi
 	else
 		/usr/bin/pkexec $cache/bin/edit-apt-sources.sh "/etc/apt/sources.list"
+		exit $?
 	fi
 fi
 h="mrai Package Manager: the Multiple Repo App Installer
@@ -155,6 +157,8 @@ h="mrai Package Manager: the Multiple Repo App Installer
 
 	--git			Search for an app installed from GitHub, regardless of method
 
+	-v, --verbose		Give more information about the queried package
+
 -u, --update,	Update your software. This may or may not work for packages installed from Github.
 --upgrade
 	-a, --apt		Update from only apt
@@ -174,7 +178,24 @@ h="mrai Package Manager: the Multiple Repo App Installer
 	-a, --apt		adds a new PPA
 	
 	-f, --flat		adds a new Flatpak Remote
--l, --list		List installed apps, pass a package name after this flag to search for an installed app"
+
+-l, --list		List installed apps, pass a package name after this flag to search for an installed app
+
+	-a, --apt	Filter installed apps to ones installed with apt
+
+	-f, --flat	Filter installed apps to ones installed with Flatpak
+
+	-s, --snap	Filter installed apps to ones installed with Snap
+
+	--ga		Filter installed apps to ones installed using GitHub Automatic Method
+
+	--gm		Filter installed apps to ones installed using GitHub Manual Method
+
+	--git		Filter installed apps to ones installed from GitHub, regardless of method
+
+--edit-sources,		Edit enabled apt repos by editing /etc/apt/sources.list or one of the files
+--edit-repos,		in /etc/apt/sources.list.d
+--edit-apt-repos,"
 if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
 	/bin/echo -e "\n$h\n"
 	exit 0
@@ -872,6 +893,8 @@ elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; th
 			S="$S o"
 		elif [ "$evaluator" == "--git" ]; then
 			S="$S l"
+		elif [ "$evaluator" == "--verbose" ]; then
+			VERBOSE=1
 		else
 			S=${S:-"a"}
 			pass="$evaluator"
@@ -999,12 +1022,15 @@ while getopts 'uSircl' flag; do
 			done ;;
 		#search flag
 		S) 
-			if [ "$1" == "-S" ]; then
+			if [ "$1" == "-S" ] || [ "$1" == "-Sv" ]; then
 				S="a"
 				pass="$2"
+				if [ "$1" == "-Sv" ]; then
+					VERBOSE="1"
+				fi
 				break
-			fi			
-			while getopts 'asfg' flag; do
+			fi		
+			while getopts 'asfgv' flag; do
 				case "${flag}" in
 					a) S="$S p" ;;
 					s) S="$S s" ;;
@@ -1021,6 +1047,7 @@ while getopts 'uSircl' flag; do
 								*) S="$S l" ;;
 							esac
 						done ;;
+					v) VERBOSE="1" ;;
 					*) 
 						if [ "$1" == "-S" ]; then
 							S="a"
@@ -1133,6 +1160,8 @@ while getopts 'uSircl' flag; do
 done
 #start:
 #check to make sure SOMETHING is set
+echo "$VERBOSE"
+echo "$S"
 if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ]; then
 	/bin/echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"
 	exit 2
@@ -1296,37 +1325,42 @@ else
 		done
 	#search flag
 	elif [[ ! -z "$S" ]]; then
-		#apt sub-flag, only search from apt
-		if $(/bin/echo "$S" | /bin/grep -q "p"); then
-			/usr/bin/apt search "$pass"
-		fi
-		#flatpak sub-flag, only search from flatpak
-		if $(/bin/echo "$S" | /bin/grep -q "f"); then
-			if [ -f "$cache"/flatpak.flag ]; then
-				/usr/bin/flatpak search "$pass"
-			else
-				/bin/echo -e "\nFlatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n"
+		if [ "$VERBOSE" != "1" ]; then
+			#apt sub-flag, only search from apt
+			if $(/bin/echo "$S" | /bin/grep -q "p"); then
+				/usr/bin/apt search "$pass"
 			fi
-		fi
-		#snap sub-flag, only search from snap
-		if $(/bin/echo "$S" | /bin/grep -q "s"); then
-			/usr/bin/snap search "$pass"
-		fi
-		#Manual GitHub sub-flag, only search apps installed using manual method from GitHub
-		if $(/bin/echo "$S" | /bin/grep -q "m"); then
-			list=$(gitmanlist | /bin/grep "$pass")
-			/bin/echo -e "\nInstalled through Manual Method:\n$list\n"
-		fi
-		#Automatic GitHub sub-flag, only search apps installed using automatic method from GitHub
-		if $(/bin/echo "$S" | /bin/grep -q "o"); then
-			list=$(gitautolist | /bin/grep "$pass")
-			/bin/echo -e "\nInstalled through Automatic Method:\n$list\n"
-		fi
-		#generel GitHub sub-flag, only search apps installed from GitHub, regardless of method
-		if $(/bin/echo "$S" | /bin/grep -q "l"); then
-			list1=$(gitmanlist | /bin/grep "$pass")
-			list2=$(gitautolist | /bin/grep "$pass")
-			list="Installed through Manual Method:
+			#flatpak sub-flag, only search from flatpak
+			if $(/bin/echo "$S" | /bin/grep -q "f"); then
+				if [ -f "$cache"/flatpak.flag ]; then
+					/usr/bin/flatpak search "$pass"
+				else
+					/bin/echo -e "\nFlatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n"
+				fi
+			fi
+			#snap sub-flag, only search from snap
+			if $(/bin/echo "$S" | /bin/grep -q "s"); then
+				if [ -f "$cache"/snapd.flag ]; then
+					/usr/bin/snap search "$pass"
+				else
+					/bin/echo -e "\nSnapd is not installed. Please run \"mrai -ia snapd\" to install it.\n"
+				fi
+			fi
+			#Manual GitHub sub-flag, only search apps installed using manual method from GitHub
+			if $(/bin/echo "$S" | /bin/grep -q "m"); then
+				list=$(gitmanlist | /bin/grep "$pass")
+				/bin/echo -e "\nInstalled through Manual Method:\n$list\n"
+			fi
+			#Automatic GitHub sub-flag, only search apps installed using automatic method from GitHub
+			if $(/bin/echo "$S" | /bin/grep -q "o"); then
+				list=$(gitautolist | /bin/grep "$pass")
+				/bin/echo -e "\nInstalled through Automatic Method:\n$list\n"
+			fi
+			#generel GitHub sub-flag, only search apps installed from GitHub, regardless of method
+			if $(/bin/echo "$S" | /bin/grep -q "l"); then
+				list1=$(gitmanlist | /bin/grep "$pass")
+				list2=$(gitautolist | /bin/grep "$pass")
+				list="Installed through Manual Method:
 $list1
 
 Installed through Automatic Method:
@@ -1334,23 +1368,73 @@ Installed through Automatic Method:
 $list2
 
 "
-			/bin/echo -e "\n$list\n"
+				/bin/echo -e "\n$list\n"
+			fi
+		elif [ "$VERBOSE" == "1" ]; then
+			#apt sub-flag, only search from apt
+			if $(/bin/echo "$S" | /bin/grep -q "p"); then
+				/usr/bin/apt show "$pass"
+			fi
+			#flatpak sub-flag, only search from flatpak
+			if $(/bin/echo "$S" | /bin/grep -q "f"); then
+				if [ -f "$cache"/flatpak.flag ]; then
+					/bin/echo -e "\nFlatpak does not support verbose search mode. Using normal search.\n"
+					/usr/bin/flatpak search "$pass"
+				else
+					/bin/echo -e "\nFlatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n"
+				fi
+			fi
+			#snap sub-flag, only search from snap
+			if $(/bin/echo "$S" | /bin/grep -q "s"); then
+				if [ -f "$cache"/snapd.flag ]; then
+					/usr/bin/snap info "$pass"
+				else
+					/bin/echo -e "\nSnapd is not installed. Please run \"mrai -ia snapd\" to install it.\n"
+				fi
+			fi
+			#Manual GitHub sub-flag, only search apps installed using manual method from GitHub
+			if $(/bin/echo "$S" | /bin/grep -q "m"); then
+				/bin/echo -e "\nGitHub apps do not support Verbose Search mode. Falling Back to Normal Search . . .\n"
+				list=$(gitmanlist | /bin/grep "$pass")
+				/bin/echo -e "\nInstalled through Manual Method:\n$list\n"
+			fi
+			#Automatic GitHub sub-flag, only search apps installed using automatic method from GitHub
+			if $(/bin/echo "$S" | /bin/grep -q "o"); then
+				/bin/echo -e "\nGitHub apps do not support Verbose Search mode. Falling Back to Normal Search . . .\n"
+				list=$(gitautolist | /bin/grep "$pass")
+				/bin/echo -e "\nInstalled through Automatic Method:\n$list\n"
+			fi
+			#generel GitHub sub-flag, only search apps installed from GitHub, regardless of method
+			if $(/bin/echo "$S" | /bin/grep -q "l"); then
+				/bin/echo -e "\nGitHub apps do not support Verbose Search mode. Falling Back to Normal Search . . .\n"
+				list1=$(gitmanlist | /bin/grep "$pass")
+				list2=$(gitautolist | /bin/grep "$pass")
+				list="Installed through Manual Method:
+$list1
+
+Installed through Automatic Method:
+
+$list2
+
+"
+			fi
 		fi
-		#search EVERYTHING
+		#search EVERYTHING		
 		if [ "$S" == "a" ]; then
-			list1=$(gitmanlist | /bin/grep "$pass")
-			list2=$(gitautolist | /bin/grep "$pass")
-			/bin/echo -e "\nApt packages:\n"
-			/usr/bin/apt search "$pass"
-			if [ -f "$cache"/flatpak.flag ]; then
-				/bin/echo -e "\nFlatpak Packages:\n"
-				/usr/bin/flatpak search "$pass"
-			fi
-			if [ -f "$cache"/snapd.flag ]; then
-				/bin/echo -e "\nSnap Packages:\n"
-				/usr/bin/snap search "$pass"
-			fi
-			list="Installed through Manual Method:
+			if [ "$VERBOSE" != "1" ]; then
+				list1=$(gitmanlist | /bin/grep "$pass")
+				list2=$(gitautolist | /bin/grep "$pass")
+				/bin/echo -e "\nApt packages:\n"
+				/usr/bin/apt search "$pass"
+				if [ -f "$cache"/flatpak.flag ]; then
+					/bin/echo -e "\nFlatpak Packages:\n"
+					/usr/bin/flatpak search "$pass"
+				fi
+				if [ -f "$cache"/snapd.flag ]; then
+					/bin/echo -e "\nSnap Packages:\n"
+					/usr/bin/snap search "$pass"
+				fi
+				list="Installed through Manual Method:
 $list1
 
 Installed through Automatic Method:
@@ -1358,11 +1442,41 @@ Installed through Automatic Method:
 $list2
 
 "
-			/bin/echo -e "\nInstalled GitHub Apps:\n"
-			if [ "$list" == " " ]; then
-				/bin/echo -e "No matching GitHub Apps Installed.\n"
-			else
-				/bin/echo "$list"
+				/bin/echo -e "\nInstalled GitHub Apps:\n"
+				if [ "$list" == " " ]; then
+					/bin/echo -e "No matching GitHub Apps Installed.\n"
+				else
+					/bin/echo "$list"
+				fi
+			elif [ "$VERBOSE" == "1" ]; then
+				list1=$(gitmanlist | /bin/grep "$pass")
+				list2=$(gitautolist | /bin/grep "$pass")
+				/bin/echo -e "\nApt packages:\n"
+				/usr/bin/apt show "$pass"
+				if [ -f "$cache"/flatpak.flag ]; then
+					/bin/echo -e "\nFlatpak Packages:\n"
+					/bin/echo -e "\nFlatpak does not support verbose search mode. Using normal search.\n"
+					/usr/bin/flatpak search "$pass"
+				fi
+				if [ -f "$cache"/snapd.flag ]; then
+					/bin/echo -e "\nSnap Packages:\n"
+					/usr/bin/snap info "$pass"
+				fi
+				/bin/echo -e "\nGitHub apps do not support Verbose Search mode. Falling Back to Normal Search . . .\n"
+				list="Installed through Manual Method:
+$list1
+
+Installed through Automatic Method:
+
+$list2
+
+"
+				/bin/echo -e "\nInstalled GitHub Apps:\n"
+				if [ "$list" == " " ]; then
+					/bin/echo -e "No matching GitHub Apps Installed.\n"
+				else
+					/bin/echo "$list"
+				fi
 			fi
 		fi
 	#clean flag
