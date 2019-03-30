@@ -18,6 +18,5 @@ fi
 usr=$(users)
 if [ -f /home/$usr/.selected_editor ]; then
 	/bin/cp /home/$usr/.selected_editor $cache/selected_editor.conf
-	chmod +x  $cache/selected_editor.conf
 fi
 /bin/chown -R $(users):$(users) $cache

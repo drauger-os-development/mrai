@@ -49,7 +49,7 @@ while [ "$int" == "0" ]; do
 done
 {
     /bin/cp "$file" "$file.back_up_mrai"
-    eval "$editor $file"
+    eval "$editor $1"
 } && {
     /bin/echo -e "\nUpdating Apt Repository Cache . . .\n"
     /usr/bin/apt update
