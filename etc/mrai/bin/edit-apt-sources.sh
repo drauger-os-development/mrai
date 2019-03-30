@@ -32,25 +32,26 @@ while [ "$int" == "0" ]; do
         if [ ! -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
             editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
             #eval $cache/selected_editor.conf
-
+            int="1"
         elif [ -f /home/$usr/.selected_editor ] && [ ! -f $cache/selected_editor.conf ]; then
             editor=$(/bin/grep /home/$usr/.selected_editor | /bin/sed 's/SELECTED_EDITOR=//g')
             #eval $cache/selected_editor.conf
             /bin/cp /home/$usr/.selected_editor $cache/selected_editor.conf
             /bin/chown "$usr":"$usr" $cache/selected_editor.conf
+            int="1"
         elif [ -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
             editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
+            int="1"
         else
             exit 2
         fi
-        int="1"
     else
         /usr/bin/select-editor
     fi
 done
 {
     /bin/cp $file "$file.back_up_mrai"
-    eval "$editor $file"
+    $editor $file
 } && {
     /bin/echo -e "\nUpdating Apt Repository Cache . . .\n"
     /usr/bin/apt update
