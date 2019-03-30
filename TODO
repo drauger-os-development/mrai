@@ -6,4 +6,3 @@ In order of importance
   4. Add a show app information feature (like `apt-get show`)
   5. Maybe add support for AppImages?
   6. Debug some more
-  7. Getting in an existing apt repository or make one for mrai
