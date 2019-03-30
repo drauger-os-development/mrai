@@ -27,7 +27,7 @@ file="$1"
 usr=$(/usr/bin/users)
 cache="/etc/mrai"
 int=0
-while [ "$int" == "0" ]; then
+while [ "$int" == "0" ]; do
     if [ -f /home/$usr/.selected_editor ] || [ -f $cache/selected_editor.conf ]; then
         if [ ! -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
             editor=$(/bin/grep $cache/selected_editor.conf | /bin/sed 's/SELECTED_EDITOR=//g')
