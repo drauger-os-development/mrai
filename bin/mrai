@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.0.0-beta1"
+version="1.0.2-beta1"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -73,17 +73,22 @@ elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--
 			/usr/bin/pkexec $cache/bin/edit-apt-sources.sh "/etc/apt/sources.list"
 		else
 			/bin/echo -e "\nYour sources.list.d directroy has config files in it as well.\n"
-			/bin/echo "1 /etc/apt/sources.list"
-			int=2
+			/bin/echo "0 /etc/apt/sources.list"
+			int=1
 			for each in $sld; do
 				/bin/echo "$int /etc/apt/sources.list.d/$each"
 				int=$((int+1))
 			done
-			read -p "Give the number of the file you would like to edit: [1-$int]: " choice
+			int=$((int-1))
+			read -p "Give the number of the file you would like to edit: [0-$int]: " choice
 			int=1
 			for each in $sld; do
+				if [ "$choice" == "0" ]; then
+					file="/etc/apt/sources.list"
+					break
+				fi
 				if [ "$int" == "$choice" ]; then
-					if [ "$choice" == "1" ]; then
+					if [ "$choice" == "0" ]; then
 						file="/etc/apt/sources.list"
 					else
 						file="/etc/apt/sources.list.d/$each"
@@ -243,7 +248,7 @@ snapupdate () {
 #Install software from apt
 aptinstall () {
 	for each in $pass; do
-		if $(/usr/bin/dpkg -l | /bin/grep -q "ii  $each"); then
+		if $(/usr/bin/dpkg -l "$each" | /bin/grep -q "ii  $each"); then
 			continue
 		else
 			new="$new $each"
