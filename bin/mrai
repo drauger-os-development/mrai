@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.0.2-beta2"
+version="1.0.3-beta2"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -759,10 +759,10 @@ flatupdate () {
 	if [ -f "$cache"/flatpak.flag ]; then
 		#update flatpak packages
 		/bin/echo -e "\nUpdating Flatpaks. Please wait . . . \n"
-		/usr/bin/flatpak update
+		/usr/bin/flatpak update 2>/dev/null || /bin/echo -e "\nFlatpak has had an error. Please try updating again later with 'mrai -uf'.\n"
 		/bin/echo ""
 	elif [ "$1" == "-uf" ] || [ "$2" == "--flat" ]; then
-		/bin/echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
+		/bin/echo -e "\nSorry. Package 'flatpak' is not installed. Please run 'mrai -ia flatpak' to install it.\n"
 		exit 2
 	fi
 }
