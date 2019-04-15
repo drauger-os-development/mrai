@@ -1,0 +1,6 @@
+mrai (1.0.2-beta2) bionic; urgency=medium
+
+  * Fixed issue with installing an app when there is another app installed with a similar name
+  * Fixed issue where *.list files in /etc/apt/sources.list.d where numbered diffrently from what they would be recognized as
+
+ -- Thomas Castleman <contact@draugeros.org>  Tue, 09 Apr 2019 01:04:07 -0500

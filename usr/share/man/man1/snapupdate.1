@@ -1,0 +1,66 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 3/27/19               \" DATE
+.Dt snapupdate      \" Program name and manual section number
+.Os snapupdate
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm snapupdate
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line.
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Multiple Repository Application Installer - Snap Updater
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl Fl version
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+is used by mrai to update snaps. Running it will essentially just update any snaps you have installed.
+.Pp                      \" Inserts a space
+
+.Pp
+A list of flags and their descriptions:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl Fl version                \"-a flag as a list item
+print version number and exit
+.El                      \" Ends the list
+.Pp
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.It Pa /bin/mrai
+Main Program File
+.It Pa /bin/aptupdate
+Update utility to update from apt. Run with root.
+.It Pa /bin/snapupdate
+Update utility to update snaps. 
+.It Pa /etc/mrai/bin/clean.sh
+Cleaning script
+.It Pa /etc/mrai/bin/gitautoinst.sh
+GitHub Installation Wizard
+.It Pa /etc/mrai/bin/aptremove.sh
+Uninstall and cleaning Utility
+.Pp
+
+.It These may or may not be on your system, depending on what you have installed:
+.Pp
+
+.It Pa /etc/mrai/snapd.flag
+Marker for whether snapd is installed or not
+.It Pa /etc/mrai/flatpak.flag
+Marker for whether flatpak is installed or not
+.It Pa /etc/mrai/apt-fast.flag
+Marker for whether apt-fast is installed or not
+.It Pa /etc/mrai/selected_editor.conf
+Designates which CLI text editor you would like to use when editing one of the sources.list files for apt. This can also be changed to a GUI text editor such as gedit, leafpad, or mousepad
+.El                      \" Ends the list
+.Sh SEE ALSO
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr aptupdate 1 ,
+.Xr mrai 1 ,
+.Sh BUGS              \" Document known, unremedied bugs
+.Nm
+is currently in alpha. Bugs are to be expected. If you find a bug, please report it to: https://github.com/drauger-os-development/mrai/issues
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner

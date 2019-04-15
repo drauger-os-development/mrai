@@ -1,0 +1,128 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 3/27/19               \" DATE
+.Dt mrai      \" Program name and manual section number
+.Os mrai
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm mrai
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line.
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Multiple Repository Application Installer
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl cihrSluv              \" [-abcd]
+.Op Fl Fl fix-config
+.Op Fl Fl add-repo
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+.Nm
+Is an application for Debian based operating systems, inspired by AUR helpers from Arch Linux and it's derivatives. It is a all-in-one front end for apt, snapd, and flatpak. It also helps handle different tasks such as fixing app configurations and adding repositories. 
+.Pp                      \" Inserts a space
+
+.Pp
+A list of flags and their descriptions:
+.Bl -tag -width -indent  \" Differs from above in tag removed
+.It Fl c, Fl Fl clean                \"-a flag as a list item
+Clean Up. This only cleans up your system from apt and apps installed from GitHub, since snapd and flatpak handle this on their own
+.Pp
+
+.It Fl i, Fl Fl install
+Install app with given name. By default, mrai will try to install from the first possible source, in this order:
+apt, snapd, flatpak, GitHub. 
+.Pp
+
+.Pp
+To specify, pass: a for apt, s for snap, f for flatpak, ga for GitHub (Automatic method), gm for GitHub (Manual Method), g for GitHub (attempt to detect metod).
+.Pp
+
+.It Fl h, Fl Fl help
+Print the help dialogue and exit
+.Pp
+
+.It Fl r, Fl Fl remove, Fl Fl uninstall
+Remove the passed app.
+.Nm
+will autodetect how the designated app was installed. If multiple version are installed in multiple methods, it will prompt the user to specify which method to uninstall from.
+.Pp
+
+.It Fl S, Fl Fl search, Fl Fl query, Fl Fl find
+Search for the app with the passed name. If an install method is passed, only that method will be searched for the desigered app. (To specify install methods, see the specification instrctions for the install flag). You can also pass -v, or --verbose in order to get more information about the app you are looking for.
+.Pp
+
+.It Fl l, Fl Fl list
+List installed apps, also is capable of searching installed apps. Specify an installation method to further narrow that search (To specify install methods, see the specification instrctions for the install flag)
+.Pp
+
+.It Fl u, Fl Fl update, Fl Fl upgrade
+Update your system.
+.Pp
+
+.It Fl v, Fl Fl version
+Print the installed version and exit
+.Pp
+
+.It Fl Fl fix-config
+Attempt to fix any issues that occured upon install of an app. This only works for apps installed through apt
+.Pp
+
+.It Fl Fl add-repo
+Add a repository to update/install apps from. MUST BE FOLLOWED BY ONE OF THE FOLLOWING:
+.Pp
+
+.It Fl a, Fl Fl apt
+Adds a new PPA
+
+.It Fl f, Fl Fl flat
+Adds a new Flatpak Remote
+
+.It Fl Fl edit-sources, Fl Fl edit-repos, Fl Fl edit-apt-repos
+Edit your /etc/apt/sources.list file for apt, or one of the other *.list files in /etc/apt/sources.list.d
+.Pp
+
+.El                      \" Ends the list
+.Pp
+.Sh FILES                \" File used or created by the topic of the man page
+.Bl -tag -width "/Users/joeuser/Library/really_long_file_name" -compact
+.It Pa /bin/mrai
+Main Program File
+.It Pa /bin/aptupdate
+Update utility to update from apt. Run with root.
+.It Pa /bin/snapupdate
+Update utility to update snaps. 
+.It Pa /etc/mrai/bin/clean.sh
+Cleaning script
+.It Pa /etc/mrai/bin/gitautoinst.sh
+GitHub Installation Wizard
+.It Pa /etc/mrai/bin/aptremove.sh
+Uninstall and cleaning Utility
+.It Pa /etc/mrai/bin/edit-apt-sources.sh
+Editing manager for apt repos
+.Pp
+.
+
+.It These may or may not be on your system, depending on what you have installed:
+.Pp
+
+.It Pa /etc/mrai/snapd.flag
+Marker for whether snapd is installed or not
+.It Pa /etc/mrai/flatpak.flag
+Marker for whether flatpak is installed or not
+.It Pa /etc/mrai/apt-fast.flag
+Marker for whether apt-fast is installed or not
+.It Pa /etc/mrai/selected_editor.conf
+Designates which CLI text editor you would like to use when editing one of the sources.list files for apt. This can also be changed to a GUI text editor such as gedit, leafpad, or mousepad
+.El                      \" Ends the list
+.Sh SEE ALSO
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+.Xr aptupdate 1 ,
+.Xr snapupdate 1
+.Sh BUGS              \" Document known, unremedied bugs
+.Nm
+is currently in early beta. Bugs are to be expected. It is known that the GitHub installation Wizard is buggy. If you find a bug, please report it to: 
+.Pp
+https://github.com/drauger-os-development/mrai/issues
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner
