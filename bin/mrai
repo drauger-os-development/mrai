@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.0.3-beta2"
+version="1.0.4-beta2"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -1278,7 +1278,13 @@ else
 		elif [ "$type" == "0" ]; then
 			aptremove
 		elif [ "$type" == "5" ]; then
-			/bin/echo -e "\nAccording to all our databases, this app is not installed.\n"
+			/bin/echo -e "\nAccording to all our databases, this app is not installed.\n\nApps with similar package names:\n"
+			show=$(dpkg -l | grep '^ii' | grep "$pass")
+			if [ "$show" == " " ] || [ "$show" == "" ]; then
+				echo -e "No apps with similar names installed.\n"
+			else
+				echo -e "$show\n"
+			fi
 			exit 1
 		else
 			#if we get something other than a value from 1 and 5 set to $type, we have a SERIOUS issue. Please submit a bug report in this instance
