@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.0.4-beta2"
+version="1.0.7-beta2"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -211,7 +211,7 @@ if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
 		/bin/echo "" >> "$cache"/apt-fast.flag
 	fi
 else
-	if [[ -f "$cache"/apt-fast.flag ]]; then
+	if [is_aptfast_installed]; then
 		/bin/rm "$cache"/apt-fast.flag
 	fi
 fi
@@ -220,7 +220,7 @@ if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
 		/bin/echo "" >> "$cache"/snapd.flag
 	fi
 else
-	if [[ -f "$cache"/snapd.flag ]]; then
+	if [is_snapd_installed]; then
 		/bin/rm "$cache"/snapd.flag
 	fi
 fi
@@ -229,7 +229,7 @@ if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
 		/bin/echo "" >> "$cache"/flatpak.flag
 	fi
 else
-	if [[ -f "$cache"/flatpak.flag ]]; then
+	if [is_flatpak_installed]; then
 		/bin/rm "$cache"/flatpak.flag
 	fi
 fi
@@ -270,7 +270,7 @@ aptinstall () {
 			pass="$new"
 	fi
 	if [ "$check" == "0" ]; then
-		if [ -f "$cache"/apt-fast.flag ]; then
+		if is_aptfast_installed; then
 			({
 				#Install software using apt-fast, if available based on the apt-fast.flag
 				#use /usr/bin/pkexec to gain root privleges in order to install software
@@ -330,7 +330,7 @@ gitautoinst () {
 
 flatinstall () {
 	#check that flatpak.flag is in place
-	if [ -f "$cache"/flatpak.flag ]; then
+	if is_flatpak_installed; then
 		loop=1
 		while [ "$loop" == "1" ]; do
 			#search for the desired package, to ensure it exists
@@ -433,7 +433,7 @@ flatinstall () {
 #install snap apps
 snapinstall () {
 	#check for the snapd.flag file
-	if [ -f "$cache"/snapd.flag ]; then
+	if is_snapd_installed; then
 		#check for the app we want
 		for each in $pass; do
 			list=$(/usr/bin/snap list)
@@ -756,7 +756,7 @@ gitupdate () {
 #update flatpaks
 flatupdate () {
 	#check if the flatpak.flag file is there, cause why use flatpak if flatpak isn't even installed?
-	if [ -f "$cache"/flatpak.flag ]; then
+	if is_flatpak_installed; then
 		#update flatpak packages
 		/bin/echo -e "\nUpdating Flatpaks. Please wait . . . \n"
 		/usr/bin/flatpak update 2>/dev/null || /bin/echo -e "\nFlatpak has had an error. Please try updating again later with 'mrai -uf'.\n"
@@ -775,10 +775,10 @@ checkinstalltype () {
 	if $(/usr/bin/dpkg -l | /bin/grep -q "ii  $pass"); then
 		type=0
 	fi
-	if [ -f "$cache"/snapd.flag ] && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
+	if is_snapd_installed && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
 		type="$type 1"
 	fi
-	if [ -f "$cache"/flatpak.flag ] && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
+	if is_flatpak_installed && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
 		type="$type 2"
 	fi
 	if $(/bin/ls --group-directories-first "$gitautocache" | /bin/grep -q "$pass"); then
@@ -826,12 +826,41 @@ clean () {
 	}
 }
 
-#goto function. Cause Windows has it but BASH doesn't \_(*_*)_/
+#goto function. Cause Windows BATCH has it but BASH doesn't \_(*_*)_/
+#( Yes I know it's a legacy thing. I don't care. It's nice sometimes. )
 goto () {
     label=$1
     cmd=$(/bin/sed -n "/$label:/{:a;n;p;ba};" $0 | /bin/grep -v ':$')
     eval "$cmd"
     exit
+}
+
+#Functions to check if suggested packages are installed
+
+#check for snapd
+is_snapd_installed () {
+	if [ -f "$cache"/snapd.flag ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+#check for apt-fast
+is_aptfast_installed () {
+	if [ -f "$cache"/apt-fast.flag ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+#check for flatpak
+is_flatpak_installed () {
+	if [ -f "$cache"/flatpak.flag ]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 #Welp. There's all the functions Lets define some variables
@@ -1278,12 +1307,31 @@ else
 		elif [ "$type" == "0" ]; then
 			aptremove
 		elif [ "$type" == "5" ]; then
-			/bin/echo -e "\nAccording to all our databases, this app is not installed.\n\nApps with similar package names:\n"
-			show=$(dpkg -l | grep '^ii' | grep "$pass")
+			/bin/echo -e "\nAccording to all our databases, this app is not installed.\n\nApps with similar package names:\n\n"
+			show=$(/usr/bin/dpkg -l | /bin/grep '^ii' | /bin/grep "$pass")
+			/bin/echo -e "Apt Packages:\n\n"
 			if [ "$show" == " " ] || [ "$show" == "" ]; then
-				echo -e "No apps with similar names installed.\n"
+				/bin/echo -e "No Apt Packages with similar names installed.\n"
 			else
-				echo -e "$show\n"
+				/bin/echo -e "$show\n"
+			fi
+			if is_snapd_installed; then
+				show=$(/usr/bin/snap list | /bin/grep "$pass")
+				/bin/echo "Snaps:\n\n"
+				if [ "$show" == " " ] || [ "$show" == "" ]; then
+					/bin/echo -e "No Snaps with similar names installed.\n"
+				else
+					/bin/echo -e "$show\n"
+				fi
+			fi
+			if is_flatpak_installed; then
+				show=$(/usr/bin/flatpak list | /bin/grep "$pass")
+				/bin/echo "Flatpaks:\n\n"
+				if [ "$show" == " " ] || [ "$show" == "" ]; then
+					/bin/echo -e "No Flatpaks with similar names installed.\n"
+				else
+					/bin/echo -e "$show\n"
+				fi
 			fi
 			exit 1
 		else
@@ -1341,7 +1389,7 @@ else
 			fi
 			#flatpak sub-flag, only search from flatpak
 			if $(/bin/echo "$S" | /bin/grep -q "f"); then
-				if [ -f "$cache"/flatpak.flag ]; then
+				if is_flatpak_installed; then
 					/usr/bin/flatpak search "$pass"
 				else
 					/bin/echo -e "\nFlatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n"
@@ -1349,7 +1397,7 @@ else
 			fi
 			#snap sub-flag, only search from snap
 			if $(/bin/echo "$S" | /bin/grep -q "s"); then
-				if [ -f "$cache"/snapd.flag ]; then
+				if is_snapd_installed; then
 					/usr/bin/snap search "$pass"
 				else
 					/bin/echo -e "\nSnapd is not installed. Please run \"mrai -ia snapd\" to install it.\n"
@@ -1386,7 +1434,7 @@ $list2
 			fi
 			#flatpak sub-flag, only search from flatpak
 			if $(/bin/echo "$S" | /bin/grep -q "f"); then
-				if [ -f "$cache"/flatpak.flag ]; then
+				if is_flatpak_installed; then
 					/bin/echo -e "\nFlatpak does not support verbose search mode. Using normal search.\n"
 					/usr/bin/flatpak search "$pass"
 				else
@@ -1395,7 +1443,7 @@ $list2
 			fi
 			#snap sub-flag, only search from snap
 			if $(/bin/echo "$S" | /bin/grep -q "s"); then
-				if [ -f "$cache"/snapd.flag ]; then
+				if is_snapd_installed; then
 					/usr/bin/snap info "$pass"
 				else
 					/bin/echo -e "\nSnapd is not installed. Please run \"mrai -ia snapd\" to install it.\n"
@@ -1435,11 +1483,11 @@ $list2
 				list2=$(gitautolist | /bin/grep "$pass")
 				/bin/echo -e "\nApt packages:\n"
 				/usr/bin/apt search "$pass"
-				if [ -f "$cache"/flatpak.flag ]; then
+				if is_flatpak_installed; then
 					/bin/echo -e "\nFlatpak Packages:\n"
 					/usr/bin/flatpak search "$pass"
 				fi
-				if [ -f "$cache"/snapd.flag ]; then
+				if is_snapd_installed; then
 					/bin/echo -e "\nSnap Packages:\n"
 					/usr/bin/snap search "$pass"
 				fi
@@ -1462,12 +1510,12 @@ $list2
 				list2=$(gitautolist | /bin/grep "$pass")
 				/bin/echo -e "\nApt packages:\n"
 				/usr/bin/apt show "$pass"
-				if [ -f "$cache"/flatpak.flag ]; then
+				if is_flatpak_installed; then
 					/bin/echo -e "\nFlatpak Packages:\n"
 					/bin/echo -e "\nFlatpak does not support verbose search mode. Using normal search.\n"
 					/usr/bin/flatpak search "$pass"
 				fi
-				if [ -f "$cache"/snapd.flag ]; then
+				if is_snapd_installed; then
 					/bin/echo -e "\nSnap Packages:\n"
 					/usr/bin/snap info "$pass"
 				fi
@@ -1499,7 +1547,7 @@ $list2
 				/bin/echo ""
 			fi
 			if $(/bin/echo "$L" | /bin/grep -q 's'); then
-				if [ -f "$cache"/snapd.flag ]; then
+				if is_snapd_installed; then
 					/bin/echo -e "\nSnaps:\n"
 					/usr/bin/snap list "$2"
 					/bin/echo ""
@@ -1508,7 +1556,7 @@ $list2
 				fi
 			fi
 			if $(/bin/echo "$L" | /bin/grep -q 'f'); then
-				if [ -f "$cache"/flatpak.flag ]; then
+				if is_flatpak_installed; then
 					/bin/echo -e "\nFlatpaks:\n"
 					/usr/bin/flatpak list -a | /bin/grep "$2"
 					/bin/echo ""
@@ -1536,11 +1584,11 @@ $list2
 		else
 			/bin/echo -e "\nApt:\n"
 			/usr/bin/dpkg -l
-			if [ -f "$cache"/snapd.flag ]; then
+			if is_snapd_installed; then
 				/bin/echo -e "\nSnaps:\n"
 				/usr/bin/snap list
 			fi
-			if [ -f "$cache"/flatpak.flag ]; then
+			if is_flatpak_installed; then
 				/bin/echo -e "\nFlatpaks:\n"
 				/usr/bin/flatpak list -a
 			fi
