@@ -39,11 +39,11 @@ If installing it from the GitHub repo, we suggest running:
 
 `cd mrai`
 
-`./build.sh
+`./build.sh`
 
 This will generate a \*.deb file in the parent directory which you can then install.
 
-Drauger OS users can install it by running `sudo apt install mrai`
+Drauger OS users can install it directly from the repos by running `sudo apt install mrai`
 
 # Uninstalling
 To uninstall, run:
