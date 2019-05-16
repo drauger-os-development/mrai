@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.0.7-beta2"
+version="1.0.8-beta2"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -115,16 +115,16 @@ h="mrai Package Manager: the Multiple Repo App Installer
 
 -c, --clean		Delete old *.deb files, old config files, and old Github files
 
--i,				Install an app, if none of the below options are given, check in the following order:
---install				apt,
-						snap,
-						flatpak,
-						Github manual,
-						Github automatic
+--find			Find the package the provides a given command
+
+-i,--install		Install an app, if none of the below options are given, check in the following order:
+			apt, snap, flatpak, Github manual method, Github automatic method
+
 
 	-a, ---apt		Install just from apt. In which case, usage will be:
 
 						mrai -ia {apt-package-name}
+
 
 	-g, --git,		Install just from Github, In which case, usage will be:
 	--gm, --ga		
@@ -134,69 +134,99 @@ h="mrai Package Manager: the Multiple Repo App Installer
 					automaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your
 					system.
 
+
 	-s, --snap		Install just from snapd, In which case, usage will be:
 
 						mrai -is {snap-name}
+
 	
 	-f, --flat		Install as Flatpak, In which case, usage will be:
 
 						mrai -if {flatpak-name}
 
+
 -h, --help		Display this help dialogue and exit.
 
--r, --remove	Uninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,
+
+-r, --remove		Uninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,
 --uninstall		the name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed
 
--S, --search,	Search for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,
---query, --find				please vist https://www.github.com
+
+-S, --search,		Search for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,
+--query			please vist https://www.github.com
+
 	
 	-a, --apt		Search for an app through apt
 
+
 	-s, --snap		Search for an app through snap
+
 
 	-f, --flat		Search for an app through flatpak
 
+
 	--ga			Search for an app that was installed using GitHub Automatic Method
+
 
 	--gm			Search for an app that was installed using GitHub Manual Method
 
+
 	--git			Search for an app installed from GitHub, regardless of method
+
 
 	-v, --verbose		Give more information about the queried package
 
--u, --update,	Update your software. This may or may not work for packages installed from Github.
+
+-u, --update,		Update your software. This may or may not work for packages installed from Github.
 --upgrade
+
 	-a, --apt		Update from only apt
+
 
 	-f, --flat		Update from only Flatpak
 
+
 	-g, --git		Update from only Github
+
 	
 	-s, --snap		Update only installed snaps
 
--v, --version	Print Current Version and exit
 
---fix-config	Essentially this runs 'sudo dpkg --configure -a', to fix package management issues
+-v, --version		Print Current Version and exit
 
---add-repo		Add a repository, MUST BE FOLLOWED BY ONE OF THE FOLLOWING OPTIONS
+
+--fix-config		Essentially this runs 'sudo dpkg --configure -a', to fix package management issues
+
+
+--add-repo		Add a repository, MUST BE FOLLOWED BY ONE OF THE FOLLOWING OPTIONS:
+
 
 	-a, --apt		adds a new PPA
+
 	
 	-f, --flat		adds a new Flatpak Remote
 
+
 -l, --list		List installed apps, pass a package name after this flag to search for an installed app
+
 
 	-a, --apt	Filter installed apps to ones installed with apt
 
+
 	-f, --flat	Filter installed apps to ones installed with Flatpak
+
 
 	-s, --snap	Filter installed apps to ones installed with Snap
 
+
 	--ga		Filter installed apps to ones installed using GitHub Automatic Method
+
 
 	--gm		Filter installed apps to ones installed using GitHub Manual Method
 
+
 	--git		Filter installed apps to ones installed from GitHub, regardless of method
+
 
 --edit-sources,		Edit enabled apt repos by editing /etc/apt/sources.list or one of the files
 --edit-repos,		in /etc/apt/sources.list.d
@@ -826,15 +856,6 @@ clean () {
 	}
 }
 
-#goto function. Cause Windows BATCH has it but BASH doesn't \_(*_*)_/
-#( Yes I know it's a legacy thing. I don't care. It's nice sometimes. )
-goto () {
-    label=$1
-    cmd=$(/bin/sed -n "/$label:/{:a;n;p;ba};" $0 | /bin/grep -v ':$')
-    eval "$cmd"
-    exit
-}
-
 #Functions to check if suggested packages are installed
 
 #check for snapd
@@ -882,8 +903,6 @@ if [ "$1" == "--install" ]; then
 		evaluator=${!test}
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			test=2
-			goto start
-			exit 0
 		fi
 		if [ "$evaluator" == "--apt" ]; then
 			i="a"
@@ -906,14 +925,12 @@ if [ "$1" == "--install" ]; then
 		(( test+=1 ))
 	done
 #search flag
-elif [ "$1" == "--search" ] || [ "$1" == "--find" ] || [ "$1" == "--query" ]; then
+elif [ "$1" == "--search" ] || [ "$1" == "--query" ]; then
 	test=2
 	while [ "$test" != "1" ]; do
 		evaluator="${!test}"
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			test=2
-			goto start
-			exit 0
 		fi
 		if [ "$evaluator" == "--apt" ]; then
 			S="$S p"
@@ -940,10 +957,6 @@ elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
 	test=2
 	while [ "$test" != "1" ]; do
 		evaluator="${!test}"
-		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			goto start
-			exit 0
-		fi
 		if [ "$evaluator" == "--apt" ]; then
 			u="$u a"
 		elif [ "$evaluator" == "--snap" ]; then
@@ -966,34 +979,22 @@ elif [ "$1" == "--remove" ] || [ "$1" == "--uninstall" ]; then
 	test=2
 	while [ "$test" != "1" ]; do
 		evaluator="${!test}"
-		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			goto start
-			exit 0
-		fi
 		if [ "$evaluator" == "--assume-yes" ] || [ "$evaluator" == "-y" ]; then
 			a=1
 		fi
 		(( test+=1 ))
 	done
-	goto start
-	exit 0
 #clean flag
 elif [ "$1" == "--clean" ]; then
 	c=1
 	test=2
 	while [ "$test" != "1" ]; do
 		evaluator="${!test}"
-		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			goto start
-			exit 0
-		fi
 		if [ "$evaluator" == "--assume-yes" ] || [ "$evaluator" == "-y" ]; then
 			a=1
 		fi
 		(( test+=1 ))
 	done
-	goto start
-	exit 0
 elif [ "$1" == "--list" ]; then
 	LIST=1
 	test="2"
@@ -1001,8 +1002,6 @@ elif [ "$1" == "--list" ]; then
 		evaluator="${!test}"
 		if [ -z $evaluator ] && [ "$test" != "2" ]; then
 			test=2
-			goto start
-			exit 0
 		fi
 		if [ "$evaluator" == "--apt" ]; then
 			L="$L p"
@@ -1022,179 +1021,181 @@ elif [ "$1" == "--list" ]; then
 		fi
 		(( test+=1 ))
 	done
-	goto start
-	exit 0
+elif [ "$1" == "--find" ]; then
+	FIND=1
+	look="$2"
 fi
-#compound flag managment system
-while getopts 'uSircl' flag; do
-	case "${flag}" in
-		#update flag
-		u) 
-			if [ "$1" == "-u" ] || [ "$1" == "-uy" ] || [ "$1" == "-yu" ]; then
-				u="a s f g"
-				if [ "$1" == "-uy" ] || [ "$1" == "-yu" ]; then
-					a=1
-				fi
-				break
-			fi
-			while getopts 'asfgy' flag; do
-				case "${flag}" in
-					a) u="$u a" ;;
-					s) u="$u s" ;;
-					f) u="$u f" ;;
-					g) u="$u g" ;;
-					y) a=1 ;;
-					*) 
-						if [ "$1" == "-u" ]; then
-							u="a s f g"
-						else
-							/bin/echo -e "\nSorry. This option is not recognized.\n"
-							exit 1
-						fi
-						;;
-				esac
-			done ;;
-		#search flag
-		S) 
-			if [ "$1" == "-S" ] || [ "$1" == "-Sv" ]; then
-				S="a"
-				pass="$2"
-				if [ "$1" == "-Sv" ]; then
-					VERBOSE="1"
-				fi
-				break
-			fi		
-			while getopts 'asfgv' flag; do
-				case "${flag}" in
-					a) S="$S p" ;;
-					s) S="$S s" ;;
-					f) S="$S f" ;;
-					g) 
-						if [ "$1" == "-Sg" ]; then
-							S="$S l"
-							break
-						fi
-						while getopts 'ma' flag; do
-							case "${flag}" in
-								m) S="$S m" ;;
-								a) S="$S o" ;;
-								*) S="$S l" ;;
-							esac
-						done ;;
-					v) VERBOSE="1" ;;
-					*) 
-						if [ "$1" == "-S" ]; then
-							S="a"
-						else
-							/bin/echo -e "\nSorry. This option is not recognized.\n"
-							exit 1
-						fi ;;
-				esac
-			done
-			x=2
-			while [ "$x" != 1 ]; do
-				if [ "$x" == "2" ]; then
-					if [ "${!x}" == "" ]; then
-						(( x+=1 ))
-						continue
-					else
-						pass="${!x}"
-						(( x+=1 ))
-						break
+if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ] && [ -z "$FIND" ]; then
+	#compound flag managment system
+	while getopts 'uSircl' flag; do
+		case "${flag}" in
+			#update flag
+			u) 
+				if [ "$1" == "-u" ] || [ "$1" == "-uy" ] || [ "$1" == "-yu" ]; then
+					u="a s f g"
+					if [ "$1" == "-uy" ] || [ "$1" == "-yu" ]; then
+						a=1
 					fi
-				else
-					if [ "${!x}" == "" ]; then
-						x=1
-						break
-					else
-						pass="${!x}"
-						(( x+=1 ))
-						break
+					break
+				fi
+				while getopts 'asfgy' flag; do
+					case "${flag}" in
+						a) u="$u a" ;;
+						s) u="$u s" ;;
+						f) u="$u f" ;;
+						g) u="$u g" ;;
+						y) a=1 ;;
+						*) 
+							if [ "$1" == "-u" ]; then
+								u="a s f g"
+							else
+								/bin/echo -e "\nSorry. This option is not recognized.\n"
+								exit 1
+							fi
+							;;
+					esac
+				done ;;
+			#search flag
+			S) 
+				if [ "$1" == "-S" ] || [ "$1" == "-Sv" ]; then
+					S="a"
+					pass="$2"
+					if [ "$1" == "-Sv" ]; then
+						VERBOSE="1"
 					fi
-				fi
-			done ;;
-		#install flag
-		i) 
-			if [ "$1" == "-i" ] || [ "$1" == "-iy" ] || [ "$1" == "-yi" ]; then
-				i="l"
-				pass="$2"
-				if [ "$1" == "-iy" ] || [ "$1" == "-yi" ]; then
-					a=1
-				fi
-				break
-			fi
-			while getopts 'asfgy' flag; do
-				case "${flag}" in
-					a) i="a" ;;
-					s) i="s" ;;
-					f) i="f" ;;
-					y) a=1 ;;
-					g) 
-						if [ "$1" == "-ig" ]; then
-							i="$i gb"
-							break
-						fi
-						while getopts 'ma' flag; do
-							case "${flag}" in
-								m) i="gm" ;;
-								a) i="ga" ;;
-								*) i="gb" ;;
-							esac
-						done ;;
-					*) 
-						if [ "$1" == "-i" ]; then
-							i="l"
-						else
-							/bin/echo -e "\nSorry. This option is not recognized.\n"
+					break
+				fi		
+				while getopts 'asfgv' flag; do
+					case "${flag}" in
+						a) S="$S p" ;;
+						s) S="$S s" ;;
+						f) S="$S f" ;;
+						g) 
+							if [ "$1" == "-Sg" ]; then
+								S="$S l"
+								break
+							fi
+							while getopts 'ma' flag; do
+								case "${flag}" in
+									m) S="$S m" ;;
+									a) S="$S o" ;;
+									*) S="$S l" ;;
+								esac
+							done ;;
+						v) VERBOSE="1" ;;
+						*) 
+							if [ "$1" == "-S" ]; then
+								S="a"
+							else
+								/bin/echo -e "\nSorry. This option is not recognized.\n"
 							exit 1
-						fi ;;
-				esac
-			done ;;
-		#remove flag
-		r) 
-			if [ "$1" == "-r" ] || [ "$1" == "-ry" ] || [ "$1" == "-yr" ]; then
-				r=1
-				if [ "$1" == "-ry" ]; then
-					a=1
-				fi
-			fi;;
-		#clean flag
-		c)
-			if [ "$1" == "-c" ] || [ "$1" == "-cy" ] || [ "$1" == "-yc"; then
-				c=1
-				if [ "$1" == "-cy" ] || [ "$1" == "-yc" ]; then
-					a=1
-				fi
-			fi;;
-		l) LIST=1
-			while getopts 'asfg' flag; do
-				case "${flag}" in
-					a) L="p" ;;
-					s) L="s" ;;
-					f) L="f" ;;
-					g) 
-						if [ "$1" == "-lg" ]; then
-							L="$L gb"
+							fi ;;
+					esac
+				done
+				x=2
+				while [ "$x" != 1 ]; do
+					if [ "$x" == "2" ]; then
+						if [ "${!x}" == "" ]; then
+							(( x+=1 ))
+							continue
+						else
+							pass="${!x}"
+							(( x+=1 ))
 							break
 						fi
-						while getopts 'ma' flag; do
-							case "${flag}" in
-								m) L="gm" ;;
-								a) L="ga" ;;
-								*) L="gb" ;;
-							esac
-						done ;;
-				esac
-			done;;
-		#all else
-		*)
-			/bin/echo -e "\nError: Option not recognized.\n\n$h\n"
-			exit 2;;
-	esac
-done
-#start:
+					else
+						if [ "${!x}" == "" ]; then
+							x=1
+							break
+						else
+							pass="${!x}"
+							(( x+=1 ))
+							break
+						fi
+					fi
+				done ;;
+			#install flag
+			i) 
+				if [ "$1" == "-i" ] || [ "$1" == "-iy" ] || [ "$1" == "-yi" ]; then
+					i="l"
+					pass="$2"
+					if [ "$1" == "-iy" ] || [ "$1" == "-yi" ]; then
+						a=1
+					fi
+					break
+				fi
+				while getopts 'asfgy' flag; do
+					case "${flag}" in
+						a) i="a" ;;
+						s) i="s" ;;
+						f) i="f" ;;
+						y) a=1 ;;
+						g) 
+							if [ "$1" == "-ig" ]; then
+								i="$i gb"
+								break
+							fi
+							while getopts 'ma' flag; do
+								case "${flag}" in
+									m) i="gm" ;;
+									a) i="ga" ;;
+									*) i="gb" ;;
+								esac
+							done ;;
+						*) 
+							if [ "$1" == "-i" ]; then
+								i="l"
+							else
+								/bin/echo -e "\nSorry. This option is not recognized.\n"
+								exit 1
+							fi ;;
+					esac
+				done ;;
+			#remove flag
+			r) 
+				if [ "$1" == "-r" ] || [ "$1" == "-ry" ] || [ "$1" == "-yr" ]; then
+					r=1
+					if [ "$1" == "-ry" ]; then
+						a=1
+					fi
+				fi;;
+			#clean flag
+			c)
+				if [ "$1" == "-c" ] || [ "$1" == "-cy" ] || [ "$1" == "-yc"; then
+					c=1
+					if [ "$1" == "-cy" ] || [ "$1" == "-yc" ]; then
+						a=1
+					fi
+				fi;;
+			l) LIST=1
+				while getopts 'asfg' flag; do
+					case "${flag}" in
+						a) L="p" ;;
+						s) L="s" ;;
+						f) L="f" ;;
+						g) 
+							if [ "$1" == "-lg" ]; then
+								L="$L gb"
+								break
+							fi
+							while getopts 'ma' flag; do
+								case "${flag}" in
+									m) L="gm" ;;
+									a) L="ga" ;;
+									*) L="gb" ;;
+								esac
+							done ;;
+					esac
+				done;;
+			#all else
+			*)
+				/bin/echo -e "\nError: Option not recognized.\n\n$h\n"
+				exit 2;;
+		esac
+	done
+fi
 #check to make sure SOMETHING is set
-if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ]; then
+if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ] && [ -z "$FIND" ]; then
 	/bin/echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"
 	exit 2
 else
@@ -1608,6 +1609,14 @@ $list2
 			else
 				/bin/echo "$list"
 			fi
+		fi
+	elif [ "$FIND" == "1" ]; then
+		command_path=$(/usr/bin/dpkg -S $(/usr/bin/which "$look") 2>/dev/null)
+		if [ -z "$command_path" ]; then
+			/bin/echo -e "\nError: No package providing specificed command.\n"
+		else
+			command_path=$(/bin/echo "$command_path" | /bin/sed 's/:/ /g' | /usr/bin/awk '{print $1}')
+			/bin/echo -e "\nPackage Providing Command \"$look\": $command_path\n"
 		fi
 	#no recognized flags passed
 	else
