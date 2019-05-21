@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.0.8-beta2"
+version="1.0.9-beta2"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -1186,7 +1186,8 @@ if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ 
 								esac
 							done ;;
 					esac
-				done;;
+				done
+				L=${L:-"a"};;
 			#all else
 			*)
 				/bin/echo -e "\nError: Option not recognized.\n\n$h\n"
@@ -1540,11 +1541,12 @@ $list2
 	#clean flag
 	elif [[ ! -z "$c" ]]; then
 		clean
+	#List flag
 	elif [[ "$LIST" == "1" ]]; then
 		if [[ ! -z "$2" ]]; then
 			if $(/bin/echo "$L" | /bin/grep -q 'p'); then
 				/bin/echo -e "\nApt:\n"
-				/usr/bin/dpkg -l "$2"
+				/usr/bin/dpkg -l | /bin/grep '^ii' | /binb/grep "$2"
 				/bin/echo ""
 			fi
 			if $(/bin/echo "$L" | /bin/grep -q 's'); then
@@ -1584,7 +1586,7 @@ $list2
 			fi
 		else
 			/bin/echo -e "\nApt:\n"
-			/usr/bin/dpkg -l
+			/usr/bin/dpkg -l | /bin/grep '^ii' | /bin/grep "$2"
 			if is_snapd_installed; then
 				/bin/echo -e "\nSnaps:\n"
 				/usr/bin/snap list
