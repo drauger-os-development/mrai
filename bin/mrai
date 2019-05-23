@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.0.9-beta2"
+version="1.1.0-beta3"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -278,7 +278,7 @@ snapupdate () {
 #Install software from apt
 aptinstall () {
 	for each in $pass; do
-		if $(/usr/bin/dpkg -l "$each" | /bin/grep -q "ii  $each"); then
+		if $(/usr/bin/dpkg -l "$each" 2>/dev/null | /bin/grep -q "ii  $each"); then
 			continue
 		else
 			new="$new $each"
@@ -1206,7 +1206,7 @@ else
 		if [ "$i" == "a" ]; then
 			#set $pass to $y that way aptinstall can use it
 			pass="$y"
-			pass=$(/bin/echo "$pass" | /bin/sed 's/,/\ /')
+			pass=$(/bin/echo "$pass" | /bin/sed 's/,/ /')
 			( aptinstall && exit 0 ) || exit 2
 		#git sub-flag
 		elif $(/bin/echo "$i" | /bin/grep -q "g"); then
@@ -1225,7 +1225,7 @@ else
 		#snap sub-flag
 		elif [ "$i" == "s" ]; then
 			pass="$2"
-			pass=$(/bin/echo "$pass" | /bin/sed 's/,/\ /')
+			pass=$(/bin/echo "$pass" | /bin/sed 's/,/ /g')
 			( snapinstall && exit 0 ) || exit 2
 		#flatpak sub-flag
 		elif [ "$i" == "f" ]; then
