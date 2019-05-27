@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.1.0-beta3"
+version="1.1.1-beta3"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -241,7 +241,7 @@ if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
 		/bin/echo "" >> "$cache"/apt-fast.flag
 	fi
 else
-	if [is_aptfast_installed]; then
+	if [ is_aptfast_installed ]; then
 		/bin/rm "$cache"/apt-fast.flag
 	fi
 fi
