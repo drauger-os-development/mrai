@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.1.1-beta3"
+version="1.1.2-beta3"
 if [[ "$EUID" == "0" ]]; then
     /bin/echo -e "\nPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.\n" && exit 2
 fi
@@ -34,8 +34,14 @@ if [ "$?" == "0" ] && [ "$1" != "--version" ] && [ "$1" != "-v" ] && [ "$(/bin/e
 	exit 2
 fi
 cache="/etc/mrai"
+scripts="/usr/share/mrai"
 gitautocache="/etc/mrai/gitauto"
 gitmancache="/etc/mrai/gitman"
+called_as="$0"
+R='\033[0;31m'
+G='\033[0;32m'
+Y='\033[1;33m'
+NC='\033[0m'
 user=$(/usr/bin/whoami)
 if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
 	/bin/echo -e "\n$version\n"
@@ -62,15 +68,15 @@ elif [ "$1" == "--add-repo" ]; then
 		fi
 		exit $?
 	else
-		/bin/echo -e "\nERROR: No package manager indicated\n"
-		exit 2
+		/bin/echo -e "\n$R \bERROR:$NC No package manager indicated\n"
+		error_report "2" "User Error: Attempted to add repository without specifying package manager"
 	fi
 elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--edit-apt-repos" ]; then
 	/bin/echo -e "\nTo enable an apt repo, remove the \"# \" (including the space) from the beginning of the line.\nTo disable a repo, just add the \"# \" back to the beginning of the line.\n\nLines beginning with \"deb-src\" are for source code.\n"
 	if [ -d /etc/apt/sources.list.d ]; then
 		sld=$(/bin/ls /etc/apt/sources.list.d)
 		if [ "$sld" == "" ] || [ "$sld" == " " ]; then
-			/usr/bin/pkexec $cache/bin/edit-apt-sources.sh "/etc/apt/sources.list"
+			/usr/bin/pkexec $scripts/edit-apt-sources.sh "/etc/apt/sources.list"
 		else
 			/bin/echo -e "\nYour sources.list.d directroy has config files in it as well.\n"
 			/bin/echo "0 /etc/apt/sources.list"
@@ -99,7 +105,7 @@ elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--
 				fi
 			done
 			{
-				/usr/bin/pkexec $cache/bin/edit-apt-sources.sh "$file"
+				/usr/bin/pkexec $scripts/edit-apt-sources.sh "$file"
 			} && {
 				exit 0
 			} || {
@@ -107,7 +113,7 @@ elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--
 			}
 		fi
 	else
-		/usr/bin/pkexec $cache/bin/edit-apt-sources.sh "/etc/apt/sources.list"
+		/usr/bin/pkexec $scripts/edit-apt-sources.sh "/etc/apt/sources.list"
 		exit $?
 	fi
 fi
@@ -270,7 +276,7 @@ snapupdate () {
 	{
 		/bin/bash /bin/snapupdate
 	} || {
-		/bin/echo -e "\nWe're sorry snapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
+		/bin/echo -e "\n$R \bsnapupdate failed with exit code $?. Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
 	}
 }
@@ -351,7 +357,7 @@ aptinstall () {
 #install software, using a more automatic method, from GitHub
 gitautoinst () {
 	{
-		/usr/bin/pkexec "$cache"/bin/gitautoinst.sh "$HOME" "$user" "$pass"
+		/usr/bin/pkexec "$scripts"/gitautoinst.sh "$HOME" "$user" "$pass"
 	} || {
 		/bin/echo -e "\nWe're sorry. gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
@@ -405,7 +411,7 @@ flatinstall () {
 					loop="0"
 				else
 					#for mutliple installation canditdates, ask which the user wishes to install.
-					/bin/echo -e "\nERROR: Multiple Installation Candidates Detected.\n"
+					/bin/echo -e "\n$Y \bWARNING: Multiple Installation Candidates Detected.\n"
 					/bin/echo -e "Which package would you like to install?\n$r\n"
 					read -p "Please copy-paste the name of the package here (Type \"exit\", \"break\", or \"end\" to exit): " int
 					#check if the user wants out. If they do, let them out
@@ -438,7 +444,7 @@ flatinstall () {
 				#		OR
 				#	B. Does not contain the name of a flatpak
 				#In fact, lets print that.
-				/bin/echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least on Flatpak in it.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
+				/bin/echo -e "\nSomething happened...and it wasn't good.\nIt appears Flatpak returned something other then \"No Matches Found\" or something with the name of at least one Flatpak in it.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 				#There. Bit long, but it was needed. 
 				#Alright. Lets end this puppy.
 				loop="0"
@@ -451,8 +457,8 @@ flatinstall () {
 			#Tell them they don't have flatpak
 			#Also, if the user wants to mrai to use flatpak they have to install it through mrai so 
 			#it can make the flag file. Otherwise it won't work.
-			/bin/echo -e "\nSorry. Package 'flatpak' is not installed. Please run {mrai -ia flatpak} to install it.\n"
-			exit 2
+			/bin/echo -e "\n$R \bERROR: package 'flatpak' is not installed.$NC Please run {mrai -ia flatpak} to install it.\n"
+			error_report "2" "User Error: Flatpak function attempted without flatpak being installed"
 		else
 			#they didn't call it so not as big a deal. Lets just return, not exit.
 			return 2
@@ -586,9 +592,9 @@ gitmaninstall () {
 aptremove () {
 	{
 		if [ "$a" == "1" ]; then
-			/usr/bin/pkexec "$cache"/bin/aptremove.sh 1 "$pass" "$user"
+			/usr/bin/pkexec "$scripts"/aptremove.sh 1 "$pass" "$user"
 		else
-			/usr/bin/pkexec "$cache"/bin/aptremove.sh "$pass" "$user"
+			/usr/bin/pkexec "$scripts"/aptremove.sh "$pass" "$user"
 		fi
 	} || {
 		/bin/echo -e "\nWe're sorry. aptremove.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
@@ -644,7 +650,8 @@ gitremove () {
 				elif [ "$num" == "4" ]; then
 					opt="--uninstall"
 				else
-					/bin/echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2
+					/bin/echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n"
+					exit 2
 				fi
 				#Sleep so the user can read what we just /bin/echoed out
 				/bin/sleep 3s
@@ -667,7 +674,8 @@ gitremove () {
 				elif [ "$num" == "4" ]; then
 					opt="--uninstall"
 				else
-					/bin/echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n" && exit 2
+					/bin/echo -e "\nAll other options on the install script have failed. Please look online for documentation on how to remove this app.\nWe are sorry for any inconvenience.\n"
+					exit 2
 				fi
 				#Sleep so the user can read what we just /bin/echoed out
 				/bin/sleep 3s
@@ -679,10 +687,12 @@ gitremove () {
 			#The contents of ANY *.flag file made by one of the two git install functions (see gitmaninstall and gitautoinst)
 			#should contain both an "ADDRESS" field and a "RUN_AS_ROOT" feild. RUN_AS_ROOT can only be a "yes", "no", or "null"
 			#if RUN_AS_ROOT is set to anything else, this will be displayed
-			/bin/echo -e "\nWe're sorry. The function gitremove has encountered an error. Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" && exit 2
+			/bin/echo -e "\n$R \bERROR: function gitremove has encountered an error.$NC Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
+			error_report "2" "Function gitremove ecountered an error"
 		fi
 	else
-		/bin/echo -e "\nWe're sorry. The function gitremove in /bin/mrai has encountered an error. Please contact the devs for help.\n" && exit 2
+		/bin/echo -e "\n$R \bERROR: function gitremove has encountered an error.$NC Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
+		error_report "2" "Function gitremove ecountered an error"
 	fi		
 }
 
@@ -789,8 +799,9 @@ flatupdate () {
 	if is_flatpak_installed; then
 		#update flatpak packages
 		/bin/echo -e "\nUpdating Flatpaks. Please wait . . . \n"
-		/usr/bin/flatpak update 2>/dev/null || /bin/echo -e "\nFlatpak has had an error. Please try updating again later with 'mrai -uf'.\n"
+		/usr/bin/flatpak update 2>/dev/null || /bin/echo -e "\n$R \bFlatpak has had an error. Please try updating again later with 'mrai -uf'.\n"
 		/bin/echo ""
+		error_report "1" "Flatpak encountered an error. Updating will continue."
 	elif [ "$1" == "-uf" ] || [ "$2" == "--flat" ]; then
 		/bin/echo -e "\nSorry. Package 'flatpak' is not installed. Please run 'mrai -ia flatpak' to install it.\n"
 		exit 2
@@ -846,9 +857,9 @@ gitmanlist () {
 clean () {
 	{
 		if [ "$a" == "1" ]; then
-			/usr/bin/pkexec "$cache"/bin/clean.sh -y $user
+			/usr/bin/pkexec "$scripts"/clean.sh -y $user
 		else
-			/usr/bin/pkexec "$cache"/bin/clean.sh $user
+			/usr/bin/pkexec "$scripts"/clean.sh $user
 		fi
 	} || {
 		/bin/echo -e "\nWe're sorry. clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
@@ -881,6 +892,14 @@ is_flatpak_installed () {
 		return 0
 	else
 		return 1
+	fi
+}
+
+#report errors
+error_report () {
+	"$scripts"/log-out.sh $1 "/sbin/mrai" $2 "$called_as" $(/bin/pwd)
+	if [[ "$1" != "1" ]]; then
+		exit "$1"
 	fi
 }
 
@@ -1190,15 +1209,15 @@ if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ 
 				L=${L:-"a"};;
 			#all else
 			*)
-				/bin/echo -e "\nError: Option not recognized.\n\n$h\n"
-				exit 2;;
+				/bin/echo -e "\n$R \bError: Option not recognized.$NC\n\n$h\n"
+				error_report "2" "User Error: Provided unknown option.";;
 		esac
 	done
 fi
 #check to make sure SOMETHING is set
 if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ] && [ -z "$FIND" ]; then
-	/bin/echo -e "\nError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"
-	exit 2
+	/bin/echo -e "\n$R \bError in main function: Case failed with 0 commands reported. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"
+	error_report "2" "Verbose and compound flag systems failed. Something was set and got through but was not detected before work segment."
 else
 	#check for the install flags
 	if [[ ! -z "$i" ]]; then
@@ -1251,7 +1270,7 @@ else
 			}
 		else
 			/bin/echo -e "\nAn error has occured in main function. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"
-			exit 2
+			error_report "2" "Install flag was set but nothing was set dictating what package manager to use."
 		fi
 	#remove / uninstall flag
 	elif [[ ! -z "$r" ]] && [ "$r" == "1" ]; then
@@ -1274,7 +1293,9 @@ else
 						2) show="$show flatpak"; input="$input 3 for flatpak"; check="$check 3" ;;
 						3) show="$show Github_Automatic" ;;
 						4) show="$show Github_Manual" ;;
-						*) /bin/echo "There is an unrecognized value in \$type variable. Error in checkinstalltype"; exit 2 ;;
+						*) 
+							/bin/echo -e "\n$R \bERROR:$NC unrecognized value in \$type variable. Error in checkinstalltype. Please report bug to https://github.com/drauger-os-development/mrai\n"
+							error_report 2 "Unrecognize value in variable \$type in uninstall segment: $type";;
 					esac
 				done
 				if $(/bin/echo "$show" | /bin/grep -q "Github"); then
@@ -1338,8 +1359,8 @@ else
 			exit 1
 		else
 			#if we get something other than a value from 1 and 5 set to $type, we have a SERIOUS issue. Please submit a bug report in this instance
-			/bin/echo -e "\nmrai has encountered an error in function {checkinstalltype}.\nPlease submit a bug report at https://github.com/drauger-os-development/mrai/issues.\n"
-			exit 2
+			/bin/echo -e "\nmrai has encountered an$R error$NC in function {checkinstalltype}.\nPlease submit a bug report at https://github.com/drauger-os-development/mrai/issues.\n"
+			error_report "2" "function checkinstalltype returned an impossible value: $type"
 		fi
 	#update flag
 	elif [[ ! -z "$u" ]]; then
@@ -1370,7 +1391,7 @@ else
 					fi
 				else
 					/bin/echo -e "\n We're sorry. An error has occured in the implementation of the assume-yes flag.\nPlease report this bug to\nhttps://github.com/drauger-os-development/mrai/issues\n"
-					exit 2
+					error_report "2" "Assume-yes flag \"\$a\" set to non-bool character"
 				fi
 			elif [[ "$x" == "s" ]]; then
 				if $(/bin/echo "$u" | /bin/grep -q "a"); then
@@ -1615,7 +1636,7 @@ $list2
 	elif [ "$FIND" == "1" ]; then
 		command_path=$(/usr/bin/dpkg -S $(/usr/bin/which "$look") 2>/dev/null)
 		if [ -z "$command_path" ]; then
-			/bin/echo -e "\nError: No package providing specificed command.\n"
+			/bin/echo -e "\n$R \bERROR:$NC No package providing specificed command.\n"
 		else
 			command_path=$(/bin/echo "$command_path" | /bin/sed 's/:/ /g' | /usr/bin/awk '{print $1}')
 			/bin/echo -e "\nPackage Providing Command \"$look\": $command_path\n"

@@ -1,5 +1,8 @@
 #!/bin/bash
 cache="/etc/mrai"
+if [[ ! -d $cache ]]; then
+	/bin/mkdir $cache
+fi
 if [[ ! -d $cache/gitauto ]]; then
 	/bin/mkdir $cache/gitauto
 fi
