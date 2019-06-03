@@ -49,51 +49,135 @@ while getopts 'sy' flag; do
 		*) exit 2 ;;
 	esac
 done
-/bin/echo -e "\nUpdating installed software . . . \n"
+/bin/echo -e "\n$G \bUpdating installed software . . . $NC\n"
 if [ "$y" == "0" ]; then
 	#updating apt cache then updating install apt packages
 	if [[ ! -f /etc/mrai/apt-fast.flag ]]; then
-		{ /usr/bin/apt update && /usr/bin/apt full-upgrade } || {  error="$?"; /usr/bin/dpkg --configure -a; error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey." }
-		/bin/echo -e "\n$G \bRemoving old dependencies . . . \n"
+		{
+			/usr/bin/apt update && /usr/bin/apt full-upgrade
+		} || {  
+			error="$?"
+			/usr/bin/dpkg --configure -a
+			error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey."
+		}
+		/bin/echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
 		#removing unneeded dependencies
-		{ /usr/bin/apt autoremove } || { error="$?"; error_report "$error" "apt autoremove failed" }
-		/bin/echo -e "\n$G \bCleaning up . . . \n"
+		{ 
+			/usr/bin/apt autoremove 
+		} || { 
+			error="$?"
+			error_report "$error" "apt autoremove failed" 
+		}
+		/bin/echo -e "\n$G \bCleaning up . . . $NC\n"
 		#cleaning up
-		{ /usr/bin/apt-get clean } || { error="$?"; error_report "$error" "apt clean has failed. Most like file permission issue." }
-		{ /usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}') } || { error="$?"; error_report "$error" "Config file removal failed. Either a syntax issue or some thing having to do with configuration of installed apps." }
+		{ 
+			/usr/bin/apt-get clean 
+		} || { 
+			error="$?"
+			error_report "$error" "apt clean has failed. Most like file permission issue." 
+		}
+		{ 
+			/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}') 
+		} || { 
+			error="$?"
+			error_report "$error" "Config file removal failed. Either a syntax issue or some thing having to do with configuration of installed apps." 
+		}
 	#proceed to update snaps, if mrai said to
 	else
-		( /usr/sbin/apt-fast update && /usr/sbin/apt-fast dist-upgrade } || {  error="$?"; /usr/bin/dpkg --configure -a; error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey." }
-		/bin/echo -e "\n$G \bRemoving old dependencies . . . \n"
+		{
+			/usr/sbin/apt-fast update && /usr/sbin/apt-fast dist-upgrade 
+		} || {
+			error="$?"
+			/usr/bin/dpkg --configure -a
+			error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey."
+		}
+		/bin/echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
 		#removing unneeded dependencies
-		{ /usr/bin/apt autoremove } || { error="$?"; error_report "$error" "apt autoremove failed" }
-		/bin/echo -e "\n$G \bCleaning up . . . \n"
+		{
+			/usr/bin/apt autoremove
+		} || {
+			error="$?"
+			error_report "$error" "apt autoremove failed"
+		}
+		/bin/echo -e "\n$G \bCleaning up . . . $NC\n"
 		#cleaning up
-		{ /usr/bin/apt clean } || { error="$?"; error_report "$error" "apt clean has failed. Most like file permission issue." }
-		{ /usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}') } || { error="$?"; error_report "$error" "Config file removal failed. Either a syntax issue or some thing having to do with configuration of installed apps." }
+		{
+			/usr/bin/apt clean
+		} || {
+			error="$?"
+			error_report "$error" "apt clean has failed. Most like file permission issue."
+		}
+		{
+			/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
+		} || {
+			error="$?"
+			error_report "$error" "Config file removal failed. Either a syntax issue or some thing having to do with configuration of installed apps."
+		}
 		#proceed to update snaps, if mrai said to
 	fi
 elif [ "$y" == "1" ]; then
 	#updating apt cache then updating install apt packages
 	if [[ ! -f /etc/mrai/apt-fast.flag ]]; then
-		{ /usr/bin/apt update && /usr/bin/apt -y full-upgrade } || {  error="$?"; /usr/bin/dpkg --configure -a; error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey." }
-		/bin/echo -e "\n$G \bRemoving old dependencies . . . \n"
+		{
+			/usr/bin/apt update && /usr/bin/apt -y full-upgrade
+		} || {
+			error="$?"
+			/usr/bin/dpkg --configure -a
+			error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey."
+		}
+		/bin/echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
 		#removing unneeded dependencies
-		{ /usr/bin/apt -y autoremove } || { error="$?"; error_report "$error" "apt autoremove failed" }
-		/bin/echo -e "\n$G \bCleaning up . . . \n"
+		{
+			/usr/bin/apt -y autoremove
+		} || {
+			error="$?"
+			error_report "$error" "apt autoremove failed"
+		}
+		/bin/echo -e "\n$G \bCleaning up . . . $NC\n"
 		#cleaning up
-		{ /usr/bin/apt-get clean } || { error="$?"; error_report "$error" "apt clean has failed. Most like file permission issue." }
-		{ /usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}') } || { error="$?"; error_report "$error" "Config file removal failed. Either a syntax issue or some thing having to do with configuration of installed apps." }
+		{
+			/usr/bin/apt-get clean
+		} || {
+			error="$?"
+			error_report "$error" "apt clean has failed. Most like file permission issue."
+		}
+		{
+			/usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
+		} || {
+			error="$?"
+			error_report "$error" "Config file removal failed. Either a syntax issue or some thing having to do with configuration of installed apps."
+		}
 		#proceed to update snaps, if mrai said to
 	else
-		{ /usr/sbin/apt-fast update && /usr/sbin/apt-fast -y dist-upgrade } || {  error="$?"; /usr/bin/dpkg --configure -a; error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey." }
-		/bin/echo -e "\n$G \bRemoving old dependencies . . . \n"
+		{
+			/usr/sbin/apt-fast update && /usr/sbin/apt-fast -y dist-upgrade
+		} || { 
+			error="$?"
+			/usr/bin/dpkg --configure -a
+			error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey."
+		}
+		/bin/echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
 		#removing unneeded dependencies
-		{ /usr/bin/apt -y autoremove } || { error="$?"; error_report "$error" "apt autoremove failed" }
-		/bin/echo -e "\n$G \bCleaning up . . . \n"
+		{
+			/usr/bin/apt -y autoremove
+		} || {
+			error="$?"
+			error_report "$error" "apt autoremove failed"
+		}
+		/bin/echo -e "\n$G \bCleaning up . . . $NC\n"
 		#cleaning up
-		{ /usr/bin/apt clean } || { error="$?"; error_report "$error" "apt clean has failed. Most like file permission issue." }
-		{ /usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}') } || { error="$?"; error_report "$error" "Config file removal failed. Either a syntax issue or some thing having to do with configuration of installed apps." }
+		{
+			/usr/bin/apt clean
+		} || {
+			error="$?"
+			error_report "$error" "apt clean has failed. Most like file permission issue."
+		}
+		{
+			/usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
+		} || {
+			error="$?"
+			error_report "$error" "Config file removal failed. Either a syntax issue or some thing having to do with configuration of installed apps."
+		}
 		#proceed to update snaps, if mrai said to
 	fi
 fi
