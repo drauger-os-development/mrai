@@ -20,19 +20,17 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.6-beta1
+#VERSION 0.0.7-beta1
 #make sure we have the right permissions, exit if we don't
 #this entire script won't work anyways if we don't have the right permissions
 scripts="/usr/share/mrai"
 called_as="$0"
 R='\033[0;31m'
-G='\033[0;32m'
-Y='\033[1;33m'
 NC='\033[0m'
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
-	"$scripts"/log-out.sh $1 "/usr/share/mrai/aptremove.sh" $2 "$called_as" $(/bin/pwd)
+	"$scripts"/log-out.sh "$1" "/usr/share/mrai/aptremove.sh" "$2" "$called_as" "$(/bin/pwd)"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi
@@ -82,7 +80,7 @@ fi
 	if [ "$1" == "1" ]; then
 		"$scripts"/clean.sh -y $3
 	else
-		read -p "Would you like mrai to clean up left-over, unused dependencies? [y/N]: " ans
+		read -pr "Would you like mrai to clean up left-over, unused dependencies? [y/N]: " ans
 		if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
 			"$scripts"/clean.sh $2
 		fi

@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION: 0.0.7-beta1
+#VERSION: 0.0.8-beta1
 set -e
 set -o pipefail
 y=0
@@ -33,7 +33,7 @@ NC='\033[0m'
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
-	"$scripts"/log-out.sh "$1" "/usr/share/mrai/clean.sh" "$2" "$called_as" $(/bin/pwd)
+	"$scripts"/log-out.sh "$1" "/usr/share/mrai/clean.sh" "$2" "$called_as" "$(/bin/pwd)"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi
@@ -88,9 +88,9 @@ else
 fi
 /bin/echo -e "\n$G \bCleaning up old GitHub files . . .$NC\n"
 {
-	/bin/rm -rf /home/$user/.mrai
-	/bin/mkdir /home/$user/.mrai
-	/bin/chown $user:$user /home/$user/.mrai
+	/bin/rm -rf /home/"$user"/.mrai
+	/bin/mkdir /home/"$user"/.mrai
+	/bin/chown "$user:$user" /home/"$user"/.mrai
 	/bin/echo -e "\n$G \bClean up complete.\n"
 } || {
 	error_report "2" "Github clean up failed. Most likly due to incorrect file system permissions."
