@@ -20,69 +20,66 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.4-beta1
+#VERSION 0.0.5-beta1
 home="$1"
 user="$2"
 pass="$3"
-cache="/etc/mrai"
 gitautocache="/etc/mrai/gitauto"
 scripts="/usr/share/mrai"
 called_as="$0"
 R='\033[0;31m'
-G='\033[0;32m'
-Y='\033[1;33m'
 NC='\033[0m'
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
-	"$scripts"/log-out.sh $1 "/usr/share/mrai/gitautoinst.sh" $2 "$called_as" $(/bin/pwd)
+	"$scripts"/log-out.sh "$1" "/usr/share/mrai/gitautoinst.sh" "$2" "$called_as" "$(/bin/pwd)"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi
 }
 
-cd $home
+cd "$home" || exit 1
 #make directory .mrai if it exists
 if [[ ! -d .mrai ]]; then
-	/bin/su $user -c 'mkdir .mrai'
+	/bin/su "$user" -c 'mkdir .mrai'
 fi
-cd .mrai
+cd .mrai || exit 1 
 #check to see how the URL to github is formatted
 #check for a VERY specific location
 {
 	if $(/bin/echo "$pass" | /bin/grep -q 'https://github.com/') || $(/bin/echo "$pass" | /bin/grep -q 'http://github.com/'); then
-		/bin/su $user -c "/usr/bin/git clone $pass"
+		/bin/su "$user" -c "/usr/bin/git clone $pass"
 	#check for a slightly less specific location
 	elif $(/bin/echo "$pass" | /bin/grep -q 'github.com/'); then
-		/bin/su $user -c "/usr/bin/git clone https://$pass"
+		/bin/su "$user" -c "/usr/bin/git clone https://$pass"
 	#if they did not specifiy "GitHub.com", assume it.
 	else 
-		/bin/su $user -c "/usr/bin/git clone https://github.com/$pass"
+		/bin/su "$user" -c "/usr/bin/git clone https://github.com/$pass"
 	fi
 } || {
 	error_report "$?" "git clone failed. Either because the provided URL is not GitHub, or because the cloning is being done as root, or there is no internet."
 }
 #cd into the new directory git just make from the GitHub repo
-pass1=$(/bin/echo $pass | /bin/sed 's/.*\///')
-cd $pass1
+pass1=$(/bin/echo "$pass" | /bin/sed 's/.*\///')
+cd "$pass1" || exit 1
 #Check for a Makefile
 if [ -f Makefile ] || [ -f makefile ] || [ -f MAKEFILE ]; then
 	#ask if we need to run a specific file in order to get set up
 	/bin/echo -e "\nA Makefile has been detected. Some apps require you to run a seperate file before the Makefile."
-	read -p "Would you like to run such a file? [y/N]: " ans
+	read -pr "Would you like to run such a file? [y/N]: " ans
 	if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
 		#show a list of files for the user to chose from
 		/bin/ls --color=auto
-		read -p "Which of the above files would you like to run? (Press enter with no input to cancel and continue with running the Makefile. Type 'exit' to exit.): " ans
+		read -pr "Which of the above files would you like to run? (Press enter with no input to cancel and continue with running the Makefile. Type 'exit' to exit.): " ans
 		#check to see if $ans is set and NOT to exit, if it is it should be set to a file name
 		if [[ ! -z $ans ]] && [ "$ans" != "exit" ]; then
-			read -p "Would you like to run this file as root? [y/N]: " ans1
+			read -pr "Would you like to run this file as root? [y/N]: " ans1
 			#make the designated file executable and run it
 			/bin/chmod +x "$ans"
 			if [ "$ans1" == "Y" ] || [ "$ans1" == "y" ]; then
-				./$ans || error_report "2" "$ans for GitHub app $pass1 has failed. Please contact the developer."
+				./"$ans" || error_report "2" "$ans for GitHub app $pass1 has failed. Please contact the developer."
 			else
-				/bin/su $user -c "./$ans" || error_report "2" "$ans for GitHub app $pass1 has failed. Please contact the developer."
+				/bin/su "$user" -c "./$ans" || error_report "2" "$ans for GitHub app $pass1 has failed. Please contact the developer."
 			fi
 		#check to see if $ans is set to exit
 		elif [ "$ans" == "exit" ]; then
@@ -99,7 +96,7 @@ if [ -f Makefile ] || [ -f makefile ] || [ -f MAKEFILE ]; then
 	/usr/bin/make install || error_report "2" "Make has failed. Please ensure all dependencies are satisfied."
 	#Back up the Makefile since it might be useful in uninstalling the software
 	{
-		/bin/su $user -c "( /bin/mkdir $gitautocache/$pass1 && /bin/cp Makefile $gitautocache/$pass1 ) || ( cd .. && /bin/rm -rf $pass1 && exit 1 ) || exit 2"
+		/bin/su "$user" -c "( /bin/mkdir $gitautocache/$pass1 && /bin/cp Makefile $gitautocache/$pass1 ) || ( cd .. && /bin/rm -rf $pass1 && exit 1 ) || exit 2"
 		/bin/echo "ADDRESS=$pass" >> "$gitautocache"/"$pass1"/auto.flag
 	} || {
 		error_report "2" "Could not modify Makefile. Incorrect file system permissions."
@@ -108,5 +105,5 @@ if [ -f Makefile ] || [ -f makefile ] || [ -f MAKEFILE ]; then
 else
 	#remove the folder to save space
 	cd ..
-	/bin/rm -rf $pass1 || error_report "2" "Could not remove directory. Incorrect file system permissions."
+	/bin/rm -rf "$pass1" || error_report "2" "Could not remove directory. Incorrect file system permissions."
 fi

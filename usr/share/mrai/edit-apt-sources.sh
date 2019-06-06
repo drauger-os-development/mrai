@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.1.4-beta1
+#VERSION 0.1.5-beta1
 set -e
 set -o pipefail
 file="$1"
@@ -31,29 +31,28 @@ scripts="/usr/share/mrai"
 called_as="$0"
 R='\033[0;31m'
 G='\033[0;32m'
-Y='\033[1;33m'
 NC='\033[0m'
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
-	"$scripts"/log-out.sh $1 "/usr/share/mrai/edit-apt-sources.sh" $2 "$called_as" $(/bin/pwd)
+	"$scripts"/log-out.sh "$1" "/usr/share/mrai/edit-apt-sources.sh" "$2" "$called_as" "$(/bin/pwd)"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi
 }
 {
 	while [ "$int" == "0" ]; do
-		if [ -f /home/$usr/.selected_editor ] || [ -f $cache/selected_editor.conf ]; then
-			if [ ! -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
-				editor=$(/bin/cat $cache/selected_editor.conf | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')
+		if [ -f /home/"$usr"/.selected_editor ] || [ -f "$cache"/selected_editor.conf ]; then
+			if [ ! -f /home/"$usr"/.selected_editor ] && [ -f "$cache"/selected_editor.conf ]; then
+				editor=$(/bin/cat "$cache"/selected_editor.conf | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')
 				int="1"
-			elif [ -f /home/$usr/.selected_editor ] && [ ! -f $cache/selected_editor.conf ]; then
-				editor=$(/bin/cat /home/$usr/.selected_editor | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')
-				/bin/cp /home/$usr/.selected_editor $cache/selected_editor.conf
-				/bin/chown "$usr":"$usr" $cache/selected_editor.conf
+			elif [ -f /home/"$usr"/.selected_editor ] && [ ! -f "$cache"/selected_editor.conf ]; then
+				editor=$(/bin/cat /home/"$usr"/.selected_editor | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')
+				/bin/cp /home/"$usr"/.selected_editor "$cache"/selected_editor.conf
+				/bin/chown "$usr:$usr" $"cache"/selected_editor.conf
 				int="1"
-			elif [ -f /home/$usr/.selected_editor ] && [ -f $cache/selected_editor.conf ]; then
-				editor=$(/bin/cat $cache/selected_editor.conf | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')	
+			elif [ -f /home/"$usr"/.selected_editor ] && [ -f "$cache"/selected_editor.conf ]; then
+				editor=$(/bin/cat "$cache"/selected_editor.conf | /bin/grep 'SELECTED_EDITOR=' | /bin/sed 's/SELECTED_EDITOR=//g')	
 				int="1"
 			else
 				exit 2
