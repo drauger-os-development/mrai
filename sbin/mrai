@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.1.6-beta3"
+version="1.1.8-beta3"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -126,6 +126,9 @@ h="mrai Package Manager: the Multiple Repo App Installer
 
 						mrai -ia {apt-package-name}
 
+				To install multiple apps at once, add a comma between each package name:
+					
+						mrai -ia {package-1},{package-2},{package-3},...
 
 	-g, --git,		Install just from Github, In which case, usage will be:
 	--gm, --ga		
@@ -282,7 +285,11 @@ aptinstall () {
 		if $(/usr/bin/dpkg -l "$each" 2>/dev/null | /bin/grep -q "ii  $each"); then
 			continue
 		else
-			new="$new $each"
+			if [ -n "$new" ]; then
+				new="$new $each"
+			else
+				new="$each"
+			fi
 		fi
 	done
 	for each in $pass; do
@@ -305,10 +312,13 @@ aptinstall () {
 			({
 				#Install software using apt-fast, if available based on the apt-fast.flag
 				#use /usr/bin/pkexec to gain root privleges in order to install software
+				#
+				#Because of the way apt works, we have to pass $pass unquoted. Otherwise,
+				#apt will read the contents of $pass as a single package name, not a list
 				if [ "$a" == "1" ]; then
-					/usr/bin/pkexec /usr/sbin/apt-fast -y install "$pass"
+					/usr/bin/pkexec /usr/sbin/apt-fast -y install $pass
 				else
-					/usr/bin/pkexec /usr/sbin/apt-fast install "$pass"
+					/usr/bin/pkexec /usr/sbin/apt-fast install $pass
 				fi
 			} && {
 			#update flags if snapd or flatpak get installed
@@ -323,9 +333,9 @@ aptinstall () {
 			({
 				#install software using apt, due to the unavailability of apt-fast
 				if [ "$a" == "1" ]; then
-					/usr/bin/pkexec /usr/bin/apt -y install "$pass"
+					/usr/bin/pkexec /usr/bin/apt -y install $pass
 				else
-					/usr/bin/pkexec /usr/bin/apt install "$pass"
+					/usr/bin/pkexec /usr/bin/apt install $pass
 				fi
 			} && {
 			#update flags if snapd, flatpak, or apt-fast get installed
@@ -493,11 +503,11 @@ snapinstall () {
 			#try to install the snap normally. This is prefered over classic snaps
 			#for security reasons due to it's comperably lacking amount of access to the user's system
 			#as compared to classic snaps
-			/usr/bin/snap install "$pass" || read -pr "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
+			/usr/bin/snap install $pass || read -pr "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ -n "$ans" ]; then
 				#check to see if they are cool with the classic snaps, and if so install it. Or at least try to.
 				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
-					/usr/bin/snap install "$pass" --classic || /bin/echo -e "\n$R \bERROR:$NC Snap installation failed.\n"
+					/usr/bin/snap install $pass --classic || /bin/echo -e "\n$R \bERROR:$NC Snap installation failed.\n"
 				else
 					return 2
 				fi
@@ -813,24 +823,28 @@ checkinstalltype () {
 	#check how a given app is installed by checking the list of installed apps in each
 	#then /bin/grepping over that list and looking for the app
 	type=""
-	if $(/usr/bin/dpkg -l | /bin/grep -q "ii  $pass"); then
-		type=0
-	fi
-	if is_snapd_installed && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
-		type="$type 1"
-	fi
-	if is_flatpak_installed && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
-		type="$type 2"
-	fi
-	if $(/bin/ls --group-directories-first "$gitautocache" | /bin/grep -q "$pass"); then
-		type="$type 3"
-	fi
-	if $(/bin/ls --group-directories-first "$gitmancache" | /bin/grep -q "$pass"); then
-		type="$type 4"
-	fi
-	if [ "$type" == "" ]; then
-		type=5
-	fi
+	IFS=","
+	for each in $pass; do
+		if $(/usr/bin/dpkg -l | /bin/grep -q "ii  $pass"); then
+			type=0
+		fi
+		if is_snapd_installed && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
+			type="$type 1"
+		fi
+		if is_flatpak_installed && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
+			type="$type 2"
+		fi
+		if $(/bin/ls --group-directories-first "$gitautocache" | /bin/grep -q "$pass"); then
+			type="$type 3"
+		fi
+		if $(/bin/ls --group-directories-first "$gitmancache" | /bin/grep -q "$pass"); then
+			type="$type 4"
+		fi
+		if [ "$type" == "" ]; then
+			type=5
+		fi
+	done
+	IFS=" "
 }
 
 #list apps installed from GitHub that where installed using automatic method
@@ -917,135 +931,115 @@ S=""
 i=""
 r=""
 c=""
-a=0
-#install flag
-if [ "$1" == "--install" ]; then
-	test=2
-	while [ "$test" != "1" ]; do
-		evaluator=${!test}
-		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			test=2
-		fi
-		if [ "$evaluator" == "--apt" ]; then
-			i="a"
-		elif [ "$evaluator" == "--snap" ]; then
-			i="s"
-		elif [ "$evaluator" == "--flat" ]; then
-			i="f"
-		elif [ "$evaluator" == "--gm" ]; then
-			i="gm"
-		elif [ "$evaluator" == "--ga" ]; then
-			i="ga"
-		elif [ "$evaluator" == "--git" ]; then
-			i="gb"
-		elif [ "$evaluator" == "-y" ] || [ "$evaluator" == "--assume-yes" ]; then
-			a=1
-		else
-			i=${i:-"l"}
-			pass="$evaluator"
-		fi
-		(( test+=1 ))
-	done
-#search flag
-elif [ "$1" == "--search" ] || [ "$1" == "--query" ]; then
-	test=2
-	while [ "$test" != "1" ]; do
-		evaluator="${!test}"
-		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			test=2
-		fi
-		if [ "$evaluator" == "--apt" ]; then
-			S="$S p"
-		elif [ "$evaluator" == "--snap" ]; then
-			S="$S s"
-		elif [ "$evaluator" == "--flat" ]; then
-			S="$S f"
-		elif [ "$evaluator" == "--gm" ]; then
-			S="$S m"
-		elif [ "$evaluator" == "--ga" ]; then
-			S="$S o"
-		elif [ "$evaluator" == "--git" ]; then
-			S="$S l"
-		elif [ "$evaluator" == "--verbose" ]; then
-			VERBOSE=1
-		else
-			S=${S:-"a"}
-			pass="$evaluator"
-		fi
-		(( test+=1 ))
-	done
-#update flag
-elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
-	test=2
-	while [ "$test" != "1" ]; do
-		evaluator="${!test}"
-		if [ "$evaluator" == "--apt" ]; then
-			u="$u a"
-		elif [ "$evaluator" == "--snap" ]; then
-			u="$u s"
-		elif [ "$evaluator" == "--flat" ]; then
-			u="$u f"
-		elif [ "$evaluator" == "--git" ]; then
-			u="$u g"
-		elif [ "$evaluator" == "-y" ] || [ "$evaluator" == "--assume-yes" ]; then
-			a=1
-		else
-			u=${u:-"a s f g"}
-		fi
-		(( test+=1 ))
-	done
-#uninstall flag
-elif [ "$1" == "--remove" ] || [ "$1" == "--uninstall" ]; then
-	r=1
-	pass="$2"
-	test=2
-	while [ "$test" != "1" ]; do
-		evaluator="${!test}"
-		if [ "$evaluator" == "--assume-yes" ] || [ "$evaluator" == "-y" ]; then
+num="$#"
+sent=1
+if [ "$num" == "0" ]; then
+	/bin/echo -e "\n$R \b$ERROR:$NC No options passed.\n"
+	exit 2
+fi
+(( num+=1 ))
+#search for each main flag type
+if $(/bin/echo "${!sent}" | grep -q "^--"); then
+	#Find flag
+	if [ "${!sent}" == "--find" ]; then
+		FIND=1
+		look="${!(( sent+1 ))}"
+	#clean flag
+	elif [ "${!sent}" == "--clean" ]; then
+		c=1
+		if [ "${!(( sent+1 ))}" == "--assume-yes" ] || [ "${!(( sent+1 ))}" == "-y" ]; then
 			a=1
 		fi
-		(( test+=1 ))
-	done
-#clean flag
-elif [ "$1" == "--clean" ]; then
-	c=1
-	test=2
-	while [ "$test" != "1" ]; do
-		evaluator="${!test}"
-		if [ "$evaluator" == "--assume-yes" ] || [ "$evaluator" == "-y" ]; then
+	#uninstall flag
+	elif [ "${!sent}" == "--remove"] || [ "${!sent}" == "--uninstall" ]; then
+		r=1
+		if [ "${!(( sent+1 ))}" == "--assume-yes" ] || [ "${!(( sent+1 ))}" == "-y" ]; then
 			a=1
 		fi
-		(( test+=1 ))
-	done
-elif [ "$1" == "--list" ]; then
-	LIST=1
-	test="2"
-	while [ "$test" != "1" ]; do
-		evaluator="${!test}"
-		if [ -z $evaluator ] && [ "$test" != "2" ]; then
-			test=2
-		fi
-		if [ "$evaluator" == "--apt" ]; then
-			L="$L p"
-		elif [ "$evaluator" == "--snap" ]; then
-			L="$L s"
-		elif [ "$evaluator" == "--flat" ]; then
-			L="$L f"
-		elif [ "$evaluator" == "--gm" ]; then
-			L="$L gm"
-		elif [ "$evaluator" == "--ga" ]; then
-			L="$L ga"
-		elif [ "$evaluator" == "--git" ]; then
-			L="$L gb"
-		else
-			L=${L:-"a"}
-			pass="$evaluator"
-		fi
-		(( test+=1 ))
-	done
-elif [ "$1" == "--find" ]; then
-	FIND=1
-	look="$2"
+		#THIS FLAG WILL NEED $PASS TO WORK
+	#upgrade flag
+	elif [ "${!sent}" == "--update" ] || [ "${!sent}" == "--upgrade" ]; then
+		carry="$sent"
+		while $(/bin/echo ${!sent} | grep -q "^-"); do
+			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
+				u="$u a"
+			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
+				u="$u s"
+			elif [ "${!sent}" == "--flat" ] || [ "${!sent}" == "-f" ]; then
+				u="$u f"
+			elif [ "${!sent}" == "--git" ]; then
+				u="$u g"
+			elif [ "${!sent}" == "--assume-yes" ] || [ "${!sent}" == "-y" ]; then
+				a=1
+			fi
+		done
+		sent="$carry"
+		u=${u:-"a s f g"}
+	#List Flag
+	elif [ "${!sent}" == "--list" ]; then
+		carry="$sent"
+		while $(/bin/echo ${!sent} | grep -q "^-"); do
+			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
+				L="$L p"
+			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
+				L="$L s"
+			elif [ "${!sent}" == "--flat" ] || [ "${!sent}" == "-f" ]; then
+				L="$L f"
+			elif [ "${!sent}" == "--git" ]; then
+				L="$L gb"
+			elif [ "${!sent}" == "--gm" ]; then
+				L="$L gm"
+			elif [ "${!sent}" == "--ga" ]; then
+				L="$L ga"
+			fi
+		done
+		sent="$carry"
+		L=${L:-"a"}
+	#Install Flag
+	elif [ "${!sent}" == "--install" ]; then
+		carry="$sent"
+		while $(/bin/echo ${!sent} | grep -q "^-"); do
+			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
+				i="a"
+			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
+				i="s"
+			elif [ "${!sent}" == "--flat" ] || [ "${!sent}" == "-f" ]; then
+				i="f"
+			elif [ "${!sent}" == "--git" ]; then
+				i="gb"
+			elif [ "${!sent}" == "--gm" ]; then
+				i="gm"
+			elif [ "${!sent}" == "--ga" ]; then
+				i="ga"
+			elif [ "${!sent}" == "--assume-yes" ] || [ "{!sent}" == "-y" ]; then
+				a=1
+			fi
+		done
+		sent="$carry"
+		i=${i:-"l"}
+	#Search Flag
+	elif [ "${!sent}" == "--search" ] || [ "${!sent}" == "--query" ]; then
+		carry="$sent"
+		while $(/bin/echo ${!sent} | grep -q "^-"); do
+			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
+				S="$S a"
+			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
+				S="$S s"
+			elif [ "${!sent}" == "--flat" ] || [ "${!sent}" == "-f" ]; then
+				S="$S f"
+			elif [ "${!sent}" == "--git" ]; then
+				S="$S gb"
+			elif [ "${!sent}" == "--gm" ]; then
+				S="$S gm"
+			elif [ "${!sent}" == "--ga" ]; then
+				S="$S ga"
+			elif [ "${!sent}" == "--verbose" ]; then
+				VERBOSE=1
+			fi
+		done
+		sent="$carry"
+		S=${S:-"a"}
+	fi
 fi
 if [ -z "$i" ] && [ -z "$r" ] && [ -z "$c" ] && [ -z "$S" ] && [ -z "$u" ] && [ -z "$LIST" ] && [ -z "$FIND" ]; then
 	#compound flag managment system
@@ -1228,22 +1222,22 @@ else
 		#check for apt sub-flag
 		if [ "$i" == "a" ]; then
 			#set $pass to $y that way aptinstall can use it
-			pass="$y"
-			pass=$(/bin/echo "$pass" | /bin/sed 's/,/ /')
+			pass="$2"
+			pass=$(/bin/echo "$pass" | /bin/sed 's/,/ /g')
 			aptinstall "$@"
 			exit $?
 		#git sub-flag
 		elif $(/bin/echo "$i" | /bin/grep -q "g"); then
 			#manual sub-flag
 			if $(/bin/echo "$i" | /bin/grep -q "gm"); then
-				pass="$y"
+				pass="$2"
 				( gitmaninstall && exit 0 ) || exit 2
 			#auto sub-flag
 			elif $(/bin/echo "$i" | /bin/grep -q "ga"); then
-				pass="$y"
+				pass="$2"
 				( gitautoinst && exit 0 ) || exit 2
 			elif $(/bin/echo "$i" | /bin/grep -q "gb"); then
-				pass="$y"
+				pass="$2"
 				( gitautoinst && exit 0 ) || ( gitmaninstall && exit 1 ) || exit 2
 			fi
 		#snap sub-flag
@@ -1253,7 +1247,7 @@ else
 			( snapinstall && exit 0 ) || exit 2
 		#flatpak sub-flag
 		elif [ "$i" == "f" ]; then
-			pass="$y"
+			pass="$2"
 			( flatinstall && exit 0 ) || exit 2
 		#none of the sub-flags where passed, so try ALL install methods until one works
 		elif [ "$i" == "l" ]; then
@@ -1265,7 +1259,7 @@ else
 			} || {
 				flatinstall
 			} || {
-				pass="$y"
+				pass="$2"
 				gitautoinst
 			} || {
 				gitmaninstall
@@ -1280,7 +1274,7 @@ else
 	#remove / uninstall flag
 	elif [[ -n "$r" ]] && [ "$r" == "1" ]; then
 		#check the way a certain app is installed so it can be properly removed
-		pass="$y"		
+		pass="$2"		
 		checkinstalltype
 		if $(/bin/echo "$type" | /bin/grep -q " "); then
 			if [ "$type" == " 1" ]; then
@@ -1293,11 +1287,11 @@ else
 				#make a case, set a variable containing text equal to methods an app is installed by
 				for each in $type; do
 					case "$each" in
-						0) show="apt"; input=" 1 for apt"; check="1" ;;
-						1) show="$show snap"; input="$input 2 for snap"; check="$check 2" ;;
-						2) show="$show flatpak"; input="$input 3 for flatpak"; check="$check 3" ;;
-						3) show="$show Github_Automatic" ;;
-						4) show="$show Github_Manual" ;;
+						0) if [ -z "$show" ]; then show="apt"; else show="$show apt"; fi; input=" 1 for apt"; check="1" ;;
+						1) if [ -z "$show" ]; then show="snap"; else show="$show snap"; fi; input="$input 2 for snap"; check="$check 2" ;;
+						2) if [ -z "$show" ]; then show="flatpak"; else show="$show flatpak"; fi; input="$input 3 for flatpak"; check="$check 3" ;;
+						3) if [ -z "$show" ]; then show="Github_Automatic"; else show="$show Github_Automatic"; fi ;;
+						4) if [ -z "$show" ]; then show="Github_Manual"; else show="$show Github_Manual"; fi ;;
 						*) 
 							/bin/echo -e "\n$R \bERROR:$NC unrecognized value in \$type variable. Error in checkinstalltype. Please report bug to https://github.com/drauger-os-development/mrai\n"
 							error_report 2 "Unrecognize value in variable \$type in uninstall segment: $type";;
@@ -1646,6 +1640,7 @@ $list2
 				/bin/echo "$list"
 			fi
 		fi
+#Find flag
 	elif [ "$FIND" == "1" ]; then
 		command_path=$(/usr/bin/dpkg -S $(command -v "$look") 2>/dev/null)
 		if [ -z "$command_path" ]; then

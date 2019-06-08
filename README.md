@@ -29,6 +29,7 @@ mrai: Multiple Repository App Installer
   
 # Notes
 As of yet, this is still pre-production software. There are definitly bugs that need to be worked out. `mrai` does work, but please use it with caution.
+If you want a more up-to-date version, consider looking at the `dev-branch` branch. 
 
 # Installation
 Right now, the prefered method of installtion is to either install `mrai` from this GitHub repo so you can have the latest, most up-to-date version, or install it from the \*.deb package in the releases page so that apt can uninstall it later. `mrai` currently is not on any apt repo but is planned to have a PPA once a production ready release is reached.

@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.7-beta1
+#VERSION 0.0.8-beta1
 #make sure we have the right permissions, exit if we don't
 #this entire script won't work anyways if we don't have the right permissions
 scripts="/usr/share/mrai"
@@ -43,15 +43,19 @@ cache="/etc/mrai"
 {
 	if [ -f "$cache"/apt-fast.flag ]; then
 		if [ "$1" == "1" ]; then
-			/usr/sbin/apt-fast -y purge "$2"
+			pass=$(/bin/echo "$2" | /bin/sed 's/,/ /g')
+			/usr/sbin/apt-fast -y purge $pass
 		else
-			/usr/sbin/apt-fast purge "$1"
+			pass=$(/bin/echo "$1" | /bin/sed 's/,/ /g')			
+			/usr/sbin/apt-fast purge $pass
 		fi
 	else
 		if [ "$1" == "1" ]; then
-			/usr/bin/apt -y purge "$2"
+			pass=$(/bin/echo "$2" | /bin/sed 's/,/ /g')
+			/usr/bin/apt -y purge $pass
 		else
-			/usr/bin/apt purge "$1"
+			pass=$(/bin/echo "$1" | /bin/sed 's/,/ /g')
+			/usr/bin/apt purge $pass
 		fi
 	fi
 } || {
