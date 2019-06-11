@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.0.8-beta1"
+version="0.0.9-beta1"
 scripts="/usr/share/mrai"
 called_as="$0"
 R='\033[0;31m'
@@ -41,9 +41,11 @@ fi
 #check for /etc/mrai/snapd.flag
 if [ -f /etc/mrai/snapd.flag ]; then
 	#force snaps to update
-	/bin/echo -e "\n$G \bForce Updating Snaps. Please Wait . . .\n"
+	/bin/echo -e "\n$G \bForce Updating Snaps. Please Wait . . .$NC\n"
 	{
-		/usr/bin/snap refresh
+		/usr/bin/snap refresh &
+		PID="$!"
+		/usr/share/mrai/base-spinner.sh "Updating Snaps . . . " "$PID"
 	} || {
 		error_report "$?" "Snap has had an error. Most likely network issues."
 	}

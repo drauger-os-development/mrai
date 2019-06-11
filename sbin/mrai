@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.2.0-beta4"
+version="1.2.1-beta4"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -32,7 +32,7 @@ if [[ "$EUID" == "0" ]]; then
 fi
 #pre-config
 #check if mrai is already running
-test=$(/bin/pidof -x -o "$$" "mrai" > /dev/null)
+test=$(/bin/pidof -x -o "$$" "mrai" 1>/dev/null 2>&1)
 if [ "$test" == "0" ] && [ "$1" != "--version" ] && [ "$1" != "-v" ] && [ "$(/bin/echo "$1" | /bin/grep -q '-S')" != 0 ] && [ "$(/bin/echo "$1" | /bin/grep -q '--search')" != 0 ] && [ "$(/bin/echo "$1" | /bin/grep -q '--find')" != 0 ] && [ "$(/bin/echo "$1" | /bin/grep -q '--query')" != 0 ]; then
     /bin/echo -e "\n$R \bmrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited.$NC\n"
 	exit 2
@@ -934,7 +934,7 @@ c=""
 num="$#"
 sent=1
 if [ "$num" == "0" ]; then
-	/bin/echo -e "\n$R \b$ERROR:$NC No options passed.\n"
+	/bin/echo -e "\n$R \bERROR:$NC No options passed.\n"
 	exit 2
 fi
 (( num+=1 ))
