@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+
+  <vendor>Drauger OS Development</vendor>
+  <vendor_url>https://draugeros.org/go</vendor_url>
+
+  <action id="org.drauger.mrai.apt.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_US">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_AU">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_GB">Authentication is required to install, remove, or update software.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/apt</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+    <action id="org.drauger.mrai.apt-fast.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_US">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_AU">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_GB">Authentication is required to install, remove, or update software.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/sbin/apt-fast</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+  <action id="org.drauger.mrai.aptremove.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_US">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_AU">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_GB">Authentication is required to install, remove, or update software.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/mrai/aptremove</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+  <action id="org.drauger.mrai.aptupdate.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_US">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_AU">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_GB">Authentication is required to install, remove, or update software.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/sbin/aptupdate</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+  <action id="org.drauger.mrai.clean.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to clean your system.</message>
+    <message xml:lang="en_US">Authentication is required to clean your system.</message>
+    <message xml:lang="en_AU">Authentication is required to clean your system.</message>
+    <message xml:lang="en_GB">Authentication is required to clean your system.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/mrai/clean</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+  <action id="org.drauger.mrai.edit-apt-sources.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to edit apt repositories.</message>
+    <message xml:lang="en_US">Authentication is required to edit apt repositories.</message>
+    <message xml:lang="en_AU">Authentication is required to edit apt repositories.</message>
+    <message xml:lang="en_GB">Authentication is required to edit apt repositories.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/mrai/edit-apt-sources</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+  <action id="org.drauger.mrai.gitautoinst.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_US">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_AU">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_GB">Authentication is required to install, remove, or update software.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/mrai/gitautoinst</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+  <action id="org.drauger.mrai.dpkg.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to correct incorrect package configurations.</message>
+    <message xml:lang="en_US">Authentication is required to correct incorrect package configurations.</message>
+    <message xml:lang="en_AU">Authentication is required to correct incorrect package configurations.</message>
+    <message xml:lang="en_GB">Authentication is required to correct incorrect package configurations.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/dpkg</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+  <action id="org.drauger.mrai.snapupdate.policy">
+    <description>Use the PolicyKit backend to allow mrai administrative access</description>
+    <message>Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_US">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_AU">Authentication is required to install, remove, or update software.</message>
+    <message xml:lang="en_GB">Authentication is required to install, remove, or update software.</message>
+    <icon_name>alert</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/sbin/snapupdate</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+  </action>
+
+</policyconfig>

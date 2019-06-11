@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.5-beta1
+#VERSION 0.0.6-beta1
 home="$1"
 user="$2"
 pass="$3"
@@ -66,14 +66,14 @@ cd "$pass1" || exit 1
 if [ -f Makefile ] || [ -f makefile ] || [ -f MAKEFILE ]; then
 	#ask if we need to run a specific file in order to get set up
 	/bin/echo -e "\nA Makefile has been detected. Some apps require you to run a seperate file before the Makefile."
-	read -pr "Would you like to run such a file? [y/N]: " ans
+	read -rp "Would you like to run such a file? [y/N]: " ans
 	if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
 		#show a list of files for the user to chose from
 		/bin/ls --color=auto
-		read -pr "Which of the above files would you like to run? (Press enter with no input to cancel and continue with running the Makefile. Type 'exit' to exit.): " ans
+		read -rp "Which of the above files would you like to run? (Press enter with no input to cancel and continue with running the Makefile. Type 'exit' to exit.): " ans
 		#check to see if $ans is set and NOT to exit, if it is it should be set to a file name
 		if [[ ! -z $ans ]] && [ "$ans" != "exit" ]; then
-			read -pr "Would you like to run this file as root? [y/N]: " ans1
+			read -rp "Would you like to run this file as root? [y/N]: " ans1
 			#make the designated file executable and run it
 			/bin/chmod +x "$ans"
 			if [ "$ans1" == "Y" ] || [ "$ans1" == "y" ]; then
