@@ -20,11 +20,13 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.1.3-beta1"
+version="0.1.5-beta1"
 called_as="$0"
 R='\033[0;31m'
 G='\033[0;32m'
 NC='\033[0m'
+i=1
+sp="/-\|"
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
@@ -180,5 +182,5 @@ elif [ "$y" == "1" ]; then
 	fi
 fi
 if [ "$s" == "1" ]; then
-	/usr/bin/pkexec /sbin/snapupdate
+	/usr/bin/pkexec "/sbin/snapupdate"
 fi

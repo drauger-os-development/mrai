@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.1.8-beta3"
+version="1.2.0-beta4"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -60,10 +60,10 @@ elif [ "$1" == "--add-repo" ]; then
 		exit $?
 	elif [ "$2" == "-f" ] || [ "$2" == "--flat" ]; then
 		if $(/bin/echo "$3" | /bin/grep -q "http://") || $(/bin/echo "$3" | /bin/grep -q "https://"); then
-			read -pr "What would you like to name this repo?: " name
+			read -rp "What would you like to name this repo?: " name
 			/usr/bin/flatpak remote-add --if-not-exists "$name" "$3"
 		else
-			read -pr "What would you like to name this repo?: " name
+			read -rp "What would you like to name this repo?: " name
 			/usr/bin/flatpak remote-add --if-not-exists "$name" http://"$3"
 		fi
 		exit $?
@@ -76,7 +76,7 @@ elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--
 	if [ -d /etc/apt/sources.list.d ]; then
 		sld=$(/bin/ls /etc/apt/sources.list.d)
 		if [ "$sld" == "" ] || [ "$sld" == " " ]; then
-			/usr/bin/pkexec $scripts/edit-apt-sources.sh "/etc/apt/sources.list"
+			/usr/bin/pkexec "$scripts/edit-apt-sources" "/etc/apt/sources.list"
 		else
 			/bin/echo -e "\nYour sources.list.d directroy has config files in it as well.\n"
 			/bin/echo "0 /etc/apt/sources.list"
@@ -86,7 +86,7 @@ elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--
 				int=$((int+1))
 			done
 			int=$((int-1))
-			read -pr "Give the number of the file you would like to edit: [0-$int]: " choice
+			read -rp "Give the number of the file you would like to edit: [0-$int]: " choice
 			int=1
 			for each in $sld; do
 				if [ "$choice" == "0" ]; then
@@ -104,11 +104,11 @@ elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--
 					int=$((int+1))
 				fi
 			done
-			/usr/bin/pkexec $scripts/edit-apt-sources.sh "$file"
+			/usr/bin/pkexec "$scripts/edit-apt-sources" "$file"
 			exit $?
 		fi
 	else
-		/usr/bin/pkexec $scripts/edit-apt-sources.sh "/etc/apt/sources.list"
+		/usr/bin/pkexec "$scripts/edit-apt-sources" "/etc/apt/sources.list"
 		exit $?
 	fi
 fi
@@ -272,7 +272,7 @@ fi
 #Force update snaps
 snapupdate () {
 	{
-		/bin/bash /sbin/snapupdate
+		/sbin/snapupdate
 	} || {
 		/bin/echo -e "\n$R \bsnapupdate failed with exit code $?.$NC Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
@@ -316,9 +316,9 @@ aptinstall () {
 				#Because of the way apt works, we have to pass $pass unquoted. Otherwise,
 				#apt will read the contents of $pass as a single package name, not a list
 				if [ "$a" == "1" ]; then
-					/usr/bin/pkexec /usr/sbin/apt-fast -y install $pass
+					/usr/bin/pkexec "/usr/sbin/apt-fast" -y install $pass
 				else
-					/usr/bin/pkexec /usr/sbin/apt-fast install $pass
+					/usr/bin/pkexec "/usr/sbin/apt-fast" install $pass
 				fi
 			} && {
 			#update flags if snapd or flatpak get installed
@@ -333,9 +333,9 @@ aptinstall () {
 			({
 				#install software using apt, due to the unavailability of apt-fast
 				if [ "$a" == "1" ]; then
-					/usr/bin/pkexec /usr/bin/apt -y install $pass
+					/usr/bin/pkexec "/usr/bin/apt" -y install $pass
 				else
-					/usr/bin/pkexec /usr/bin/apt install $pass
+					/usr/bin/pkexec "/usr/bin/apt" install $pass
 				fi
 			} && {
 			#update flags if snapd, flatpak, or apt-fast get installed
@@ -362,7 +362,7 @@ aptinstall () {
 #install software, using a more automatic method, from GitHub
 gitautoinst () {
 	{
-		/usr/bin/pkexec "$scripts"/gitautoinst.sh "$HOME" "$user" "$pass"
+		/usr/bin/pkexec "$scripts/gitautoinst" "$HOME" "$user" "$pass"
 	} || {
 		/bin/echo -e "\n$R \bERROR:$NC gitautoinst has failed with code $?. Please fill out an issue report\non our GitHub at https://github.com/drauger-os-development/mrai/issues\n"
 		exit "$?"
@@ -418,7 +418,7 @@ flatinstall () {
 					#for mutliple installation canditdates, ask which the user wishes to install.
 					/bin/echo -e "\n$Y \bWARNING:$NC Multiple Installation Candidates Detected.\n"
 					/bin/echo -e "Which package would you like to install?\n$r\n"
-					read -pr "Please copy-paste the name of the package here (Type \"exit\", \"break\", or \"end\" to exit): " int
+					read -rp "Please copy-paste the name of the package here (Type \"exit\", \"break\", or \"end\" to exit): " int
 					#check if the user wants out. If they do, let them out
 					if [ "$int" == "exit" ] || [ "$int" == "break" ] || [ "$int" == "end" ]; then
 						exit 2
@@ -503,7 +503,7 @@ snapinstall () {
 			#try to install the snap normally. This is prefered over classic snaps
 			#for security reasons due to it's comperably lacking amount of access to the user's system
 			#as compared to classic snaps
-			/usr/bin/snap install $pass || read -pr "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
+			/usr/bin/snap install $pass || read -rp "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " ans
 			if [ -n "$ans" ]; then
 				#check to see if they are cool with the classic snaps, and if so install it. Or at least try to.
 				if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
@@ -547,9 +547,9 @@ gitmaninstall () {
 	cd "$pass1" || return 1
 	/bin/echo -e "\n$(/bin/ls)\n"
 	#get the file the user needs to run to install their software
-	read -pr "Which of the above files would you like to try to run in order to install $z? (Case-Sensitive) : " run
+	read -rp "Which of the above files would you like to try to run in order to install $z? (Case-Sensitive) : " run
 	#check if the indicated file needs to run as root. Cause we can do that . . . indirectly.
-	read -pr "Should this file be run with root privleges? [y/N]: " ans
+	read -rp "Should this file be run with root privleges? [y/N]: " ans
 	ans=$(/bin/echo "$ans" | /usr/bin/awk '{print tolower($0)}')
 	if [ "$ans" == "y" ]; then
 		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
@@ -603,12 +603,12 @@ gitmaninstall () {
 aptremove () {
 	{
 		if [ "$a" == "1" ]; then
-			/usr/bin/pkexec "$scripts"/aptremove.sh 1 "$pass" "$user"
+			/usr/bin/pkexec "$scripts/aptremove" 1 "$pass" "$user"
 		else
-			/usr/bin/pkexec "$scripts"/aptremove.sh "$pass" "$user"
+			/usr/bin/pkexec "$scripts/aptremove" "$pass" "$user"
 		fi
 	} || {
-		/bin/echo -e "\n$R \bERROR:$NC aptremove.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
+		/bin/echo -e "\n$R \bERROR:$NC aptremove has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit $?
 	}
 }
@@ -667,7 +667,7 @@ gitremove () {
 				#Sleep so the user can read what we just /bin/echoed out
 				/bin/sleep 3s
 				#run the file with the designated option as root
-				( ( /usr/bin/pkexec $(/bin/pwd)/"$run" "$opt" ) && ( sent=1 ) ) || ( ((num+=1)) )
+				( ( /usr/bin/pkexec "$(/bin/pwd)/$run" "$opt" ) && ( sent=1 ) ) || ( ((num+=1)) )
 			done
 		elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
 			/bin/echo -e "\n$G \bAttempting to uninstall. Please wait . . .$NC\n"
@@ -777,7 +777,7 @@ gitupdate () {
 				#check if we need to run this as root
 				if [ "$root" == "RUN_AS_ROOT=yes" ]; then
 					#run the file as root
-					/usr/bin/pkexec "$(/bin/pwd)"/"$run" "$opt"
+					/usr/bin/pkexec "$(/bin/pwd)/$run" "$opt"
 				elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
 					#run the designated file, but NOT AS ROOT
 					exec $(/bin/pwd)/"$run" "$opt"
@@ -786,7 +786,7 @@ gitupdate () {
 					#complexity of programming it to re-ask if the passed string doesn't match a certain set of criteria
 					if [ "$root" == "RUN_AS_ROOT=null" ]; then
 						#fix the null value
-						read -pr "Should this be run as root in the future? [y/N]: " ans
+						read -rp "Should this be run as root in the future? [y/N]: " ans
 						if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 							/bin/sed -i 's/RUN_AS_ROOT=null/RUN_AS_ROOT=yes/g' "$flag"
 						elif [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
@@ -875,12 +875,12 @@ gitmanlist () {
 clean () {
 	{
 		if [ "$a" == "1" ]; then
-			/usr/bin/pkexec "$scripts"/clean.sh -y "$user"
+			/usr/bin/pkexec "$scripts/clean" -y "$user"
 		else
-			/usr/bin/pkexec "$scripts"/clean.sh "$user"
+			/usr/bin/pkexec "$scripts/clean" "$user"
 		fi
 	} || {
-		/bin/echo -e "\n$R \bERROR:$NC clean.sh has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
+		/bin/echo -e "\n$R \bERROR:$NC clean has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit 2
 	}
 }
@@ -1302,7 +1302,7 @@ else
 					check="$check 4"
 				fi
 				/bin/echo -e "\n$G \bThere are mutliple apps which fit the package name passed installer.\n\nThese are installed through: $show\n\nFrom which package manager would you like to uninstall?$NC"
-				read -pr "$input. Select ONE: " ans
+				read -rp "$input. Select ONE: " ans
 				while [ -n "$ans" ]; do
 					if [ "$ans" == "1" ] && $(/bin/echo "$check" | /bin/grep -q "1"); then
 						aptremove
@@ -1322,7 +1322,7 @@ else
 					else
 						/bin/echo -e "\n$Y \bUnrecognized Input passed. Please try again.$NC\n"
 						/bin/echo -e "\n$G \bThere are mutliple apps which fit the package name passed installer.\n\nThese are installed through: $show\n\nFrom which package manager would you like to uninstall?$NC"
-						read -pr "$input. Select ONE: " ans
+						read -rp "$input. Select ONE: " ans
 					fi
 				done
 			fi
@@ -1379,9 +1379,9 @@ else
 				if [ "$a" == "0" ]; then
 					{
 						if $(/bin/echo "$u" | /bin/grep -q "s"); then
-							/usr/bin/pkexec /sbin/aptupdate -s
+							/usr/bin/pkexec "/sbin/aptupdate" -s 2>/dev/null
 						else
-							/usr/bin/pkexec /sbin/aptupdate
+							/usr/bin/pkexec "/sbin/aptupdate" 2>/dev/null
 						fi
 					} || {
 						error_report "$?" "aptupdate has had an error. Please check error log for more info."
@@ -1389,9 +1389,9 @@ else
 				elif [ "$a" == "1" ]; then
 					{
 						if $(/bin/echo "$u" | /bin/grep -q "s"); then
-							/usr/bin/pkexec /sbin/aptupdate -sy
+							/usr/bin/pkexec "/sbin/aptupdate" -sy 2>/dev/null
 						else
-							/usr/bin/pkexec /sbin/aptupdate -y
+							/usr/bin/pkexec "/sbin/aptupdate" -y 2>/dev/null
 						fi
 					} || {
 						error_report "$?" "aptupdate has had an error. Please check error log for more info."
