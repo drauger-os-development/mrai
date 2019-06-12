@@ -951,7 +951,7 @@ if $(/bin/echo "${!sent}" | grep -q "^--"); then
 			a=1
 		fi
 	#uninstall flag
-	elif [ "${!sent}" == "--remove"] || [ "${!sent}" == "--uninstall" ]; then
+	elif [ "${!sent}" == "--remove" ] || [ "${!sent}" == "--uninstall" ]; then
 		r=1
 		if [ "${!(( sent+1 ))}" == "--assume-yes" ] || [ "${!(( sent+1 ))}" == "-y" ]; then
 			a=1
