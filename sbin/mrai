@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.2.1-beta4"
+version="1.2.2-beta4"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -1447,15 +1447,7 @@ else
 			if $(/bin/echo "$S" | /bin/grep -q "l"); then
 				list1=$(gitmanlist | /bin/grep "$pass")
 				list2=$(gitautolist | /bin/grep "$pass")
-				list="$G \bInstalled through Manual Method:$NC
-$list1
-
-$G \bInstalled through Automatic Method:$NC
-
-$list2
-
-"
-				/bin/echo -e "\n$list\n"
+				/bin/echo -e "\n$G \bInstalled through Manual Method:$NC\n$list1\n\n$G \bInstalled through Automatic Method:$NC\n\n$list2\n\n\n"
 			fi
 		elif [ "$VERBOSE" == "1" ]; then
 			#apt sub-flag, only search from apt
@@ -1496,14 +1488,7 @@ $list2
 				/bin/echo -e "\n$Y \bGitHub apps do not support Verbose Search mode. Falling Back to Normal Search . . .$NC\n"
 				list1=$(gitmanlist | /bin/grep "$pass")
 				list2=$(gitautolist | /bin/grep "$pass")
-				list="$G \bInstalled through Manual Method:$NC
-$list1
-
-$G \bInstalled through Automatic Method:$NC
-
-$list2
-
-"
+				/bin/echo -e "\n$G \bInstalled through Manual Method:$NC\n$list1\n\n$G \bInstalled through Automatic Method:$NC\n\n$list2\n\n\n"
 			fi
 		fi
 		#search EVERYTHING		
@@ -1530,10 +1515,20 @@ $list2
 
 "
 				/bin/echo -e "\n$G \bInstalled GitHub Apps:$NC\n"
-				if [ "$list" == " " ]; then
-					/bin/echo -e "$Y \bNo matching GitHub Apps Installed.$NC\n"
+				if [ "$list1" == " " ] || [ "$list1" == "" ] || [ -z "$list1" ]; then
+					if [ "$list2" == " " ] || [ "$list2" == "" ] || [ -z "$list2" ]; then
+						/bin/echo -e "$Y \bNo matching GitHub Apps Installed.$NC\n"
+					else
+						/bin/echo -e "\n$G \bInstalled through Automatic Method:$NC\n\n$list2\n"
+					fi
+				elif [ "$list2" == " " ] || [ "$list2" == "" ] || [ -z "$list2" ]; then
+					if [ "$list1" == " " ] || [ "$list1" == "" ] || [ -z "$list1" ]; then
+						/bin/echo -e "$Y \bNo matching GitHub Apps Installed.$NC\n"
+					else
+						/bin/echo -e "\n$G \bInstalled through Manual Method:$NC\n\n$list2\n"
+					fi
 				else
-					/bin/echo "$list"
+					/bin/echo -e "\n$list\n"
 				fi
 			elif [ "$VERBOSE" == "1" ]; then
 				list1=$(gitmanlist | /bin/grep "$pass")
