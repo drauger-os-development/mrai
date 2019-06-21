@@ -20,13 +20,17 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION: 0.0.5-beta1
+#VERSION: 0.0.8-beta1
+#
+#Passed Options Need To Be:
+# $1: Message to display
+# $2: PID to watch. Will exit when PID disappears
 sp="/-\|"
 i=1
 message="$1"
-while true; do
-	sleep 0.25s
-	printf "\r\033[K"
-	printf "[${sp:i++%${#sp}:1}] $message"
+while [ -d "/proc/$2" ]; do
+	/bin/sleep 0.25s
+	/usr/bin/printf "\r\033[K"
+	/usr/bin/printf "[${sp:i++%${#sp}:1}] $message"
 done
-printf "\r\033[K"
+/usr/bin/printf "\r\033[K"

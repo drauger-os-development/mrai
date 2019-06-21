@@ -1,6 +1,6 @@
-mrai (1.0.2-beta2) bionic; urgency=medium
+mrai (1.2.2-beta4) bionic; urgency=medium
 
-  * Fixed issue with installing an app when there is another app installed with a similar name
-  * Fixed issue where *.list files in /etc/apt/sources.list.d where numbered diffrently from what they would be recognized as
+  * multiple bug fixes
+  * when an invalid package name is passed, mrai will now attempt to suggest packages with similar names for removal
 
- -- Thomas Castleman <contact@draugeros.org>  Tue, 09 Apr 2019 01:04:07 -0500
+ -- Thomas Castleman <contact@draugeros.org>  Tue, 19 Jun 2019 11:28:00 -0500
