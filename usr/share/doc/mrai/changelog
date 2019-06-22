@@ -1,6 +1,5 @@
-mrai (1.2.2-beta4) bionic; urgency=medium
+mrai (1.2.3-beta4) bionic; urgency=medium
 
-  * multiple bug fixes
-  * when an invalid package name is passed, mrai will now attempt to suggest packages with similar names for removal
+  * Fixed output formatting error with snapupdate
 
- -- Thomas Castleman <contact@draugeros.org>  Tue, 19 Jun 2019 11:28:00 -0500
+ -- Thomas Castleman <contact@draugeros.org>  Tue, 21 Jun 2019 09:39:30 -0500
