@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.2.3-beta4"
+version="1.2.4-beta4"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -240,31 +240,32 @@ if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
 	exit 0
 fi
 #check for apt-fast, snapd, and flatpak and update the flags
+#here, we continue using the functions cause the functions check for the flags
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
-	if [[ ! -f "$cache"/apt-fast.flag ]]; then
+	if ! is_aptfast_installed ; then
 		/bin/echo "" >> "$cache"/apt-fast.flag
 	fi
 else
-	if [ is_aptfast_installed ]; then
-		/bin/rm "$cache"/apt-fast.flag
+	if is_aptfast_installed; then
+		/bin/rm "$cache"/apt-fast.flag 2>/dev/null
 	fi
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
-	if [[ ! -f "$cache"/snapd.flag ]]; then
+	if ! is_snapd_installed; then
 		/bin/echo "" >> "$cache"/snapd.flag
 	fi
 else
-	if [ is_snapd_installed ]; then
-		/bin/rm "$cache"/snapd.flag
+	if is_snapd_installed; then
+		/bin/rm "$cache"/snapd.flag 2>/dev/null
 	fi
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
-	if [[ ! -f "$cache"/flatpak.flag ]]; then
+	if ! is_flatpak_installed; then
 		/bin/echo "" >> "$cache"/flatpak.flag
 	fi
 else
-	if [ is_flatpak_installed ]; then
-		/bin/rm "$cache"/flatpak.flag
+	if is_flatpak_installed; then
+		/bin/rm "$cache"/flatpak.flag 2>/dev/null
 	fi
 fi
 #Start Defining Functions
@@ -883,34 +884,6 @@ clean () {
 		/bin/echo -e "\n$R \bERROR:$NC clean has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit 2
 	}
-}
-
-#Functions to check if suggested packages are installed
-
-#check for snapd
-is_snapd_installed () {
-	if [ -f "$cache"/snapd.flag ]; then
-		return 0
-	else
-		return 1
-	fi
-}
-
-#check for apt-fast
-is_aptfast_installed () {
-	if [ -f "$cache"/apt-fast.flag ]; then
-		return 0
-	else
-		return 1
-	fi
-}
-#check for flatpak
-is_flatpak_installed () {
-	if [ -f "$cache"/flatpak.flag ]; then
-		return 0
-	else
-		return 1
-	fi
 }
 
 #report errors
