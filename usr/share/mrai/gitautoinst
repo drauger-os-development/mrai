@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.6-beta1
+#VERSION 0.0.7-beta1
 home="$1"
 user="$2"
 pass="$3"
@@ -32,7 +32,7 @@ NC='\033[0m'
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
-	"$scripts"/log-out.sh "$1" "/usr/share/mrai/gitautoinst.sh" "$2" "$called_as" "$(/bin/pwd)"
+	"$scripts"/log-out "$1" "/usr/share/mrai/gitautoinst.sh" "$2" "mrai" "$(/bin/pwd)" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi

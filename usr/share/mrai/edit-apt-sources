@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.1.5-beta1
+#VERSION 0.1.6-beta1
 set -e
 set -o pipefail
 file="$1"
@@ -35,7 +35,7 @@ NC='\033[0m'
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
-	"$scripts"/log-out.sh "$1" "/usr/share/mrai/edit-apt-sources.sh" "$2" "$called_as" "$(/bin/pwd)"
+	"$scripts"/log-out "$1" "/usr/share/mrai/edit-apt-sources.sh" "$2" "mrai" "$(/bin/pwd)" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi
