@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.1.6-beta1"
+version="0.1.7-beta1"
 called_as="$0"
 R='\033[0;31m'
 G='\033[0;32m'
@@ -30,7 +30,7 @@ sp="/-\|"
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
-	/usr/share/mrai/log-out "$1" "/sbin/aptupdate" "$2" "mrai" "$(/bin/pwd)" "$called_as"
+	/usr/share/mrai/log-out "$1" "/sbin/aptupdate" "$2" "mrai" "$PWD" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi

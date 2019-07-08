@@ -35,7 +35,7 @@ NC='\033[0m'
 #report errors
 error_report () {
 	/bin/echo -e "\n$R \bERROR:$NC $2\n"
-	"$scripts"/log-out "$1" "/usr/share/mrai/edit-apt-sources.sh" "$2" "mrai" "$(/bin/pwd)" "$called_as"
+	"$scripts"/log-out "$1" "/usr/share/mrai/edit-apt-sources.sh" "$2" "mrai" "$PWD" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi
