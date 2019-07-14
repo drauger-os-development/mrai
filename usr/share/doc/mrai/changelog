@@ -1,5 +1,6 @@
-mrai (1.2.3-beta4) bionic; urgency=medium
+mrai (1.3.0-beta5) bionic; urgency=medium
 
-  * Fixed output formatting error with snapupdate
+  * multiple bug fixes
+  * faster logging program
 
- -- Thomas Castleman <contact@draugeros.org>  Tue, 21 Jun 2019 09:39:30 -0500
+ -- Thomas Castleman <contact@draugeros.org>  Tue, 14 Jul 2019 17:49:15 -0500
