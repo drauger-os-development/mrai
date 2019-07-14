@@ -242,29 +242,29 @@ fi
 #check for apt-fast, snapd, and flatpak and update the flags
 #here, we continue using the functions cause the functions check for the flags
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
-	if [ ! is_aptfast_installed ]; then
+	if ! is_aptfast_installed; then
 		/bin/echo "" >> "$cache"/apt-fast.flag
 	fi
 else
-	if [ is_aptfast_installed ]; then
+	if is_aptfast_installed; then
 		/bin/rm "$cache"/apt-fast.flag 2>/dev/null
 	fi
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
-	if [ ! is_snapd_installed ]; then
+	if ! is_snapd_installed; then
 		/bin/echo "" >> "$cache"/snapd.flag
 	fi
 else
-	if [ is_snapd_installed ]; then
+	if is_snapd_installed; then
 		/bin/rm "$cache"/snapd.flag 2>/dev/null
 	fi
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
-	if [ ! is_flatpak_installed ]; then
+	if ! is_flatpak_installed; then
 		/bin/echo "" >> "$cache"/flatpak.flag
 	fi
 else
-	if [ is_flatpak_installed ]; then
+	if is_flatpak_installed; then
 		/bin/rm "$cache"/flatpak.flag 2>/dev/null
 	fi
 fi
@@ -811,7 +811,7 @@ gitupdate () {
 #update flatpaks
 flatupdate () {
 	#check if the flatpak.flag file is there, cause why use flatpak if flatpak isn't even installed?
-	if [ is_flatpak_installed ]; then
+	if is_flatpak_installed; then
 		#update flatpak packages
 		/bin/echo -e "\n$G \bUpdating Flatpaks. Please wait . . . $NC\n"
 		/usr/bin/flatpak update 2>/dev/null || ( /bin/echo -e "\n$R \bFlatpak has had an error. Please try updating again later with 'mrai -uf'.$NC\n"; error_report "1" "Flatpak encountered an error. Updating will continue." )
@@ -835,7 +835,7 @@ checkinstalltype () {
 		if [ is_snapd_installed ] && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
 			type="$type 1"
 		fi
-		if [ is_flatpak_installed ] && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
+		if is_flatpak_installed && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
 			type="$type 2"
 		fi
 		if $(/bin/ls --group-directories-first "$gitautocache" | /bin/grep -q "$pass"); then
@@ -887,6 +887,34 @@ clean () {
 		/bin/echo -e "\n$R \bERROR:$NC clean has failed with exit code $?. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"
 		exit 2
 	}
+}
+
+#Functions to check if suggested packages are installed
+
+#check for snapd
+is_snapd_installed () {
+	if [ -f "$cache"/snapd.flag ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+#check for apt-fast
+is_aptfast_installed () {
+	if [ -f "$cache"/apt-fast.flag ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+#check for flatpak
+is_flatpak_installed () {
+	if [ -f "$cache"/flatpak.flag ]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 #report errors
