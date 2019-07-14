@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.2.6-beta4"
+version="1.3.0-beta5"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -242,29 +242,29 @@ fi
 #check for apt-fast, snapd, and flatpak and update the flags
 #here, we continue using the functions cause the functions check for the flags
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
-	if ! is_aptfast_installed ; then
+	if [ ! is_aptfast_installed ]; then
 		/bin/echo "" >> "$cache"/apt-fast.flag
 	fi
 else
-	if is_aptfast_installed; then
+	if [ is_aptfast_installed ]; then
 		/bin/rm "$cache"/apt-fast.flag 2>/dev/null
 	fi
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
-	if ! is_snapd_installed; then
+	if [ ! is_snapd_installed ]; then
 		/bin/echo "" >> "$cache"/snapd.flag
 	fi
 else
-	if is_snapd_installed; then
+	if [ is_snapd_installed ]; then
 		/bin/rm "$cache"/snapd.flag 2>/dev/null
 	fi
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
-	if ! is_flatpak_installed; then
+	if [ ! is_flatpak_installed ]; then
 		/bin/echo "" >> "$cache"/flatpak.flag
 	fi
 else
-	if is_flatpak_installed; then
+	if [ is_flatpak_installed ]; then
 		/bin/rm "$cache"/flatpak.flag 2>/dev/null
 	fi
 fi
@@ -747,6 +747,9 @@ gitupdate () {
 	for each in $pass; do
 		pass1="$each"
 		if $( /bin/ls | /bin/grep -q "$z"); then
+			if $(/bin/echo "$pass1" | grep -q "^-"); then
+				/bin/echo -e "\n$Y \bWARNING:$NC Attempting to enter a directory whose name starts with \"-\""
+			fi
 			cd "$pass1" || return 1
 			#read the *.flag file and parse it for info
 			flag=$(/bin/ls | /bin/grep ".flag")
@@ -808,7 +811,7 @@ gitupdate () {
 #update flatpaks
 flatupdate () {
 	#check if the flatpak.flag file is there, cause why use flatpak if flatpak isn't even installed?
-	if is_flatpak_installed; then
+	if [ is_flatpak_installed ]; then
 		#update flatpak packages
 		/bin/echo -e "\n$G \bUpdating Flatpaks. Please wait . . . $NC\n"
 		/usr/bin/flatpak update 2>/dev/null || ( /bin/echo -e "\n$R \bFlatpak has had an error. Please try updating again later with 'mrai -uf'.$NC\n"; error_report "1" "Flatpak encountered an error. Updating will continue." )
@@ -829,10 +832,10 @@ checkinstalltype () {
 		if $(/usr/bin/dpkg -l | /bin/grep -q "ii  $pass"); then
 			type=0
 		fi
-		if is_snapd_installed && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
+		if [ is_snapd_installed ] && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
 			type="$type 1"
 		fi
-		if is_flatpak_installed && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
+		if [ is_flatpak_installed ] && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
 			type="$type 2"
 		fi
 		if $(/bin/ls --group-directories-first "$gitautocache" | /bin/grep -q "$pass"); then
@@ -851,7 +854,7 @@ checkinstalltype () {
 #list apps installed from GitHub that where installed using automatic method
 gitautolist () {
 	{
-		/bin/ls --group-directories-first $gitautocache
+		/bin/ls --group-directories-first "$gitautocache"
 	} || {
 		error="$?"		
 		/bin/echo -e "\n$R \bERROR:$NC Function gitautolist has failed with exit code $error.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
@@ -863,7 +866,7 @@ gitautolist () {
 #list apps installed from GitHub that where installed using manual method
 gitmanlist () {
 	{
-		/bin/ls --group-directories-first $gitmancache
+		/bin/ls --group-directories-first "$gitmancache"
 	} || {
 		error="$?"
 		/bin/echo -e "\n$R \bERROR:$NC Function gitmanlist has failed with exit code $error.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n"
@@ -905,35 +908,37 @@ i=""
 r=""
 c=""
 num="$#"
-sent=1
 if [ "$num" == "0" ]; then
 	/bin/echo -e "\n$R \bERROR:$NC No options passed.\n"
 	exit 2
 fi
 (( num+=1 ))
 #search for each main flag type
-if $(/bin/echo "${!sent}" | grep -q "^--"); then
+if $(/bin/echo "$1" | grep -q "^--"); then
 	#Find flag
-	if [ "${!sent}" == "--find" ]; then
+	if [ "$1" == "--find" ]; then
 		FIND=1
-		look="${!(( sent+1 ))}"
+		look="$2"
 	#clean flag
-	elif [ "${!sent}" == "--clean" ]; then
+	elif [ "$1" == "--clean" ]; then
 		c=1
-		if [ "${!(( sent+1 ))}" == "--assume-yes" ] || [ "${!(( sent+1 ))}" == "-y" ]; then
+		if [ "$2" == "--assume-yes" ] || [ "$2" == "-y" ]; then
 			a=1
 		fi
 	#uninstall flag
-	elif [ "${!sent}" == "--remove" ] || [ "${!sent}" == "--uninstall" ]; then
+	elif [ "$1" == "--remove" ] || [ "$1" == "--uninstall" ]; then
 		r=1
-		if [ "${!(( sent+1 ))}" == "--assume-yes" ] || [ "${!(( sent+1 ))}" == "-y" ]; then
+		if [ "$2" == "--assume-yes" ] || [ "$2" == "-y" ]; then
 			a=1
+		fi
+		if [ "$a" != "1" ]; then
+			a=0
 		fi
 		#THIS FLAG WILL NEED $PASS TO WORK
 	#upgrade flag
-	elif [ "${!sent}" == "--update" ] || [ "${!sent}" == "--upgrade" ]; then
-		carry="$sent"
-		while $(/bin/echo ${!sent} | grep -q "^-"); do
+	elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
+		sent=2
+		while (( $(/bin/echo "$sent <= $#" | /usr/bin/bc -l) )); do
 			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
 				u="$u a"
 			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
@@ -945,13 +950,16 @@ if $(/bin/echo "${!sent}" | grep -q "^--"); then
 			elif [ "${!sent}" == "--assume-yes" ] || [ "${!sent}" == "-y" ]; then
 				a=1
 			fi
+			(( sent+=1 ))
 		done
-		sent="$carry"
+		if [ "$a" != "1" ]; then
+			a=0
+		fi
 		u=${u:-"a s f g"}
 	#List Flag
-	elif [ "${!sent}" == "--list" ]; then
-		carry="$sent"
-		while $(/bin/echo ${!sent} | grep -q "^-"); do
+	elif [ "$1" == "--list" ]; then
+		sent=2
+		while (( $(/bin/echo "$sent <= $#" | /usr/bin/bc -l) )); do
 			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
 				L="$L p"
 			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
@@ -965,13 +973,13 @@ if $(/bin/echo "${!sent}" | grep -q "^--"); then
 			elif [ "${!sent}" == "--ga" ]; then
 				L="$L ga"
 			fi
+			(( sent+=1 ))
 		done
-		sent="$carry"
 		L=${L:-"a"}
 	#Install Flag
-	elif [ "${!sent}" == "--install" ]; then
-		carry="$sent"
-		while $(/bin/echo ${!sent} | grep -q "^-"); do
+	elif [ "$1" == "--install" ]; then
+		sent=2
+		while (( $(/bin/echo "$sent <= $#" | /usr/bin/bc -l) )); do
 			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
 				i="a"
 			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
@@ -987,13 +995,16 @@ if $(/bin/echo "${!sent}" | grep -q "^--"); then
 			elif [ "${!sent}" == "--assume-yes" ] || [ "{!sent}" == "-y" ]; then
 				a=1
 			fi
+			(( sent+=1 ))
 		done
-		sent="$carry"
+		if [ "$a" != "1" ]; then
+			a=0
+		fi
 		i=${i:-"l"}
 	#Search Flag
 	elif [ "${!sent}" == "--search" ] || [ "${!sent}" == "--query" ]; then
-		carry="$sent"
-		while $(/bin/echo ${!sent} | grep -q "^-"); do
+		sent=2
+		while (( $(/bin/echo "$sent <= $#" | /usr/bin/bc -l) )); do
 			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
 				S="$S a"
 			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
@@ -1009,8 +1020,8 @@ if $(/bin/echo "${!sent}" | grep -q "^--"); then
 			elif [ "${!sent}" == "--verbose" ]; then
 				VERBOSE=1
 			fi
+			(( sent+=1 ))
 		done
-		sent="$carry"
 		S=${S:-"a"}
 	fi
 fi
@@ -1340,9 +1351,21 @@ else
 			if [ "$x" == "f" ]; then
 				flatupdate "$@"
 			elif [ "$x" == "g" ]; then
-				if [[ -n "$2" ]]; then 
-					pass="$2"
-				else
+				sent=2
+				pass=""
+				while (( $(/bin/echo "$sent <= $#" | /usr/bin/bc -l) )); do
+					if $(/bin/echo "${!sent}" | grep -q "^-"); then
+						(( sent+=1 ))
+						continue
+					else
+						if [ "$pass" == "" ]; then
+							pass="${!sent}"
+						else
+							pass="$pass ${!sent}"
+						fi
+					fi 
+				done
+				if [ "$pass" == "" ]; then
 					t=$(gitautolist)
 					r=$(gitmanlist)
 					pass="$t $r"
