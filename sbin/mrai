@@ -239,35 +239,6 @@ if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
 	/bin/echo -e "\n$h\n"
 	exit 0
 fi
-#check for apt-fast, snapd, and flatpak and update the flags
-#here, we continue using the functions cause the functions check for the flags
-if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
-	if ! is_aptfast_installed; then
-		/bin/echo "" >> "$cache"/apt-fast.flag
-	fi
-else
-	if is_aptfast_installed; then
-		/bin/rm "$cache"/apt-fast.flag 2>/dev/null
-	fi
-fi
-if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
-	if ! is_snapd_installed; then
-		/bin/echo "" >> "$cache"/snapd.flag
-	fi
-else
-	if is_snapd_installed; then
-		/bin/rm "$cache"/snapd.flag 2>/dev/null
-	fi
-fi
-if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
-	if ! is_flatpak_installed; then
-		/bin/echo "" >> "$cache"/flatpak.flag
-	fi
-else
-	if is_flatpak_installed; then
-		/bin/rm "$cache"/flatpak.flag 2>/dev/null
-	fi
-fi
 #Start Defining Functions
 
 #Force update snaps
@@ -913,8 +884,44 @@ error_report () {
 	fi
 }
 
-#Welp. There's all the functions Lets define some variables
-y="$2"
+#functions are done. Lets check system configuration:
+#check for apt-fast, snapd, and flatpak and update the flags
+#here, we continue using the functions cause the functions check for the flags
+if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
+	if is_aptfast_installed; then
+		echo "" >/dev/null 2>/dev/null
+	else
+		/usr/bin/touch "$cache"/apt-fast.flag
+	fi
+else
+	if is_aptfast_installed; then
+		/bin/rm "$cache"/apt-fast.flag 2>/dev/null
+	fi
+fi
+if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
+	if is_snapd_installed; then
+		echo "" >/dev/null 2>/dev/null
+	else
+		/usr/bin/touch "$cache"/snapd.flag
+	fi
+else
+	if is_snapd_installed; then
+		/bin/rm "$cache"/snapd.flag 2>/dev/null
+	fi
+fi
+if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
+	if is_flatpak_installed; then
+		echo "" >/dev/null 2>/dev/null
+	else
+		/usr/bin/touch "$cache"/flatpak.flag
+	fi
+else
+	if is_flatpak_installed; then
+		/bin/rm "$cache"/flatpak.flag 2>/dev/null
+	fi
+fi
+
+
 z="$3"
 #new flag detection system
 #set variables so that they can iterated over without throwing errors
