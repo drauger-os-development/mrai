@@ -832,7 +832,7 @@ checkinstalltype () {
 		if $(/usr/bin/dpkg -l | /bin/grep -q "ii  $pass"); then
 			type=0
 		fi
-		if [ is_snapd_installed ] && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
+		if is_snapd_installed && $(/usr/bin/snap list | /bin/grep -q "$pass"); then
 			type="$type 1"
 		fi
 		if is_flatpak_installed && $(/usr/bin/flatpak list  | /bin/grep -q "$pass"); then
@@ -893,28 +893,16 @@ clean () {
 
 #check for snapd
 is_snapd_installed () {
-	if [ -f "$cache"/snapd.flag ]; then
-		return 0
-	else
-		return 1
-	fi
+	[ -f "$cache"/snapd.flag ]
 }
 
 #check for apt-fast
 is_aptfast_installed () {
-	if [ -f "$cache"/apt-fast.flag ]; then
-		return 0
-	else
-		return 1
-	fi
+	[ -f "$cache"/apt-fast.flag ]
 }
 #check for flatpak
 is_flatpak_installed () {
-	if [ -f "$cache"/flatpak.flag ]; then
-		return 0
-	else
-		return 1
-	fi
+	[ -f "$cache"/flatpak.flag ]
 }
 
 #report errors
