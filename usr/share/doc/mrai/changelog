@@ -2,5 +2,7 @@ mrai (1.3.0-beta5) bionic; urgency=medium
 
   * multiple bug fixes
   * faster logging program
+  * a little code simplification
 
- -- Thomas Castleman <contact@draugeros.org>  Tue, 14 Jul 2019 17:49:15 -0500
+ -- Thomas Castleman <contact@draugeros.org>  Tue, 14 Jul 2019 20:02:50 -0500
+
