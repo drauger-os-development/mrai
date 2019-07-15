@@ -893,16 +893,16 @@ clean () {
 
 #check for snapd
 is_snapd_installed () {
-	[ -f "$cache"/snapd.flag ]
+	[ -f "$cache"/snapd.flag ];
 }
 
 #check for apt-fast
 is_aptfast_installed () {
-	[ -f "$cache"/apt-fast.flag ]
+	[ -f "$cache"/apt-fast.flag ];
 }
 #check for flatpak
 is_flatpak_installed () {
-	[ -f "$cache"/flatpak.flag ]
+	[ -f "$cache"/flatpak.flag ];
 }
 
 #report errors
