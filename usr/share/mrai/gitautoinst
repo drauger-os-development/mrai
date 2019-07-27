@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.0.7-beta1
+#VERSION 0.0.8-beta1
 home="$1"
 user="$2"
 pass="$3"
@@ -31,7 +31,7 @@ R='\033[0;31m'
 NC='\033[0m'
 #report errors
 error_report () {
-	/bin/echo -e "\n$R \bERROR:$NC $2\n"
+	builtin echo -e "\n$R \bERROR:$NC $2\n"
 	"$scripts"/log-out "$1" "/usr/share/mrai/gitautoinst.sh" "$2" "mrai" "$PWD" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
@@ -47,10 +47,10 @@ cd .mrai || exit 1
 #check to see how the URL to github is formatted
 #check for a VERY specific location
 {
-	if $(/bin/echo "$pass" | /bin/grep -q 'https://github.com/') || $(/bin/echo "$pass" | /bin/grep -q 'http://github.com/'); then
+	if $(builtin echo "$pass" | /bin/grep -q 'https://github.com/') || $(builtin echo "$pass" | /bin/grep -q 'http://github.com/'); then
 		/bin/su "$user" -c "/usr/bin/git clone $pass"
 	#check for a slightly less specific location
-	elif $(/bin/echo "$pass" | /bin/grep -q 'github.com/'); then
+	elif $(builtin echo "$pass" | /bin/grep -q 'github.com/'); then
 		/bin/su "$user" -c "/usr/bin/git clone https://$pass"
 	#if they did not specifiy "GitHub.com", assume it.
 	else 
@@ -60,12 +60,12 @@ cd .mrai || exit 1
 	error_report "$?" "git clone failed. Either because the provided URL is not GitHub, or because the cloning is being done as root, or there is no internet."
 }
 #cd into the new directory git just make from the GitHub repo
-pass1=$(/bin/echo "$pass" | /bin/sed 's/.*\///')
+pass1=$(builtin echo "$pass" | /bin/sed 's/.*\///')
 cd "$pass1" || exit 1
 #Check for a Makefile
 if [ -f Makefile ] || [ -f makefile ] || [ -f MAKEFILE ]; then
 	#ask if we need to run a specific file in order to get set up
-	/bin/echo -e "\nA Makefile has been detected. Some apps require you to run a seperate file before the Makefile."
+	builtin echo -e "\nA Makefile has been detected. Some apps require you to run a seperate file before the Makefile."
 	read -rp "Would you like to run such a file? [y/N]: " ans
 	if [ "$ans" == "Y" ] || [ "$ans" == "y" ]; then
 		#show a list of files for the user to chose from
@@ -84,7 +84,7 @@ if [ -f Makefile ] || [ -f makefile ] || [ -f MAKEFILE ]; then
 		#check to see if $ans is set to exit
 		elif [ "$ans" == "exit" ]; then
 			#exit
-			/bin/echo -e "\n$R \bAborting . . .\n"
+			builtin echo -e "\n$R \bAborting . . .\n"
 			exit 1
 		fi
 	fi
@@ -97,7 +97,7 @@ if [ -f Makefile ] || [ -f makefile ] || [ -f MAKEFILE ]; then
 	#Back up the Makefile since it might be useful in uninstalling the software
 	{
 		/bin/su "$user" -c "( /bin/mkdir $gitautocache/$pass1 && /bin/cp Makefile $gitautocache/$pass1 ) || ( cd .. && /bin/rm -rf $pass1 && exit 1 ) || exit 2"
-		/bin/echo "ADDRESS=$pass" >> "$gitautocache"/"$pass1"/auto.flag
+		builtin echo "ADDRESS=$pass" >> "$gitautocache"/"$pass1"/auto.flag
 	} || {
 		error_report "2" "Could not modify Makefile. Incorrect file system permissions."
 	}

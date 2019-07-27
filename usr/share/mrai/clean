@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION: 0.0.9-beta1
+#VERSION: 0.1.0-beta2
 set -e
 set -o pipefail
 y=0
@@ -32,7 +32,7 @@ G='\033[0;32m'
 NC='\033[0m'
 #report errors
 error_report () {
-	/bin/echo -e "\n$R \bERROR:$NC $2\n"
+	builtin echo -e "\n$R \bERROR:$NC $2\n"
 	"$scripts"/log-out "$1" "/usr/share/mrai/clean.sh" "$2" "mrai" "$PWD" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
@@ -58,7 +58,7 @@ echo -e "\n$G \bDeleting old *.deb packages . . . $NC\n"
         error_report "$?" "apt clean has failed. Most likly due to file system permission issues."
 }
 if [ "$y" == "1" ]; then
-	/bin/echo -e "\n$G \bRemoving old and out dated dependencies . . . $NC\n"
+	builtin echo -e "\n$G \bRemoving old and out dated dependencies . . . $NC\n"
 	{
 		/usr/bin/apt -y autoremove
 	} || {
@@ -71,13 +71,13 @@ if [ "$y" == "1" ]; then
 		error_report "$?" "Config file clean up has failed. Most likely due to app config issues."
 	}
 elif [ "$y" == "0" ]; then
-	/bin/echo -e "\n$G \bRemoving old and out dated dependencies . . . $NC\n"
+	builtin echo -e "\n$G \bRemoving old and out dated dependencies . . . $NC\n"
 	{
 		/usr/bin/apt autoremove
 	} || {
 		error_report "$?" "apt autoremove has failed. Most likly due to app configuration issues."
 	}
-	/bin/echo -e "\n$G \bDeleting old config files . . . $NC\n" 
+	builtin echo -e "\n$G \bDeleting old config files . . . $NC\n" 
 	{
 		/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')
 	} || {
@@ -86,12 +86,12 @@ elif [ "$y" == "0" ]; then
 else
 	exit 2
 fi
-/bin/echo -e "\n$G \bCleaning up old GitHub files . . .$NC\n"
+builtin echo -e "\n$G \bCleaning up old GitHub files . . .$NC\n"
 {
 	/bin/rm -rf /home/"$user"/.mrai
 	/bin/mkdir /home/"$user"/.mrai
 	/bin/chown "$user:$user" /home/"$user"/.mrai
-	/bin/echo -e "\n$G \bClean up complete.\n"
+	builtin echo -e "\n$G \bClean up complete.\n"
 } || {
 	error_report "2" "Github clean up failed. Most likly due to incorrect file system permissions."
 }

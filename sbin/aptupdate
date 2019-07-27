@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.1.7-beta1"
+version="0.1.8-beta1"
 called_as="$0"
 R='\033[0;31m'
 G='\033[0;32m'
@@ -29,7 +29,7 @@ i=1
 sp="/-\|"
 #report errors
 error_report () {
-	/bin/echo -e "\n$R \bERROR:$NC $2\n"
+	builtin echo -e "\n$R \bERROR:$NC $2\n"
 	/usr/share/mrai/log-out "$1" "/sbin/aptupdate" "$2" "mrai" "$PWD" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
@@ -37,7 +37,7 @@ error_report () {
 }
 
 if [ "$1" == "--version" ]; then
-	/bin/echo -e "\n$version\n"
+	builtin echo -e "\n$version\n"
 	exit 0
 fi
 s=0
@@ -49,7 +49,7 @@ while getopts 'sy' flag; do
 		*) exit 2 ;;
 	esac
 done
-/bin/echo -e "\n$G \bUpdating installed software . . . $NC\n"
+builtin echo -e "\n$G \bUpdating installed software . . . $NC\n"
 if [ "$y" == "0" ]; then
 	#updating apt cache then updating install apt packages
 	if [[ ! -f /etc/mrai/apt-fast.flag ]]; then
@@ -60,7 +60,7 @@ if [ "$y" == "0" ]; then
 			/usr/bin/dpkg --configure -a
 			error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey."
 		}
-		/bin/echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
+		builtin echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
 		#removing unneeded dependencies
 		{ 
 			/usr/bin/apt autoremove 
@@ -68,7 +68,7 @@ if [ "$y" == "0" ]; then
 			error="$?"
 			error_report "$error" "apt autoremove failed" 
 		}
-		/bin/echo -e "\n$G \bCleaning up . . . $NC\n"
+		builtin echo -e "\n$G \bCleaning up . . . $NC\n"
 		#cleaning up
 		{ 
 			/usr/bin/apt-get clean 
@@ -91,7 +91,7 @@ if [ "$y" == "0" ]; then
 			/usr/bin/dpkg --configure -a
 			error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey."
 		}
-		/bin/echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
+		builtin echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
 		#removing unneeded dependencies
 		{
 			/usr/bin/apt autoremove
@@ -99,7 +99,7 @@ if [ "$y" == "0" ]; then
 			error="$?"
 			error_report "$error" "apt autoremove failed"
 		}
-		/bin/echo -e "\n$G \bCleaning up . . . $NC\n"
+		builtin echo -e "\n$G \bCleaning up . . . $NC\n"
 		#cleaning up
 		{
 			/usr/bin/apt clean
@@ -125,7 +125,7 @@ elif [ "$y" == "1" ]; then
 			/usr/bin/dpkg --configure -a
 			error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey."
 		}
-		/bin/echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
+		builtin echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
 		#removing unneeded dependencies
 		{
 			/usr/bin/apt -y autoremove
@@ -133,7 +133,7 @@ elif [ "$y" == "1" ]; then
 			error="$?"
 			error_report "$error" "apt autoremove failed"
 		}
-		/bin/echo -e "\n$G \bCleaning up . . . $NC\n"
+		builtin echo -e "\n$G \bCleaning up . . . $NC\n"
 		#cleaning up
 		{
 			/usr/bin/apt-get clean
@@ -156,7 +156,7 @@ elif [ "$y" == "1" ]; then
 			/usr/bin/dpkg --configure -a
 			error_report "$error" " An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey."
 		}
-		/bin/echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
+		builtin echo -e "\n$G \bRemoving old dependencies . . . $NC\n"
 		#removing unneeded dependencies
 		{
 			/usr/bin/apt -y autoremove
@@ -164,7 +164,7 @@ elif [ "$y" == "1" ]; then
 			error="$?"
 			error_report "$error" "apt autoremove failed"
 		}
-		/bin/echo -e "\n$G \bCleaning up . . . $NC\n"
+		builtin echo -e "\n$G \bCleaning up . . . $NC\n"
 		#cleaning up
 		{
 			/usr/bin/apt clean

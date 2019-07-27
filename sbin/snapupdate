@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-version="0.1.2-beta2"
+version="0.1.3-beta2"
 scripts="/usr/share/mrai"
 called_as="$0"
 R='\033[0;31m'
@@ -28,29 +28,29 @@ G='\033[0;32m'
 NC='\033[0m'
 #report errors
 error_report () {
-	/bin/echo -e "\n$R \bERROR:$NC $2\n"
+	builtin echo -e "\n$R \bERROR:$NC $2\n"
 	"$scripts"/log-out "$1" "/sbin/snapupdate" "$2" "mrai" "$PWD" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
 	fi
 }
 if [ "$1" == "--version" ]; then
-	/bin/echo -e "\n$version\n"
+	builtin echo -e "\n$version\n"
 	exit 0
 fi
 #check for /etc/mrai/snapd.flag
 if [ -f /etc/mrai/snapd.flag ]; then
 	#force snaps to update
-	/bin/echo -e "\n$G \bForce Updating Snaps. Please Wait . . .$NC\n"
+	builtin echo -e "\n$G \bForce Updating Snaps. Please Wait . . .$NC\n"
 	{
 		/usr/bin/snap refresh &
 		PID="$!"
-		/usr/share/mrai/base-spinner.sh "Updating Snaps . . . " "$PID" && /bin/echo -e "\n"
+		/usr/share/mrai/base-spinner.sh "Updating Snaps . . . " "$PID" && builtin echo -e "\n"
 	} || {
 		error_report "$?" "Snap has had an error. Most likely network issues."
 	}
-	/bin/echo ""
+	builtin echo ""
 else
-	/bin/echo -e "\n$R \bWe're sorry. It appears snapd is not installed. Please run { mrai -ia snapd } to install it.\n"
+	builtin echo -e "\n$R \bWe're sorry. It appears snapd is not installed. Please run { mrai -ia snapd } to install it.\n"
 	exit 1
 fi

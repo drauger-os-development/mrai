@@ -79,6 +79,9 @@ if [ -d srv ]; then
 fi
 cp -R DEBIAN ../"$FOLDER"/DEBIAN
 cd ..
+#DELETE STUFF HERE
 rm "$FOLDER"/usr/share/mrai/log-out.cxx
+rm mrai/usr/share/mrai/log-out
+#build the shit
 dpkg-deb --build "$FOLDER"
 rm -rf "$FOLDER"
