@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.3.2-beta5"
+version="1.3.4-beta5"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -347,9 +347,8 @@ flatinstall () {
 		loop=1
 		while [ "$loop" == "1" ]; do
 			#search for the desired package, to ensure it exists
-			q=$(/usr/bin/flatpak search "$pass")
-			r=$(builtin echo "$q" | /usr/bin/awk '{print $1}')
-			if [ "$r" == "No matches found" ]; then
+			package=$(/usr/bin/flatpak search "$pass" | /usr/bin/awk '{print $1}' | /bin/grep -x "$pass")
+			if [ "$package" == "No matches found" ] || [ "$package" == "" ] || [ "$package" == " " ]; then
 				#see if there are any flatpak repos added, this is a common
 				#issue with people new to flatpak. Checking and adding it for them
 				#then rechecking just saves them the pain
@@ -365,20 +364,19 @@ flatinstall () {
 					continue
 				fi
 			#check to see if it has one of three known flatpack domains. More domains will be added in the future
-			elif $(builtin echo "$r" | /bin/grep -q "org.") || $(builtin echo "$r" | /bin/grep -q "com.") || $(builtin echo "$r" | /bin/grep -q "ws.") || $(builtin echo "$r" | /bin/grep -q "net.") ||  $(builtin echo "$r" | /bin/grep -q "io.") ||  $(builtin echo "$r" | /bin/grep -q "work.") || $(builtin echo "$r" | /bin/grep -q "nl.") || $(builtin echo "$r" | /bin/grep -q "im.") || $(builtin echo "$r" | /bin/grep -q "fr.") ||  $(builtin echo "$r" | /bin/grep -q "cc.") ||  $(builtin echo "$r" | /bin/grep -q "info.") ||  $(builtin echo "$r" | /bin/grep -q "in.") ||  $(builtin echo "$r" | /bin/grep -q "eu.") ||  $(builtin echo "$r" | /bin/grep -q "edu.") ||  $(builtin echo "$r" | /bin/grep -q "de.") ||  $(builtin echo "$r" | /bin/grep -q "cx.") ||  $(builtin echo "$r" | /bin/grep -q "us."); then
-				set -- "$r"
-				test="$2"
-				if [ -z "$test" ]; then	
+			elif $(builtin echo "$package" | /bin/grep -q "org.") || $(builtin echo "$package" | /bin/grep -q "com.") || $(builtin echo "$package" | /bin/grep -q "ws.") || $(builtin echo "$package" | /bin/grep -q "net.") ||  $(builtin echo "$package" | /bin/grep -q "io.") ||  $(builtin echo "$package" | /bin/grep -q "work.") || $(builtin echo "$package" | /bin/grep -q "nl.") || $(builtin echo "$package" | /bin/grep -q "im.") || $(builtin echo "$package" | /bin/grep -q "fr.") ||  $(builtin echo "$package" | /bin/grep -q "cc.") ||  $(builtin echo "$package" | /bin/grep -q "info.") ||  $(builtin echo "$package" | /bin/grep -q "in.") ||  $(builtin echo "$package" | /bin/grep -q "eu.") ||  $(builtin echo "$package" | /bin/grep -q "edu.") ||  $(builtin echo "$package" | /bin/grep -q "de.") ||  $(builtin echo "$package" | /bin/grep -q "cx.") ||  $(builtin echo "$package" | /bin/grep -q "us."); then
+				test=$(builtin echo "$package" | /usr/bin/awk '{print $2}')
+				if [ -z "$test" ] || [ "$test" == "" ] || [ "$test" == " " ]; then	
 					#try installing the desired flatpak from each repo
 					list=$(/usr/bin/flatpak remotes)
 					list1=$(builtin echo "$list" | /usr/bin/awk '{print $1}')
-					builtin echo -e "\n$G \bAttempting to install $r as a Flatpak. Please wait . . . $NC\n"
+					builtin echo -e "\n$G \bAttempting to install $package as a Flatpak. Please wait . . . $NC\n"
 					for entry in $list1; do
 						{
 							if [ "$a" == "1" ]; then
-								/usr/bin/flatpak install -y "$entry" "$r"
+								/usr/bin/flatpak install -y "$entry" "$package"
 							else
-								/usr/bin/flatpak install "$entry" "$r"
+								/usr/bin/flatpak install "$entry" "$package"
 							fi
 							break
 						} || { 
@@ -389,7 +387,7 @@ flatinstall () {
 				else
 					#for mutliple installation canditdates, ask which the user wishes to install.
 					builtin echo -e "\n$Y \bWARNING:$NC Multiple Installation Candidates Detected.\n"
-					builtin echo -e "Which package would you like to install?\n$r\n"
+					builtin echo -e "Which package would you like to install?\n$package\n"
 					read -rp "Please copy-paste the name of the package here (Type \"exit\", \"break\", or \"end\" to exit): " int
 					#check if the user wants out. If they do, let them out
 					if [ "$int" == "exit" ] || [ "$int" == "break" ] || [ "$int" == "end" ]; then
@@ -398,7 +396,7 @@ flatinstall () {
 					#go through the install process for the designated flatpak package
 					list=$(/usr/bin/flatpak remotes)
 					list1=$(builtin echo "$list" | /usr/bin/awk '{print $1}')
-					builtin echo -e "\n$G \bAttempting to install $r as a Flatpak. Please wait . . . $NC\n"
+					builtin echo -e "\n$G \bAttempting to install $package as a Flatpak. Please wait . . . $NC\n"
 					for entry in $list1; do
 						{
 							if [ "$a" == "1" ]; then
@@ -525,9 +523,9 @@ gitmaninstall () {
 	ans=$(builtin echo "$ans" | /usr/bin/awk '{print tolower($0)}')
 	if [ "$ans" == "y" ]; then
 		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
-		/bin/chmod +x "$(/bin/pwd)/$run"
+		/bin/chmod +x "$PWD/$run"
 		#run as root
-		/usr/bin/pkexec "$(/bin/pwd)/$run"
+		/usr/bin/pkexec "$PWD/$run"
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
 		/bin/mkdir "$gitmancache"/"$pass1" && /bin/cp "$run" "$gitmancache"/"$pass1" || return 2
 		#write necissary info into the flag, to keep the number of files down
@@ -538,9 +536,9 @@ gitmaninstall () {
 		} >> "$gitmancache"/man.flag
 	elif [ "$ans" == "n" ]; then
 		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
-		/bin/chmod +x "$(/bin/pwd)/$run"
+		/bin/chmod +x "$PWD/$run"
 		#run it
-		exec "$(/bin/pwd)/$run"
+		exec "$PWD/$run"
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
 		/bin/mkdir "$gitmancache"/"$pass1" && /bin/cp "$run" "$gitmancache"/"$pass1" || return 2
 		#write necissary info into the flag, to keep the number of files down
@@ -557,9 +555,9 @@ gitmaninstall () {
 		#THIS PRESENTS A SECURITY RISK AND SHOULD NEVER BE DONE
 		builtin echo -e "\n$Y \bInput not recognized. Running without root privileges$NC\n"
 		#make the file exicutable, cause even if it doesn't need to be it doesn't hurt
-		/bin/chmod +x "$(/bin/pwd)/$run"
+		/bin/chmod +x "$PWD/$run"
 		#run it
-		exec "$(/bin/pwd)/$run"
+		exec "$PWD/$run"
 		#back up files that are typically necissaary for updating or removing the software we just attempted to install
 		/bin/mkdir "$gitmancache"/"$pass1" && /bin/cp "$run" "$gitmancache"/"$pass1" || return 2
 		#write necissary info into the flag, to keep the number of files down
@@ -639,7 +637,7 @@ gitremove () {
 				#Sleep so the user can read what we just builtin echoed out
 				/bin/sleep 3s
 				#run the file with the designated option as root
-				( ( /usr/bin/pkexec "$(/bin/pwd)/$run" "$opt" ) && ( sent=1 ) ) || ( ((num+=1)) )
+				( ( /usr/bin/pkexec "$PWD/$run" "$opt" ) && ( sent=1 ) ) || ( ((num+=1)) )
 			done
 		elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
 			builtin echo -e "\n$G \bAttempting to uninstall. Please wait . . .$NC\n"
@@ -663,7 +661,7 @@ gitremove () {
 				#Sleep so the user can read what we just builtin echoed out
 				/bin/sleep 3s
 				#run the file with the designated option, BUT NOT AS ROOT
-				( ( exec $(/bin/pwd)/"$run" "$opt" ) && ( sent=1 ) ) || ( ((num+=1)) )
+				( ( exec "$PWD/$run" "$opt" ) && ( sent=1 ) ) || ( ((num+=1)) )
 			done
 		else
 			#Okay, if we get down here, something fucked up.
@@ -729,14 +727,14 @@ gitupdate () {
 			call=$(builtin echo "$add" | /bin/sed 's/ADDRESS=//')
 			run=$(/bin/cat "$flag" | /bin/grep "RUN=")
 			run=$(builtin echo "$run" | /bin/sed 's/RUN=//')
-			back=$(/bin/pwd)
+			back="$PWD"
 			del=$(/usr/bin/find . -type f -name "*.deb")
 			cd "$HOME"/.mrai/"$pass1" || return 1
 			#"Call home" and get the new software
 			if $(builtin echo "$call" | /bin/grep -q 'https://github.com/') || $(builtin echo "$call" | /bin/grep -q 'http://github.com/'); then
 				git clone "$call"
 			elif $(builtin echo "$call" | /bin/grep -q 'github.com/'); then
-	        		git clone https://"$call"
+	        	git clone https://"$call"
 			else
 				git clone https://github.com/"$call"
 			fi
@@ -752,10 +750,10 @@ gitupdate () {
 				#check if we need to run this as root
 				if [ "$root" == "RUN_AS_ROOT=yes" ]; then
 					#run the file as root
-					/usr/bin/pkexec "$(/bin/pwd)/$run" "$opt"
+					/usr/bin/pkexec "$PWD/$run" "$opt"
 				elif [ "$root" == "RUN_AS_ROOT=no" ] || [ "$root" == "RUN_AS_ROOT=null" ]; then
 					#run the designated file, but NOT AS ROOT
-					exec $(/bin/pwd)/"$run" "$opt"
+					exec "$PWD/$run" "$opt"
 					#if the *.flag file's RUN_AS_ROOT is set to null, ask if the user wants to reset it to either yes or no
 					#none of the *.flag files should have a RUN_AS_ROOT set as null, but it is possible to happen do to the 
 					#complexity of programming it to re-ask if the passed string doesn't match a certain set of criteria
@@ -879,7 +877,8 @@ is_flatpak_installed () {
 #report errors
 error_report () {
 	"$scripts"/log-out "$1" "/sbin/mrai" "$2" "mrai" "$PWD" "$called_as"
-	if [[ "$1" != "1" ]]; then
+	#i know this is kinda the long way to do it but it works reliably so meh?
+	if [ "$1" != "1" ] || [ "$1" != "0" ]; then
 		exit "$1"
 	fi
 }
@@ -889,7 +888,7 @@ error_report () {
 #here, we continue using the functions cause the functions check for the flags
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
 	if is_aptfast_installed; then
-		echo "" >/dev/null 2>/dev/null
+		builtin echo "" >/dev/null 2>/dev/null
 	else
 		/usr/bin/touch "$cache"/apt-fast.flag
 	fi
@@ -900,7 +899,7 @@ else
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
 	if is_snapd_installed; then
-		echo "" >/dev/null 2>/dev/null
+		builtin echo "" >/dev/null 2>/dev/null
 	else
 		/usr/bin/touch "$cache"/snapd.flag
 	fi
@@ -911,7 +910,7 @@ else
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
 	if is_flatpak_installed; then
-		echo "" >/dev/null 2>/dev/null
+		builtin echo "" >/dev/null 2>/dev/null
 	else
 		/usr/bin/touch "$cache"/flatpak.flag
 	fi
