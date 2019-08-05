@@ -20,7 +20,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#VERSION 0.1.1-beta2
+#VERSION 0.1.2-beta2
 #make sure we have the right permissions, exit if we don't
 #this entire script won't work anyways if we don't have the right permissions
 scripts="/usr/share/mrai"
@@ -29,7 +29,7 @@ R='\033[0;31m'
 NC='\033[0m'
 #report errors
 error_report () {
-	/bin/echo -e "\n$R \bERROR:$NC $2\n"
+	builtin echo -e "\n$R \bERROR:$NC $2\n"
 	"$scripts"/log-out "$1" "/usr/share/mrai/aptremove.sh" "$2" "mrai" "$PWD" "$called_as"
 	if [[ "$1" != "1" ]]; then
 		exit "$1"
@@ -43,18 +43,18 @@ cache="/etc/mrai"
 {
 	if [ -f "$cache"/apt-fast.flag ]; then
 		if [ "$1" == "1" ]; then
-			pass=$(/bin/echo "$2" | /bin/sed 's/,/ /g')
+			pass=$(builtin echo "$2" | /bin/sed 's/,/ /g')
 			/usr/sbin/apt-fast -y purge $pass
 		else
-			pass=$(/bin/echo "$1" | /bin/sed 's/,/ /g')			
+			pass=$(builtin echo "$1" | /bin/sed 's/,/ /g')			
 			/usr/sbin/apt-fast purge $pass
 		fi
 	else
 		if [ "$1" == "1" ]; then
-			pass=$(/bin/echo "$2" | /bin/sed 's/,/ /g')
+			pass=$(builtin echo "$2" | /bin/sed 's/,/ /g')
 			/usr/bin/apt -y purge $pass
 		else
-			pass=$(/bin/echo "$1" | /bin/sed 's/,/ /g')
+			pass=$(builtin echo "$1" | /bin/sed 's/,/ /g')
 			/usr/bin/apt purge $pass
 		fi
 	fi

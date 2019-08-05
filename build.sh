@@ -14,6 +14,7 @@ mkdir ../"$FOLDER"
 ##############################################################
 cd usr/share/mrai
 g++ -Wall -m64 -o "log-out" "log-out.cxx"
+g++ -Wall -m64 -o "edit-apt-sources" "edit-apt-sources.cxx"
 cd ../../..
 ##############################################################
 #							     #
@@ -79,6 +80,11 @@ if [ -d srv ]; then
 fi
 cp -R DEBIAN ../"$FOLDER"/DEBIAN
 cd ..
+#DELETE STUFF HERE
 rm "$FOLDER"/usr/share/mrai/log-out.cxx
+rm "$FOLDER"/usr/share/mrai/edit-apt-sources.cxx
+rm mrai/usr/share/mrai/log-out
+rm mrai/usr/share/mrai/edit-apt-sources
+#build the shit
 dpkg-deb --build "$FOLDER"
 rm -rf "$FOLDER"
