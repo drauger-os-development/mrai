@@ -22,7 +22,7 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.3.4-beta5"
+version="1.3.6-beta5"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -82,11 +82,22 @@ elif [ "$1" == "--edit-sources" ] || [ "$1" == "--edit-repos" ] || [ "$1" == "--
 			builtin echo "0 /etc/apt/sources.list"
 			int=1
 			for each in $sld; do
-				builtin echo "$int /etc/apt/sources.list.d/$each"
+				builtin echo -e "$int\t/etc/apt/sources.list.d/$each"
 				int=$((int+1))
 			done
 			int=$((int-1))
-			read -rp "Give the number of the file you would like to edit: [0-$int]: " choice
+			check=true
+			while $check; do
+				read -rp "Give the number of the file you would like to edit: [0-$int]: " choice
+				re='^[0-9]+$'
+				if ! [[ $choice =~ $re ]]; then
+					builtin echo -e "\n$R \bERROR:$NC Not an integer between 0 and $int. Please try again.\n"
+				elif [[ $choice -ge 0 ]] && [[ $choice -le $int ]]; then
+					check=false
+				else
+					builtin echo -e "\n$R \bERROR:$NC Not within designated range. Please try again.\n"
+				fi
+			done
 			int=1
 			for each in $sld; do
 				if [ "$choice" == "0" ]; then
