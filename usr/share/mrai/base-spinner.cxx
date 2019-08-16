@@ -25,7 +25,6 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
-//#include <sys/utsname.h>
 #include <sys/stat.h>
 
 using namespace std;
