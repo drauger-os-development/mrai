@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION 0.1.8-beta1
+ * VERSION 0.1.9-beta1
  */
 
 
@@ -96,7 +96,6 @@ int main(int argc, char **argv)
 					contents.assign((istreambuf_iterator<char>(ifs)),(istreambuf_iterator<char>()));
 					contents.erase(0,55);
 					contents.erase(9,10);
-					cout << contents << endl;
 					*editor_location = contents;
 					i = 1;
 				}
@@ -118,7 +117,6 @@ int main(int argc, char **argv)
 	}
 	try
 	{
-		cout << editor << endl;
 		contents = "";
 		ifstream ifs(file);
 		contents.assign((istreambuf_iterator<char>(ifs)),(istreambuf_iterator<char>()));

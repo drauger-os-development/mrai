@@ -15,6 +15,8 @@ mkdir ../"$FOLDER"
 cd usr/share/mrai
 g++ -Wall -m64 -o "log-out" "log-out.cxx"
 g++ -Wall -m64 -o "edit-apt-sources" "edit-apt-sources.cxx"
+g++ -Wall -m64 -o "base-spinner" "base-spinner.cxx"
+g++ -Wall -m64 -o "clean" "clean.cxx"
 cd ../../..
 ##############################################################
 #							     #
@@ -83,6 +85,10 @@ cd ..
 #DELETE STUFF HERE
 rm "$FOLDER"/usr/share/mrai/log-out.cxx
 rm "$FOLDER"/usr/share/mrai/edit-apt-sources.cxx
+rm "$FOLDER"/usr/share/mrai/base-spinner.cxx
+rm "$FOLDER"/usr/share/mrai/clean.cxx
+rm mrai/usr/share/mrai/clean
+rm mrai/usr/share/mrai/base-spinner
 rm mrai/usr/share/mrai/log-out
 rm mrai/usr/share/mrai/edit-apt-sources
 #build the shit
