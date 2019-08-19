@@ -26,14 +26,9 @@
 #include <string>
 #include <unistd.h>
 #include <sys/stat.h>
+#include "mrai_lib.h"
 
 using namespace std;
-
-bool IsPathExist(const std::string &s)
-{
-  struct stat buffer;
-  return (stat (s.c_str(), &buffer) == 0);
-}
 
 int main(int argc, char **argv)
 {
@@ -42,7 +37,7 @@ int main(int argc, char **argv)
 	string message = argv[1];
 	string check_dir = argv[2];
 	//DIR* dir = 
-	while (IsPathExist("/proc/" + check_dir))
+	while (DoesPathExist("/proc/" + check_dir))
 	{
 		usleep(250000);
 		cout << "\r\033[K";

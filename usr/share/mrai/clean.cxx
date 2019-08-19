@@ -20,7 +20,7 @@
  * 
  * 
  */
- //VERSION: 0.1.1-beta2
+ //VERSION: 0.1.2-beta2
 
 #include <iostream>
 #include <string>
@@ -32,25 +32,10 @@
 #include <sys/types.h>
 #include <experimental/filesystem>
 #include <unistd.h>
+#include "mrai_lib.h"
 
 
 using namespace std;
-
-int error_report(string error_code, string called_as, string error_message)
-{
-	string R = "\033[0;31m";
-	string NC = "\033[0m";
-	cout << R + "\bERROR:" + NC << error_message << endl;
-	string scripts = "/usr/share/mrai";
-	const char *env_var = "PWD";
-	string PWD = getenv(env_var);
-	string COMMAND = scripts + "/log-out " + error_code + " /usr/share/mrai/clean " + error_message + " mrai " + PWD + called_as;
-	int len = COMMAND.length();
-	char run[len + 1];
-	strcpy(run, COMMAND.c_str());
-	system(run);
-	return 0;
-}
 
 int main(int argc, char **argv)
 {
