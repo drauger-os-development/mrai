@@ -32,6 +32,7 @@
 #include <bits/stdc++.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "mrai_lib.h"
 
 using namespace std;
 
@@ -57,9 +58,7 @@ int main(int argc, char* argv[])
 		string name = argv[4];
 		string DIR = "/tmp/" + name;
 		string LOG_LOCATION = DIR + "/log.txt";
-		int len = DIR.length();
-		char LOG_DIR[len + 1];
-		strcpy(LOG_DIR, DIR.c_str());
+		const char * LOG_DIR = ConvertToChar(DIR);
 		struct utsname sysinfo;
 		uname(&sysinfo);
 		string UNAME = sysinfo.release;

@@ -20,7 +20,7 @@
  * 
  * 
  */
- //VERSION: 0.1.1-beta2
+ //VERSION: 0.1.4-beta2
 
 #include <iostream>
 #include <string>
@@ -32,25 +32,10 @@
 #include <sys/types.h>
 #include <experimental/filesystem>
 #include <unistd.h>
+#include "mrai_lib.h"
 
 
 using namespace std;
-
-int error_report(string error_code, string called_as, string error_message)
-{
-	string R = "\033[0;31m";
-	string NC = "\033[0m";
-	cout << R + "\bERROR:" + NC << error_message << endl;
-	string scripts = "/usr/share/mrai";
-	const char *env_var = "PWD";
-	string PWD = getenv(env_var);
-	string COMMAND = scripts + "/log-out " + error_code + " /usr/share/mrai/clean " + error_message + " mrai " + PWD + called_as;
-	int len = COMMAND.length();
-	char run[len + 1];
-	strcpy(run, COMMAND.c_str());
-	system(run);
-	return 0;
-}
 
 int main(int argc, char **argv)
 {
@@ -118,6 +103,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
+			return 2;
 		}
 		cout << "\n" << G << "Deleting old config files . . . " << NC << "\n" << endl;
 		try
@@ -127,6 +113,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"Config file clean up has failed. Most likely due to app config issues.");
+			return 2;
 		}
 	}
 	else if (y == 0)
@@ -139,6 +126,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
+			return 2;
 		}
 		cout << "\n" << G << "Deleting old config files . . . " << NC << "\n" << endl;
 		try
@@ -148,6 +136,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"Config file clean up has failed. Most likely due to app config issues.");
+			return 2;
 		}
 	}
 	else
@@ -158,9 +147,7 @@ int main(int argc, char **argv)
 	try
 	{
 		string DIR = "/home/" + user + "/.mrai";
-		int len = DIR.length();
-		char WORKING_DIR[len + 1];
-		strcpy(WORKING_DIR, DIR.c_str());
+		const char * WORKING_DIR = ConvertToChar(DIR);
 		remove(WORKING_DIR);
 		mkdir(WORKING_DIR, 01755);
 		chown(WORKING_DIR,1000,1000);
@@ -168,6 +155,7 @@ int main(int argc, char **argv)
 	catch (...)
 	{
 		error_report("2",called_as,"GitHub clean up failed. Most likly due to incorrect file system permissions");
+		return 2;
 	}
 	cout << "\n" << G << "Clean up complete." << NC << "\n" << endl;
 	return 0;
