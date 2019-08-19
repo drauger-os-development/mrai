@@ -20,7 +20,7 @@
  * 
  * 
  */
- //VERSION: 0.1.2-beta2
+ //VERSION: 0.1.4-beta2
 
 #include <iostream>
 #include <string>
@@ -103,6 +103,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
+			return 2;
 		}
 		cout << "\n" << G << "Deleting old config files . . . " << NC << "\n" << endl;
 		try
@@ -112,6 +113,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"Config file clean up has failed. Most likely due to app config issues.");
+			return 2;
 		}
 	}
 	else if (y == 0)
@@ -124,6 +126,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
+			return 2;
 		}
 		cout << "\n" << G << "Deleting old config files . . . " << NC << "\n" << endl;
 		try
@@ -133,6 +136,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"Config file clean up has failed. Most likely due to app config issues.");
+			return 2;
 		}
 	}
 	else
@@ -143,9 +147,7 @@ int main(int argc, char **argv)
 	try
 	{
 		string DIR = "/home/" + user + "/.mrai";
-		int len = DIR.length();
-		char WORKING_DIR[len + 1];
-		strcpy(WORKING_DIR, DIR.c_str());
+		const char * WORKING_DIR = ConvertToChar(DIR);
 		remove(WORKING_DIR);
 		mkdir(WORKING_DIR, 01755);
 		chown(WORKING_DIR,1000,1000);
@@ -153,6 +155,7 @@ int main(int argc, char **argv)
 	catch (...)
 	{
 		error_report("2",called_as,"GitHub clean up failed. Most likly due to incorrect file system permissions");
+		return 2;
 	}
 	cout << "\n" << G << "Clean up complete." << NC << "\n" << endl;
 	return 0;

@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  * 
  * 
- * VERSION: 0.0.9-beta1
+ * VERSION: 0.1.0-beta2
  */
 
 
@@ -71,6 +71,7 @@ int main(int argc, char **argv)
 	catch (...)
 	{
 		error_report("2",called_as,"git clone failed. Either because the provided URL is not GitHub, or because the cloning is being done as root, or there is no internet.");
+		return 2;
 	}
 	string pass1 = GetURLFilePath(PASS);
 	string PATH = "/home/" + USER + "/.mrai/" + pass1;
@@ -116,6 +117,7 @@ int main(int argc, char **argv)
 				catch (...)
 				{
 					error_report("2",called_as,"Could not mark file as executable.");
+					return 2;
 				}
 				if (ans == "Y" or ans == "y")
 				{
@@ -128,6 +130,7 @@ int main(int argc, char **argv)
 					{
 						cout << R << ans2 << "Failed" << endl;
 						error_report("2",called_as,"Pre-Makefile script failed to run correctly.");
+						return 2;
 					}
 				}
 				else
@@ -141,6 +144,7 @@ int main(int argc, char **argv)
 					{
 						cout << R << ans2 << "Failed" << endl;
 						error_report("2",called_as,"Pre-Makefile script failed to run correctly.");
+						return 2;
 					}
 				}
 			}
@@ -162,6 +166,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"make has failed");
+			return 2;
 		}
 		try
 		{
@@ -204,6 +209,7 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 			error_report("2",called_as,"Could not remove directory. Incorrect file system permissions.");
+			return 2;
 		}
 	}
 }

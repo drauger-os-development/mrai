@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION 0.2.0-beta2
+ * VERSION 0.2.1-beta2
  */
 
 
@@ -111,9 +111,7 @@ int main(int argc, char **argv)
 		backup.close();
 		string COMMAND = editor + " " + file;
 		//convert string to array of chars
-		int len = COMMAND.length();
-		char run[len + 1];
-		strcpy(run, COMMAND.c_str());
+		const char * run = ConvertToChar(COMMAND);
 		system(run);
 	}
 	catch (...)

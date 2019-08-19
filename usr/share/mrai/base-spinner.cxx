@@ -35,8 +35,7 @@ int main(int argc, char **argv)
 	string sp[5] = {"/", "-", "\\", "|"};
 	int i = 1;
 	string message = argv[1];
-	string check_dir = argv[2];
-	//DIR* dir = 
+	string check_dir = argv[2]; 
 	while (DoesPathExist("/proc/" + check_dir))
 	{
 		usleep(250000);
