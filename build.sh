@@ -18,6 +18,7 @@ g++ -Wall -m64 -o "edit-apt-sources" "edit-apt-sources.cxx"
 g++ -Wall -m64 -o "base-spinner" "base-spinner.cxx"
 g++ -Wall -m64 -o "clean" "clean.cxx"
 g++ -Wall -m64 -o "gitautoinst" "gitautoinst.cxx"
+g++ -Wall -m64 -o "aptremove" "aptremove.cxx"
 cd ../../..
 ##############################################################
 #							     #
@@ -89,6 +90,8 @@ rm "$FOLDER"/usr/share/mrai/edit-apt-sources.cxx
 rm "$FOLDER"/usr/share/mrai/base-spinner.cxx
 rm "$FOLDER"/usr/share/mrai/clean.cxx
 rm "$FOLDER"/usr/share/mrai/gitautoinst.cxx
+rm "$FOLDER"/usr/share/mrai/aptremove.cxx
+rm mrai/usr/share/mrai/aptremove
 rm mrai/usr/share/mrai/gitautoinst
 rm mrai/usr/share/mrai/clean
 rm mrai/usr/share/mrai/base-spinner
