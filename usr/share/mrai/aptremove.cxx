@@ -19,6 +19,7 @@
  * MA 02110-1301, USA.
  * 
  * 
+ * VERSION: 0.1.4-beta3
  */
 
 
@@ -39,7 +40,6 @@ int main(int argc, char **argv)
 	string NC = "\033[0m0";
 	string pass = argv[1];
 	bool assume_yes = false;
-	bool * assume_yes_address = &assume_yes;
 	if (pass == "1")
 	{
 		pass = argv[2];
@@ -89,11 +89,9 @@ int main(int argc, char **argv)
 	}
 	try
 	{
-		string each;
 		string file;
-		for (unsigned int iterator = 0; iterator <= passv.size(); iterator++)
+		for (auto & each : passv)
 		{
-			each = passv[iterator];
 			if (each == "apt-fast")
 			{
 				file = cache + "/apt-fast.flag";
@@ -144,6 +142,7 @@ int main(int argc, char **argv)
 				system(COMMAND);
 			}
 		}
+	}
 	catch (...)
 	{
 		error_report("2",called_as,"clean.sh has failed");
