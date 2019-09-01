@@ -26,6 +26,7 @@
 #include <string>
 #include <bits/stdc++.h>
 #include <sys/stat.h>
+#include <sstream> 
 
 using namespace std;
 
@@ -63,4 +64,12 @@ std::string GetURLFilePath(const std::string& url) {
         return "";
     }
     return url.substr(last_slash_location + 1);
+}
+
+int ConvertToInt(string &convert)
+{
+	stringstream sti(convert);
+	int output;
+	sti >> output;
+	return output;
 }

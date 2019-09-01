@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  * 
  * 
- * VERSION: 0.1.0-beta2
+ * VERSION: 0.1.1-beta2
  */
 
 
@@ -191,6 +191,7 @@ int main(int argc, char **argv)
 			ofstream flag;
 			flag.open(DIR + "/auto.flag",std::ios_base::app);
 			flag << "ADDRESS=" + PASS << endl;
+			output.close();
 		}
 		catch (...)
 		{
