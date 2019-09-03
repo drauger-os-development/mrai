@@ -22,11 +22,12 @@
 #
 #first off, mrai should NOT be run as root. So, check for that and kill mrai if it is running as root, before it can do any damage
 #we want todo this first, in case there are any bugs in the code below
-version="1.4.3-beta6"
+version="1.4.5-beta6"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
 NC='\033[0m'
+argc="$#"
 if [[ "$EUID" == "0" ]]; then
     builtin echo -e "\n$R \bPlease do not run mrai with root privleges. This will cause file system issues with GitHub installations.$NC\n" && exit 2
 fi
@@ -959,7 +960,7 @@ S=""
 i=""
 r=""
 c=""
-num="$#"
+num="$argc"
 if [ "$num" == "0" ]; then
 	builtin echo -e "\n$R \bERROR:$NC No options passed.\n"
 	exit 2
@@ -990,7 +991,7 @@ if $(builtin echo "$1" | grep -q "^--"); then
 	#upgrade flag
 	elif [ "$1" == "--update" ] || [ "$1" == "--upgrade" ]; then
 		sent=2
-		while (( $(builtin echo "$sent <= $#" | /usr/bin/bc -l) )); do
+		while (( sent <= argc )); do
 			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
 				u="$u a"
 			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
@@ -1012,7 +1013,7 @@ if $(builtin echo "$1" | grep -q "^--"); then
 	elif [ "$1" == "--list" ]; then
 		LIST=1
 		sent=2
-		while [[ "$sent" -le "$#" ]]; do
+		while [[ "$sent" -le "$argc" ]]; do
 			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
 				L="$L p"
 			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
@@ -1032,7 +1033,7 @@ if $(builtin echo "$1" | grep -q "^--"); then
 	#Install Flag
 	elif [ "$1" == "--install" ]; then
 		sent=2
-		while (( $(builtin echo "$sent <= $#" | /usr/bin/bc -l) )); do
+		while (( sent <= argc )); do
 			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
 				i="a"
 			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
@@ -1057,7 +1058,7 @@ if $(builtin echo "$1" | grep -q "^--"); then
 	#Search Flag
 	elif [ "${!sent}" == "--search" ] || [ "${!sent}" == "--query" ]; then
 		sent=2
-		while (( $(builtin echo "$sent <= $#" | /usr/bin/bc -l) )); do
+		while (( sent <= argc )); do
 			if [ "${!sent}" == "--apt" ] || [ "${!sent}" == "-a" ]; then
 				S="$S a"
 			elif [ "${!sent}" == "--snap" ] || [ "${!sent}" == "-s" ]; then
@@ -1474,7 +1475,7 @@ else
 			elif [ "$x" == "g" ]; then
 				sent=2
 				pass=""
-				while (( $(builtin echo "$sent <= $#" | /usr/bin/bc -l) )); do
+				while (( sent <= argc )); do
 					if $(builtin echo "${!sent}" | grep -q "^-"); then
 						(( sent+=1 ))
 						continue

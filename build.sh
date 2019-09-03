@@ -20,6 +20,9 @@ g++ -Wall -m64 -o "clean" "clean.cxx"
 g++ -Wall -m64 -o "gitautoinst" "gitautoinst.cxx"
 g++ -Wall -m64 -o "aptremove" "aptremove.cxx"
 cd ../../..
+cd sbin
+g++ -Wall -m64 -o "snapupdate" "snapupdate.cxx"
+cd ..
 ##############################################################
 #							     #
 #							     #
@@ -97,6 +100,8 @@ rm mrai/usr/share/mrai/clean
 rm mrai/usr/share/mrai/base-spinner
 rm mrai/usr/share/mrai/log-out
 rm mrai/usr/share/mrai/edit-apt-sources
+rm "$FOLDER"/sbin/snapupdate.cxx
+rm mrai/sbin/snapupdate
 #build the shit
 dpkg-deb --build "$FOLDER"
 rm -rf "$FOLDER"

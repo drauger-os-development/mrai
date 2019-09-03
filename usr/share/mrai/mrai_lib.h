@@ -26,7 +26,8 @@
 #include <string>
 #include <bits/stdc++.h>
 #include <sys/stat.h>
-#include <sstream> 
+#include <sstream>
+#include <unistd.h>
 
 using namespace std;
 
@@ -72,4 +73,27 @@ int ConvertToInt(string &convert)
 	int output;
 	sti >> output;
 	return output;
+}
+
+int base_spinner(string &message, string &PID)
+{
+	string sp[5] = {"/", "-", "\\", "|"};
+	int i = 1;
+	string DIR = "/proc/" + PID;
+	while (DoesPathExist(DIR))
+	{
+		usleep(250000);
+		cout << "\r\033[K";
+		cout << "[" << sp[i] << "] " << message << flush;;
+		if ( i == 3)
+		{
+			i = 0;
+		}
+		else
+		{
+			i++;
+		}
+	}
+	cout << "\r\033[K";
+	return 0;
 }
