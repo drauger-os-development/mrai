@@ -22,6 +22,7 @@ g++ -Wall -m64 -o "aptremove" "aptremove.cxx"
 cd ../../..
 cd sbin
 g++ -Wall -m64 -o "snapupdate" "snapupdate.cxx"
+g++ -Wall -m64 -o "aptupdate" "aptupdate.cxx"
 cd ..
 ##############################################################
 #							     #
@@ -101,6 +102,8 @@ rm mrai/usr/share/mrai/base-spinner
 rm mrai/usr/share/mrai/log-out
 rm mrai/usr/share/mrai/edit-apt-sources
 rm "$FOLDER"/sbin/snapupdate.cxx
+rm "$FOLDER"/sbin/aptupdate.cxx
+rm mrai/sbin/aptupdate
 rm mrai/sbin/snapupdate
 #build the shit
 dpkg-deb --build "$FOLDER"
