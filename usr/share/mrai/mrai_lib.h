@@ -29,6 +29,8 @@
 #include <sstream>
 #include <unistd.h>
 
+#define elif else if
+
 using namespace std;
 
 int error_report(string error_code, string called_as, string error_message)
@@ -39,7 +41,7 @@ int error_report(string error_code, string called_as, string error_message)
 	string scripts = "/usr/share/mrai";
 	const char *env_var = "PWD";
 	string PWD = getenv(env_var);
-	string COMMAND = scripts + "/log-out " + error_code + " /usr/share/mrai/clean " + error_message + " mrai " + PWD + called_as;
+	string COMMAND = scripts + "/log-out " + error_code + error_message + " mrai " + PWD + called_as;
 	int len = COMMAND.length();
 	char run[len + 1];
 	strcpy(run, COMMAND.c_str());

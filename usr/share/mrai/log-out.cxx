@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		string SCRIPT_PATH = argv[2];
+		string SCRIPT_PATH = "UNKNOWN"; //argv[2];
 		string ERROR_MESSAGE = argv[3];
 		string CALL_METHOD = argv[6];
 		string ERROR_PWD = argv[5];
