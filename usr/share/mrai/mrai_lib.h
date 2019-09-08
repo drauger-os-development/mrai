@@ -46,18 +46,13 @@ std::string gitmancache = "/etc/mrai/gitman";
 #define integer_list vector<int>
 #define floats_list vector<float>
 
-
-using namespace std;
-
-int error_report(string error_code, string called_as, string error_message)
+int error_report(std::string error_code, std::string called_as, std::string error_message)
 {
-	string R = "\033[0;31m";
-	string NC = "\033[0m";
-	cout << R + "\bERROR:" + NC << error_message << endl;
-	string scripts = "/usr/share/mrai";
+	std::cout << R + "\bERROR:" + NC << error_message << std::endl;
+	std::string scripts = "/usr/share/mrai";
 	const char *env_var = "PWD";
-	string PWD = getenv(env_var);
-	string COMMAND = scripts + "/log-out " + error_code + error_message + " mrai " + PWD + called_as;
+	std::string PWD = getenv(env_var);
+	std::string COMMAND = scripts + "/log-out " + error_code + error_message + " mrai " + PWD + called_as;
 	int len = COMMAND.length();
 	char run[len + 1];
 	strcpy(run, COMMAND.c_str());
@@ -85,24 +80,24 @@ std::string GetURLFilePath(const std::string& url) {
     return url.substr(last_slash_location + 1);
 }
 
-int ConvertToInt(string &convert)
+int ConvertToInt(std::string &convert)
 {
-	stringstream sti(convert);
+	std::stringstream sti(convert);
 	int output;
 	sti >> output;
 	return output;
 }
 
-int base_spinner(string &message, string &PID)
+int base_spinner(std::string &message, std::string &PID)
 {
-	string sp[5] = {"/", "-", "\\", "|"};
+	std::string sp[5] = {"/", "-", "\\", "|"};
 	int i = 1;
-	string DIR = "/proc/" + PID;
+	std::string DIR = "/proc/" + PID;
 	while (DoesPathExist(DIR))
 	{
 		usleep(250000);
-		cout << "\r\033[K";
-		cout << "[" << sp[i] << "] " << message << flush;;
+		std::cout << "\r\033[K";
+		std::cout << "[" << sp[i] << "] " << message << std::flush;;
 		if ( i == 3)
 		{
 			i = 0;
@@ -112,7 +107,7 @@ int base_spinner(string &message, string &PID)
 			i++;
 		}
 	}
-	cout << "\r\033[K";
+	std::cout << "\r\033[K";
 	return 0;
 }
 
@@ -135,13 +130,13 @@ std::string run(const char* cmd) {
     return result;
 }
 
-int touch(string path)
+int touch(std::string path)
 {
 	try
 	{
-		ofstream file;
+		std::ofstream file;
 		file.open(ConvertToChar(path), std::ios_base::app);
-		file << "" << flush;
+		file << "" << std::flush;
 		file.close();
 		return 0;
 	}
