@@ -1,35 +1,51 @@
 /*
- * mrai.cxx
- * 
+ * mrai_lib.h
+ *
  * Copyright 2019 Thomas Castleman <contact@draugeros.org>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
- * 
- * 
+ *
+ *
  */
 
-
+//import libs
 #include <iostream>
 #include <string>
 #include <bits/stdc++.h>
 #include <sys/stat.h>
 #include <sstream>
+#include <vector>
 #include <unistd.h>
 
+//define global vars
+std::string R = "\033[0;31m";
+std::string G = "\033[0;32m";
+std::string Y = "\033[1;33m";
+std::string NC = "\033[0m";
+std::string cache = "/etc/mrai";
+std::string scripts = "/usr/share/mrai";
+std::string gitautocache = "/etc/mrai/gitauto";
+std::string gitmancache = "/etc/mrai/gitman";
+
+//define macros
 #define elif else if
+#define string_list vector<string>
+#define integer_list vector<int>
+#define floats_list vector<float>
+
 
 using namespace std;
 
@@ -98,4 +114,39 @@ int base_spinner(string &message, string &PID)
 	}
 	cout << "\r\033[K";
 	return 0;
+}
+
+std::string run(const char* cmd) {
+    char buffer[128];
+    std::string result = "";
+    FILE* pipe = popen(cmd, "r");
+    if (!pipe) throw std::runtime_error("popen() failed!");
+    try {
+        while (fgets(buffer, sizeof buffer, pipe) != NULL)
+        {
+            result += buffer;
+        }
+    }
+    catch (...) {
+        pclose(pipe);
+        throw;
+    }
+    pclose(pipe);
+    return result;
+}
+
+int touch(string path)
+{
+	try
+	{
+		ofstream file;
+		file.open(ConvertToChar(path), std::ios_base::app);
+		file << "" << flush;
+		file.close();
+		return 0;
+	}
+	catch (...)
+	{
+		return 2;
+	}
 }

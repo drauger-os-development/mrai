@@ -34,14 +34,9 @@ using namespace std;
 int main(int argc, char **argv)
 {
 	string file = argv[1];
-	string cache = "/etc/mrai";
 	int i = 0;
 	string usr = "";
-	string scripts = "/usr/share/mrai";
 	string called_as = argv[0];
-	string R = "\033[0;31m";
-	string G = "\033[0;32m";
-	string NC = "\033[0m";
 	string contents;
 	string editor;
 	string * editor_location = &editor;

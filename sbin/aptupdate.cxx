@@ -32,9 +32,6 @@ int main(int argc, char **argv)
 {
 	string version = "0.1.9-beta1";
 	string called_as = argv[0];
-	string R = "\033[0;31m";
-	string G = "\033[0;32m";
-	string NC = "\033[0m";
 	string arg1;
 	int s = 0;
 	int y = 0;
@@ -60,7 +57,7 @@ int main(int argc, char **argv)
 	}
 	else if (argc > 2)
 	{
-		cout << "\n" << R << "aptupdate does not support setting flags seperately. Please use -sy or -ys.\n" << NC << endl;
+		cerr << "\n" << R << "aptupdate does not support setting flags seperately. Please use -sy or -ys.\n" << NC << endl;
 		return 1;
 	}
 	cout << "\n" << G << "Updating apt cache . . ." << NC << "\n" << endl;
@@ -70,7 +67,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		cout << "\n" << R << "An error has occured. Most likely your computer cannot communicate with one or more servers.\nPlease make sure you are connected to the internet and/or try again later.\n" << NC << endl;
+		cerr << "\n" << R << "An error has occured. Most likely your computer cannot communicate with one or more servers.\nPlease make sure you are connected to the internet and/or try again later.\n" << NC << endl;
 		return 2;
 	}
 	try
