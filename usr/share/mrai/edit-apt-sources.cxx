@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION 0.2.1-beta2
+ * VERSION 0.2.2-beta2
  */
 
 
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 {
 	string file = argv[1];
 	int i = 0;
-	string usr = "";
+	string usr = argv[2];
 	string called_as = argv[0];
 	string contents;
 	string editor;
@@ -45,6 +45,7 @@ int main(int argc, char **argv)
 		while ( i == 0 )
 		{
 			ifstream f("/home/" + usr + "/.selected_editor");
+			cout << "/home/" + usr + "/.selected_editor" << endl;
 			ifstream g(cache + "/selected_editor.conf");
 			if ( f.good() || g.good() )
 			{

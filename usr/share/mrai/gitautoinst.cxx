@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION: 0.1.1-beta2
+ * VERSION: 0.1.3-beta2
  */
 
 
@@ -39,29 +39,23 @@ int main(int argc, char **argv)
 	string USER = argv[2];
 	string PASS = argv[3];
 	string called_as = argv[0];
-	string DIR = "/home/" + USER + "/.mrai";
-	if (! DoesPathExist(DIR))
-	{
-		const char * WORKING_DIR = ConvertToChar(DIR);
-		mkdir(WORKING_DIR, 01755);
-		chown(WORKING_DIR,1000,1000);
-	}
+	chdir(ConvertToChar(gitautocache));
 	try
 	{
-		if ((PASS.find("https://github.com/") != std::string::npos) or (PASS.find("http://github.com/") != std::string::npos))
+		if ((PASS.find("https://github.com/") != std::string::npos) or (PASS.find("http://github.com/") != std::string::npos) or (PASS.find("git://github.com/") != std::string::npos) or (PASS.find("https://gitlab.com/") != std::string::npos) or (PASS.find("http://gitlab.com/") != std::string::npos) or (PASS.find("git://gitlab.com/") != std::string::npos))
 		{
-			const char * COMMAND = ConvertToChar("/usr/bin/git clone " + PASS + " " + DIR);
+			const char * COMMAND = ConvertToChar("/usr/bin/git clone " + PASS);
 			system(COMMAND);
 		}
-		else if ((PASS.find("github.com/") != std::string::npos))
+		else if ((PASS.find("github.com/") != std::string::npos) or (PASS.find("gitlab.com/") != std::string::npos))
 		{
-			const char * COMMAND = ConvertToChar("/usr/bin/git clone https://" + PASS + " " + DIR);
+			const char * COMMAND = ConvertToChar("/usr/bin/git clone https://" + PASS);
 			system(COMMAND);
 		}
 		else
 		{
-			const char * COMMAND = ConvertToChar("/usr/bin/git clone https://github.com/" + PASS + " " + DIR);
-			system(COMMAND);
+			cout << Y << "\nDue to added support for GitLab, automatic URL infrencing has been removed.\nPlease provide the FULL URL to clone from.\n" << NC << endl;
+		return 1;
 		}
 	}
 	catch (...)
@@ -69,9 +63,7 @@ int main(int argc, char **argv)
 		error_report("2",called_as,"git clone failed. Either because the provided URL is not GitHub, or because the cloning is being done as root, or there is no internet.");
 		return 2;
 	}
-	string pass1 = GetURLFilePath(PASS);
-	string PATH = "/home/" + USER + "/.mrai/" + pass1;
-	string PATH2 = "/home/" + USER + "/.mrai";
+	string PATH = GetURLFilePath(PASS);
 	string mpath;
 	if (DoesPathExist(PATH + "/makefile") or DoesPathExist(PATH + "/Makefile") or DoesPathExist(PATH + "/MAKEFILE"))
 	{
@@ -172,42 +164,14 @@ int main(int argc, char **argv)
 		{
 			error_report("1",called_as,"make install has failed");
 		}
-		try
-		{
-			string DIR = gitautocache + pass1;
-			const char * WORKING_DIR = ConvertToChar(DIR);
-			mkdir(WORKING_DIR, 01755);
-			chown(WORKING_DIR,1000,1000);
-			const char * makefile = ConvertToChar(mpath);
-			string contents;
-			ifstream ifs(makefile);
-			contents.assign((istreambuf_iterator<char>(ifs)),(istreambuf_iterator<char>()));
-			ofstream output;
-			output.open(DIR + "Makefile",std::ios_base::app);
-			ofstream flag;
-			flag.open(DIR + "/auto.flag",std::ios_base::app);
-			flag << "ADDRESS=" + PASS << endl;
-			output.close();
-		}
-		catch (...)
-		{
-			error_report("1",called_as,"Could not modify Makefile. Incorrect file system permissions.");
-		}
+		ofstream flag;
+		flag.open(gitautocache + PATH + "/auto.flag",std::ios_base::app);
+		flag << "ADDRESS=" + PASS << endl;
 	}
 	else
 	{
-		const char * UPDIR = ConvertToChar(PATH2);
-		chdir(UPDIR);
-		try
-		{
-			const char * REMOVE = ConvertToChar(pass1);
-			remove(REMOVE);
-		}
-		catch (...)
-		{
-			error_report("2",called_as,"Could not remove directory. Incorrect file system permissions.");
-			return 2;
-		}
+		cerr << R << "\nNo makefile detected. Removing local repository . . .\n" << NC << endl;
+		remove(ConvertToChar(gitautocache + PATH));
 	}
 }
 

@@ -29,6 +29,7 @@
 #include <sstream>
 #include <vector>
 #include <unistd.h>
+#include <regex>
 
 //define global vars
 std::string R = "\033[0;31m";
@@ -42,9 +43,11 @@ std::string gitmancache = "/etc/mrai/gitman";
 
 //define macros
 #define elif else if
-#define string_list vector<string>
-#define integer_list vector<int>
-#define floats_list vector<float>
+#define string_list std::vector<std::string>
+#define int_list std::vector<int>
+#define float_list std::vector<float>
+#define bool_list std::vector<bool>
+#define sleep(x) usleep(x)
 
 int error_report(std::string error_code, std::string called_as, std::string error_message)
 {
@@ -144,4 +147,37 @@ int touch(std::string path)
 	{
 		return 2;
 	}
+}
+
+std::string VectorToString(string_list &list)
+{
+	std::string exit_string;
+	for (unsigned int i = 0; i <= list.size(); i++)
+	{
+		if (i == 0)
+		{
+			exit_string = list[0];
+		}
+		else
+		{
+			exit_string = " " + list[i];
+		}
+	}
+	return(exit_string);
+}
+
+string_list StringToVector(std::string &string_to_convert)
+{
+	std::istringstream iss(string_to_convert);
+	string_list results(std::istream_iterator<std::string>{iss},std::istream_iterator<std::string>());
+	return results;
+}
+
+std::string grep(std::string search_field, std::string search_pattern)
+{
+	std::regex rgx(search_pattern);
+	std::smatch match;
+	const std::string s = search_field;
+	std::regex_search(s.begin(), s.end(), match, rgx);
+	return match[0];
 }
