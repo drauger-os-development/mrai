@@ -49,13 +49,22 @@ std::string gitmancache = "/etc/mrai/gitman";
 #define bool_list std::vector<bool>
 #define sleep(x) usleep(x)
 
-int error_report(std::string error_code, std::string called_as, std::string error_message)
+int error_report(int error_code, std::string called_as, std::string error_message)
 {
-	std::cout << R + "\bERROR:" + NC << error_message << std::endl;
+	if (error_code <= 1)
+	{
+		std::cerr << Y << "WARNING: " << NC << error_message << std::endl;
+	}
+	else
+	{
+		std::cerr << R << "ERROR: " << NC << error_message << std::endl;
+	}
 	std::string scripts = "/usr/share/mrai";
 	const char *env_var = "PWD";
 	std::string PWD = getenv(env_var);
-	std::string COMMAND = scripts + "/log-out " + error_code + error_message + " mrai " + PWD + called_as;
+	std::string COMMAND = scripts + "/log-out ";
+	COMMAND += std::to_string(error_code);
+	COMMAND = COMMAND + error_message + " mrai " + PWD + called_as;
 	int len = COMMAND.length();
 	char run[len + 1];
 	strcpy(run, COMMAND.c_str());
@@ -149,10 +158,10 @@ int touch(std::string path)
 	}
 }
 
-std::string VectorToString(string_list &list)
+std::string VectorToString(string_list list)
 {
 	std::string exit_string;
-	for (unsigned int i = 0; i <= list.size(); i++)
+	for (unsigned int i = 0; i < list.size(); i++)
 	{
 		if (i == 0)
 		{
@@ -160,7 +169,7 @@ std::string VectorToString(string_list &list)
 		}
 		else
 		{
-			exit_string = " " + list[i];
+			exit_string = exit_string + " " + list[i];
 		}
 	}
 	return(exit_string);
@@ -180,4 +189,16 @@ std::string grep(std::string search_field, std::string search_pattern)
 	const std::string s = search_field;
 	std::regex_search(s.begin(), s.end(), match, rgx);
 	return match[0];
+}
+
+bool Vector_Contains(string_list &vector, std::string search)
+{
+	for (unsigned int i = 0; i <= vector.size(); i++)
+	{
+		if (vector[i] == search)
+		{
+			return true;
+		}
+	}
+	return false;
 }
