@@ -522,7 +522,7 @@ int gitremove(string_list &death_row, string &called_as)
 	string auto_string = VectorToString(auto_vector);
 	string_list man_vector = gitmanlist(called_as);
 	string man_string = VectorToString(man_vector);
-	for (unsigned int i = 0; i <= death_row.size(); i++)
+	for (unsigned int i = 0; i < death_row.size(); i++)
 	{
 		if (auto_string.find(death_row[i]) != std::string::npos)
 		{
@@ -716,7 +716,7 @@ int gitupdate(string_list &update_list, string &called_as)
 	string PWD;
 	string auto_string = run(ConvertToChar("/bin/ls " + gitautocache));
 	string man_string = run(ConvertToChar("/bin/ls " + gitmancache));
-	for (unsigned int each = 0; each <= update_list.size(); each++)
+	for (unsigned int each = 0; each < update_list.size(); each++)
 	{
 		if (auto_string.find(update_list[each]) != std::string::npos)
 		{
@@ -733,7 +733,7 @@ int gitupdate(string_list &update_list, string &called_as)
 		}
 		pass = update_list[each];
 		file_list = StringToVector(pass);
-		for (unsigned int i = 0; i <= file_list.size(); i++)
+		for (unsigned int i = 0; i < file_list.size(); i++)
 		{
 			if (file_list[i].find(".flag") != std::string::npos)
 			{
@@ -840,18 +840,18 @@ int flatupdate(string &called_as, string &arg1, string &arg2)
 string_list checkinstalltype(string_list &package_names, string &called_as)
 {
 	string_list type;
-	for (unsigned int i = 0; i <= package_names.size(); i++)
+	for (unsigned int i = 0; i < package_names.size(); i++)
 	{
-		type[i] = "";
+		type.insert(type.end(), "");
 	}
 	string dpkg_string = run("ls /var/lib/dpkg/info | grep '.md5sums' | sed 's/.md5sums//g'");
-	string flat_string = run("/usr/bin/flatpak list | sed 's/\// /g' | awk '{print $1}'");
+	string flat_string = run("/usr/bin/flatpak list | sed 's/\\// /g' | awk '{print $1}'");
 	string snap_string = run("/usr/bin/snap list | awk '{print $1}' | sed 's/Name//'");
 	string_list man_vector = gitmanlist(called_as);
 	string man_string = VectorToString(man_vector);
 	string_list auto_vector = gitautolist(called_as);
 	string auto_string = VectorToString(auto_vector);
-	for (unsigned int i = 0; i <= package_names.size(); i++)
+	for (unsigned int i = 0; i < package_names.size(); i++)
 	{
 		if (dpkg_string.find(package_names[i]) != std::string::npos)
 		{
@@ -1045,7 +1045,7 @@ int main(int argc, char **argv_list)
 					//convert sources_dir_list to a list data structure
 					string_list sources_dir_vector;
 					split(sources_dir_vector, sources_dir_list, boost::is_any_of(" "));
-					for (unsigned int i1 = 0; i1 <= sources_dir_vector.size(); i1++)
+					for (unsigned int i1 = 0; i1 < sources_dir_vector.size(); i1++)
 					{
 						cout << (i1 + 1)  << "\t/etc/apt/sources.list.d/" << sources_dir_vector[i1] << endl;
 					}
@@ -1218,7 +1218,7 @@ int main(int argc, char **argv_list)
 				}
 				if (argc >= 2)
 				{
-					for (int i = 2; i <= argc-1; i++)
+					for (int i = 2; i < argc; i++)
 					{
 						if (argv[i] == "--assume-yes" or argv[i] == "-y" or argv[1] == "--remove" or argv[1] == "--uninstall")
 						{
@@ -1431,7 +1431,7 @@ int main(int argc, char **argv_list)
 				{
 					i.insert(i.end(),"l");
 				}
-				for (int i = 2; i <= argc-1; i++)
+				for (int i = 2; i < argc; i++)
 				{
 					if (argv[i] == "--assume-yes" or argv[i] == "-y" or argv[i].find("--g") != std::string::npos or argv[i].find("-s") != std::string::npos or argv[i].find("-f") != std::string::npos or argv[i].find("-a") != std::string::npos)
 					{
@@ -1519,7 +1519,7 @@ int main(int argc, char **argv_list)
 				}
 				if (argc >= 2)
 				{
-					for (int i = 2; i <= argc-1; i++)
+					for (int i = 2; i < argc; i++)
 					{
 						if (argv[i] == "--assume-yes" or argv[i] == "-y" or argv[i].find("--g") != std::string::npos or argv[i].find("-s") != std::string::npos or argv[i].find("-f") != std::string::npos or argv[i].find("-a") != std::string::npos)
 						{
@@ -2017,35 +2017,6 @@ int main(int argc, char **argv_list)
 			//update flag
 			elif (u.size() > 0)
 			{
-				if (Vector_Contains(u,"f"))
-				{
-					flatupdate(called_as, argv[1], argv[2]);
-				}
-				if (Vector_Contains(u,"g"))
-				{
-					int sent = 2;
-					string_list pass;
-					string search_output;
-					while (sent < argc)
-					{
-						search_output = grep(argv[sent],"^-");
-						if (search_output == "")
-						{
-							pass.insert(pass.end(),argv[sent]);
-						}
-						sent++;
-					}
-					if (pass.size() <= 0)
-					{
-						string_list t = gitautolist(called_as);
-						string_list r = gitmanlist(called_as);
-						pass.reserve(t.size() + r.size());
-						pass.insert(pass.end(), t.begin(), t.end());
-						pass.insert(pass.end(), r.begin(), r.end());
-					}
-
-					gitupdate(pass,called_as);
-				}
 				if (Vector_Contains(u, "a"))
 				{
 					if (! a)
@@ -2091,6 +2062,35 @@ int main(int argc, char **argv_list)
 				{
 					system("/sbin/snapupdate");
 				}
+				if (Vector_Contains(u,"f"))
+				{
+					flatupdate(called_as, argv[1], argv[2]);
+				}
+				if (Vector_Contains(u,"g"))
+				{
+					int sent = 2;
+					string_list pass;
+					string search_output;
+					while (sent < argc)
+					{
+						search_output = grep(argv[sent],"^-");
+						if (search_output == "")
+						{
+							pass.insert(pass.end(),argv[sent]);
+						}
+						sent++;
+					}
+					if (pass.size() <= 0)
+					{
+						string_list t = gitautolist(called_as);
+						string_list r = gitmanlist(called_as);
+						pass.reserve(t.size() + r.size());
+						pass.insert(pass.end(), t.begin(), t.end());
+						pass.insert(pass.end(), r.begin(), r.end());
+					}
+
+					gitupdate(pass,called_as);
+				}
 			}
 			//List flag
 			elif (L.size() > 0)
@@ -2114,7 +2114,7 @@ int main(int argc, char **argv_list)
 							{
 								num = 3;
 							}
-							for (unsigned int i = 0; i< package_list.size(); i++)
+							for (unsigned int i = 0; i < package_list.size(); i++)
 							{
 								if (package_list[i].find(argv[num]) != std:: string::npos)
 								{
@@ -2253,7 +2253,6 @@ int main(int argc, char **argv_list)
 					}
 				}
 			}
-			//CONTINUE FROM HERE
 			//Find flag
 			elif (FIND)
 			{
@@ -2264,7 +2263,7 @@ int main(int argc, char **argv_list)
 				}
 				else
 				{
-					string package = run(ConvertToChar("dpkg -S " + command_path + " | /bin/sed 's/:/ /g' | /usr/bin/awk '{print $1}'"));
+					string package = run(ConvertToChar("dpkg -S " + command_path + " | /bin/sed 's/:/ /g' | /usr/bin/awk '{print \\$1}'"));
 					if (package == "")
 					{
 						error_report(1,called_as,"No package providing specificed command.");
@@ -2272,7 +2271,7 @@ int main(int argc, char **argv_list)
 					}
 					else
 					{
-						cout << G << "Package providing command '" << look << "': " << NC << package << "\n" << endl;
+						cout << G << "\nPackage providing command '" << look << "': " << NC << package << "\n" << endl;
 					}
 				}
 			}
