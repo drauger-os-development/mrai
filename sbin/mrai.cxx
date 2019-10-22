@@ -56,7 +56,7 @@ bool is_flatpak_installed()
 
 void unlock()
 {
-	remove("/etc/mrai/mrai.lock");
+	remove("/tmp/.mrai.lock");
 }
 
 string_list gitautolist(string &called_as)
@@ -933,14 +933,14 @@ int main(int argc, char **argv_list)
 	}
 	//pre-config
 	//check if mrai is already running
-	if (DoesPathExist("/etc/mrai/mrai.lock"))
+	if (DoesPathExist("/tmp/.mrai.lock"))
 	{
 		cout << "\n" << R << "mrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited." << NC << "\n";
 		return 2;
 	}
 	//obtain lock and initialize everything that hasn't already been set
 	//from this point on, use exit(), not return()
-	touch("/etc/mrai/mrai.lock");
+	touch("/tmp/.mrai.lock");
 	atexit(unlock);
 	//from here on, everything needs to be in a try/catch so that it will unlock if there is a seg fault
 	try
@@ -1447,7 +1447,7 @@ int main(int argc, char **argv_list)
 				{
 					if (argv[1].find("a") != std::string::npos)
 					{
-						S.insert(S.end(),"a");
+						S.insert(S.end(),"p");
 					}
 					if (argv[1].find("s") != std::string::npos)
 					{
@@ -1481,7 +1481,7 @@ int main(int argc, char **argv_list)
 					{
 						if (argv[sent] == "--apt" or argv[sent] == "-a")
 						{
-							S.insert(S.end(),"a");
+							S.insert(S.end(),"p");
 						}
 						elif (argv[sent] == "--snap" or argv[sent] == "-s")
 						{
@@ -1512,7 +1512,7 @@ int main(int argc, char **argv_list)
 				}
 				if (S.size() <= 0)
 				{
-					S.insert(S.end(),"a");
+					S.insert(S.end(),"p");
 					S.insert(S.end(),"s");
 					S.insert(S.end(),"f");
 					S.insert(S.end(),"gb");
