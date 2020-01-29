@@ -1,7 +1,7 @@
 /*
  * gitautoinst.cxx
  *
- * Copyright 2019 Thomas Castleman <contact@draugeros.org>
+ * Copyright 2020 Thomas Castleman <contact@draugeros.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"git clone failed. Either because the provided URL is not GitHub, or because the cloning is being done as root, or there is no internet.");
+		error_report(2,called_as,"git clone failed. Either because the provided URL is not GitHub, or because the cloning is being done as root, or there is no internet.");
 		return 2;
 	}
 	string PATH = GetURLFilePath(PASS);
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 				}
 				catch (...)
 				{
-					error_report("2",called_as,"Could not mark file as executable.");
+					error_report(2,called_as,"Could not mark file as executable.");
 					return 2;
 				}
 				if (ans == "Y" or ans == "y")
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 					catch (...)
 					{
 						cerr << R << ans2 << "Failed" << endl;
-						error_report("2",called_as,"Pre-Makefile script failed to run correctly.");
+						error_report(2,called_as,"Pre-Makefile script failed to run correctly.");
 						return 2;
 					}
 				}
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 					catch (...)
 					{
 						cerr << R << ans2 << "Failed" << endl;
-						error_report("2",called_as,"Pre-Makefile script failed to run correctly.");
+						error_report(2,called_as,"Pre-Makefile script failed to run correctly.");
 						return 2;
 					}
 				}
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 		}
 		catch (...)
 		{
-			error_report("1",called_as,"make depend not recognized inside Makefile. Continuing . . .");
+			error_report(1,called_as,"make depend not recognized inside Makefile. Continuing . . .");
 		}
 		try
 		{
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 		}
 		catch (...)
 		{
-			error_report("2",called_as,"make has failed");
+			error_report(2,called_as,"make has failed");
 			return 2;
 		}
 		try
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
 		}
 		catch (...)
 		{
-			error_report("1",called_as,"make install has failed");
+			error_report(1,called_as,"make install has failed");
 		}
 		ofstream flag;
 		flag.open(gitautocache + PATH + "/auto.flag",std::ios_base::app);

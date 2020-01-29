@@ -1,7 +1,7 @@
 /*
  * clean.cxx
  *
- * Copyright 2019 Thomas Castleman <contact@draugeros.org>
+ * Copyright 2020 Thomas Castleman <contact@draugeros.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  *
  *
  */
- //VERSION: 0.1.4-beta2
+ //VERSION: 0.1.5-beta2
 
 #include <iostream>
 #include <string>
@@ -86,52 +86,32 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"apt clean has failed. Most likly due to file system permission issues.");
+		error_report(2,called_as,"apt clean has failed. Most likly due to file system permission issues.");
 		return 2;
 	}
 	if ( y == 1)
 	{
-		cout << "\n" << G << "Removing old and out dated dependencies . . . " << NC << "\n" << endl;
+		cout << "\n" << G << "Removing old and out dated dependencies, Deleting old config files . . . " << NC << "\n" << endl;
 		try
 		{
-			system("/usr/bin/apt -y autoremove");
+			system("/usr/bin/apt -y autoremove --purge");
 		}
 		catch (...)
 		{
-			error_report("2",called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
-			return 2;
-		}
-		cout << "\n" << G << "Deleting old config files . . . " << NC << "\n" << endl;
-		try
-		{
-			system("/usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
-		}
-		catch (...)
-		{
-			error_report("2",called_as,"Config file clean up has failed. Most likely due to app config issues.");
+			error_report(2,called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
 			return 2;
 		}
 	}
 	else if (y == 0)
 	{
-		cout << "\n" << G << "Removing old and out dated dependencies . . . " << NC << "\n" << endl;
+		cout << "\n" << G << "Removing old and out dated dependencies, Deleting old config files . . . " << NC << "\n" << endl;
 		try
 		{
-			system("/usr/bin/apt autoremove");
+			system("/usr/bin/apt autoremove --purge");
 		}
 		catch (...)
 		{
-			error_report("2",called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
-			return 2;
-		}
-		cout << "\n" << G << "Deleting old config files . . . " << NC << "\n" << endl;
-		try
-		{
-			system("/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
-		}
-		catch (...)
-		{
-			error_report("2",called_as,"Config file clean up has failed. Most likely due to app config issues.");
+			error_report(2,called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
 			return 2;
 		}
 	}
@@ -150,7 +130,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"GitHub clean up failed. Most likly due to incorrect file system permissions");
+		error_report(2,called_as,"GitHub clean up failed. Most likly due to incorrect file system permissions");
 		return 2;
 	}
 	cout << "\n" << G << "Clean up complete." << NC << "\n" << endl;

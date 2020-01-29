@@ -1,7 +1,7 @@
 /*
  * aptupdate.cxx
  *
- * Copyright 2019 Thomas Castleman <contact@draugeros.org>
+ * Copyright 2020 Thomas Castleman <contact@draugeros.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 #include <iostream>
 #include <string>
-#include "/usr/share/mrai/mrai_lib.h"
+#include "../usr/share/mrai/mrai_lib.h"
 
 using namespace std;
 
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 	catch (...)
 	{
 		system("/usr/bin/dpkg --configure -a");
-		error_report("2",called_as,"An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey.");
+		error_report(2,called_as,"An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey.");
 		return 2;
 	}
 	if (s == 1)

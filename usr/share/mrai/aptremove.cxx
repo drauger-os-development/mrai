@@ -1,7 +1,7 @@
 /*
  * aptremove.cxx
  *
- * Copyright 2019 Thomas Castleman <contact@draugeros.org>
+ * Copyright 2020 Thomas Castleman <contact@draugeros.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 	vector<string> * passv_address = &passv;
 	if (getuid() != 0)
 	{
-		error_report("2",called_as,"aptremove.sh has failed with fatal error: Not running with correct permission set.\n");
+		error_report(2,called_as,"aptremove.sh has failed with fatal error: Not running with correct permission set.\n");
 		return 2;
 	}
 	string cache = "/etc/mrai";
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"apt purge has failed. Most likely a configuration bug with an app.");
+		error_report(2,called_as,"apt purge has failed. Most likely a configuration bug with an app.");
 		return 2;
 	}
 	try
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("1",called_as,"Cannot modify files in " + cache);
+		error_report(1,called_as,"Cannot modify files in " + cache);
 	}
 	try
 	{
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"clean.sh has failed");
+		error_report(2,called_as,"clean.sh has failed");
 	}
 	return 0;
 }

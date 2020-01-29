@@ -104,7 +104,7 @@ rm mrai/usr/share/mrai/log-out
 rm mrai/usr/share/mrai/edit-apt-sources
 rm "$FOLDER"/sbin/snapupdate.cxx
 rm "$FOLDER"/sbin/aptupdate.cxx
-rm "$FOLDER"/sbin/mari.cxx
+rm "$FOLDER"/sbin/mrai.cxx
 rm mrai/sbin/mrai
 rm mrai/sbin/aptupdate
 rm mrai/sbin/snapupdate

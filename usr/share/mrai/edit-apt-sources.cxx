@@ -1,7 +1,7 @@
 /*
  * edit-apt-sources.cxx
  *
- * Copyright 2019 Thomas Castleman <contact@draugeros.org>
+ * Copyright 2020 Thomas Castleman <contact@draugeros.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",argv[0],"Could not parse selected_editor.conf or .selected-editor. Most likly file system permissions issue.");
+		error_report(2,argv[0],"Could not parse selected_editor.conf or .selected-editor. Most likly file system permissions issue.");
 		return 2;
 	}
 	try
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-			error_report("2",argv[0],"Could not manipulate " + file + ". Most likely not running as root or incorrect file system permissions.");
+			error_report(2,argv[0],"Could not manipulate " + file + ". Most likely not running as root or incorrect file system permissions.");
 			return 2;
 	}
 	try
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",argv[0],"apt update failed. Most likly bad network connection.");
+		error_report(2,argv[0],"apt update failed. Most likly bad network connection.");
 		return 2;
 	}
 	cout << "\n" + G + "\bConfiguring Apt Repos Complete!\n" + NC << endl;
