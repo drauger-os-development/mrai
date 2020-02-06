@@ -20,7 +20,7 @@
  *
  *
  */
- //VERSION: 0.1.5-beta2
+ //VERSION: 0.1.6-beta2
 
 #include <iostream>
 #include <string>
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 		{
 			*y_location = 1;
 		}
-		else if ( check == "")
+		elif ( check == "")
 		{
 			*y_location = 0;
 		}
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 			return 2;
 		}
 	}
-	else if (y == 0)
+	elif (y == 0)
 	{
 		cout << "\n" << G << "Removing old and out dated dependencies, Deleting old config files . . . " << NC << "\n" << endl;
 		try

@@ -41,17 +41,17 @@ using namespace std;
 
 bool is_snapd_installed()
 {
-	return DoesPathExist(cache + "/snapd.flag");
+	return DoesPathExist("/usr/bin/snap");
 }
 
 bool is_aptfast_installed()
 {
-	return DoesPathExist(cache + "/apt-fast.flag");
+	return DoesPathExist("/usr/sbin/apt-fast");
 }
 
 bool is_flatpak_installed()
 {
-	return DoesPathExist(cache + "/flatpak.flag");
+	return DoesPathExist("/usr/bin/flatpak");
 }
 
 void unlock()
@@ -143,12 +143,7 @@ int aptinstall (string_list passed, bool assume_yes)
 				{
 					if (install_vector[i] == "flatpak")
 					{
-						touch(cache + "/flatpak.flag");
 						system("/usr/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo");
-					}
-					elif (install_vector[i] == "snapd")
-					{
-						touch(cache + "/snapd.flag");
 					}
 				}
 			}
@@ -173,16 +168,7 @@ int aptinstall (string_list passed, bool assume_yes)
 				{
 					if (install_vector[i] == "flatpak")
 					{
-						touch(cache + "/flatpak.flag");
 						system("/usr/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo");
-					}
-					elif (install_vector[i] == "snapd")
-					{
-						touch(cache + "/snapd.flag");
-					}
-					elif (install_vector[i] == "apt-fast")
-					{
-						touch(cache + "/apt-fast.flag");
 					}
 				}
 			}
@@ -904,7 +890,7 @@ int clean(bool &assume_yes, string &user)
 
 int main(int argc, char **argv_list)
 {
-	string version = "1.4.8-beta6";
+	string version = "1.4.9-beta6";
 	string h = "mrai Package Manager: the Multiple Repo App Installer\n\n-c, --clean\t\tDelete old *.deb files, old config files, and old Github files\n\n--find\t\t\tFind the package the provides a given command\n\n-i,--install \tInstall an app, if none of the below options are given, check in the following order:\n\n\t\t\tapt, snap, flatpak, Github manual method, Github automatic method\n\n\n	-a, ---apt	\tInstall just from apt. In which case, usage will be:\n\n	\t\t\t\t\tmrai -ia {apt-package-name}\n\n\t\t\t\tTo install multiple apps at once, add a comma between each package name:\n\n\t\t\t\t\t\tmrai -ia {package-1},{package-2},{package-3},...\n\n	-g, --git,	\tInstall just from Github, In which case, usage will be:\n	--gm, --ga	\n	\t\t\t\t\tmrai -ig {/github-username/github-repo-name (or Github URL)}\n\n\t\t\t\tUnder this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or\n\t\t\t\tautomaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your\n\t\t\t\tsystem.\n\n\n	-s, --snap\t\tInstall just from snapd, In which case, usage will be:\n\n\t\t\t\t\t	mrai -is {snap-name}\n\n\n	-f, --flat	\tInstall as Flatpak, In which case, usage will be:\n\n	\t\t\t\t\tmrai -if {flatpak-name}\n\n\n-h, --help\t\tDisplay this help dialogue and exit.\n\n\n-r, --remove	\tUninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,\n--uninstall\t\tthe name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed\n\n\n-S, --search,\t\tSearch for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,\n--query	\t\tplease vist https://www.github.com\n\n\n\t-a, --apt	\tSearch for an app through apt\n\n\n\t-s, --snap\t\tSearch for an app through snap\n\n\n\t-f, --flat\t\tSearch for an app through flatpak\n\n\n\t--ga\t\t\tSearch for an app that was installed using GitHub Automatic Method\n\n\n\t--gm\t\t\tSearch for an app that was installed using GitHub Manual Method\n\n\n\t--git\t\t\tSearch for an app installed from GitHub, regardless of method\n\n\n\t-v, --verbose\t\tGive more information about the queried package\n\n\n-u, --update,\t\tUpdate your software. This may or may not work for packages installed from Github.\n\n	-a, --apt\t	Update from only apt\n\n\n	-f, --flat\t\tUpdate from only Flatpak\n\n\n\t-g, --git	\tUpdate from only Github\n\n\n	-s, --snap\t\tUpdate only installed snaps\n\n\n-v, --version\t\tPrint Current Version and exit\n\n\n--fix-config\t\tEssentially this runs 'sudo dpkg --configure -a', to fix package management issues\n\n\n--add-repo\t\tAdd a repository, MUST BE FOLLOWED BY ONE OF THE FOLLOWING OPTIONS:\n\n\n	-a, --apt\t\tadds a new PPA\n\n\n\t-f, --flat\t	adds a new Flatpak Remote\n\n\n-l, --list\t\tList installed apps, pass a package name after this flag to search for an installed app\n\n\n	-a, --apt\tFilter installed apps to ones installed with apt\n\n\n\t-f, --flat\tFilter installed apps to ones installed with Flatpak\n\n\n\t-s, --snap\tFilter installed apps to ones installed with Snap\n\n\n\t--ga\t\tFilter installed apps to ones installed using GitHub Automatic Method\n\n\n\t--gm\t\tFilter installed apps to ones installed using GitHub Manual Method\n\n\n\t--git\t\tFilter installed apps to ones installed from GitHub, regardless of method\n\n\n--edit-sources,\t\tEdit enabled apt repos by editing /etc/apt/sources.list or one of the files\n--edit-repos,\t\tin /etc/apt/sources.list.d\n--edit-apt-repos";
 	//copy the argv list so that we can compare the entires
 	//without having the weird "undefined behvior" errors
@@ -1108,48 +1094,6 @@ int main(int argc, char **argv_list)
 				{
 					exit(2);
 				}
-			}
-		}
-		if (DoesPathExist("/usr/sbin/apt-fast"))
-		{
-			if (! is_aptfast_installed())
-			{
-				touch(cache + "/apt-fast.flag");
-			}
-		}
-		else
-		{
-			if (is_aptfast_installed())
-			{
-				remove(ConvertToChar(cache + "/apt-fast.flag"));
-			}
-		}
-		if (DoesPathExist("/usr/bin/snap"))
-		{
-			if (! is_snapd_installed())
-			{
-				touch(cache + "/snapd.flag");
-			}
-		}
-		else
-		{
-			if (is_snapd_installed())
-			{
-				remove(ConvertToChar(cache + "/snapd.flag"));
-			}
-		}
-		if (DoesPathExist("/usr/bin/flatpak"))
-		{
-			if (! is_flatpak_installed())
-			{
-				touch(cache + "/flatpak.flag");
-			}
-		}
-		else
-		{
-			if (is_flatpak_installed())
-			{
-				remove(ConvertToChar(cache + "/flatpak.flag"));
 			}
 		}
 		//verbose flag system (and compound flag system. The two are now integrated together.)
