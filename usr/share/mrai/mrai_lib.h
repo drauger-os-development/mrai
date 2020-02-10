@@ -193,7 +193,7 @@ std::string grep(std::string search_field, std::string search_pattern)
 
 bool Vector_Contains(string_list &vector, std::string search)
 {
-	for (unsigned int i = 0; i <= vector.size(); i++)
+	for (unsigned int i = 0; i < vector.size(); i++)
 	{
 		if (vector[i] == search)
 		{
