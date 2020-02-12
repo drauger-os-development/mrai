@@ -1,26 +1,26 @@
 /*
  * clean.cxx
- * 
- * Copyright 2019 Thomas Castleman <contact@draugeros.org>
- * 
+ *
+ * Copyright 2020 Thomas Castleman <contact@draugeros.org>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
- * 
- * 
+ *
+ *
  */
- //VERSION: 0.1.4-beta2
+ //VERSION: 0.1.6-beta2
 
 #include <iostream>
 #include <string>
@@ -39,14 +39,10 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	string scripts = "/usr/share/mrai";
 	string called_as = argv[0];
-	string R = "\033[0;31m";
-	string G = "\033[0;32m";
-	string NC = "\033[0m";
 	int y;
 	string check;
-	if ( argv[2])
+	if (argv[2])
 	{
 		check = argv[1];
 	}
@@ -62,7 +58,7 @@ int main(int argc, char **argv)
 		{
 			*y_location = 1;
 		}
-		else if ( check == "")
+		elif ( check == "")
 		{
 			*y_location = 0;
 		}
@@ -90,52 +86,32 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"apt clean has failed. Most likly due to file system permission issues.");
+		error_report(2,called_as,"apt clean has failed. Most likly due to file system permission issues.");
 		return 2;
 	}
 	if ( y == 1)
 	{
-		cout << "\n" << G << "Removing old and out dated dependencies . . . " << NC << "\n" << endl;
+		cout << "\n" << G << "Removing old and out dated dependencies, Deleting old config files . . . " << NC << "\n" << endl;
 		try
 		{
-			system("/usr/bin/apt -y autoremove");
+			system("/usr/bin/apt -y autoremove --purge");
 		}
 		catch (...)
 		{
-			error_report("2",called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
-			return 2;
-		}
-		cout << "\n" << G << "Deleting old config files . . . " << NC << "\n" << endl;
-		try
-		{
-			system("/usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
-		}
-		catch (...)
-		{
-			error_report("2",called_as,"Config file clean up has failed. Most likely due to app config issues.");
+			error_report(2,called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
 			return 2;
 		}
 	}
-	else if (y == 0)
+	elif (y == 0)
 	{
-		cout << "\n" << G << "Removing old and out dated dependencies . . . " << NC << "\n" << endl;
+		cout << "\n" << G << "Removing old and out dated dependencies, Deleting old config files . . . " << NC << "\n" << endl;
 		try
 		{
-			system("/usr/bin/apt autoremove");
+			system("/usr/bin/apt autoremove --purge");
 		}
 		catch (...)
 		{
-			error_report("2",called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
-			return 2;
-		}
-		cout << "\n" << G << "Deleting old config files . . . " << NC << "\n" << endl;
-		try
-		{
-			system("/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
-		}
-		catch (...)
-		{
-			error_report("2",called_as,"Config file clean up has failed. Most likely due to app config issues.");
+			error_report(2,called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
 			return 2;
 		}
 	}
@@ -154,7 +130,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"GitHub clean up failed. Most likly due to incorrect file system permissions");
+		error_report(2,called_as,"GitHub clean up failed. Most likly due to incorrect file system permissions");
 		return 2;
 	}
 	cout << "\n" << G << "Clean up complete." << NC << "\n" << endl;

@@ -1,24 +1,24 @@
 /*
  * aptremove.cxx
- * 
- * Copyright 2019 Thomas Castleman <contact@draugeros.org>
- * 
+ *
+ * Copyright 2020 Thomas Castleman <contact@draugeros.org>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
- * 
- * 
+ *
+ *
  * VERSION: 0.1.4-beta3
  */
 
@@ -36,8 +36,6 @@ using namespace std;
 int main(int argc, char **argv)
 {
 	string called_as = argv[0];
-	string R = "\033[0;31m";
-	string NC = "\033[0m0";
 	string pass = argv[1];
 	bool assume_yes = false;
 	if (pass == "1")
@@ -49,7 +47,7 @@ int main(int argc, char **argv)
 	vector<string> * passv_address = &passv;
 	if (getuid() != 0)
 	{
-		error_report("2",called_as,"aptremove.sh has failed with fatal error: Not running with correct permission set.\n");
+		error_report(2,called_as,"aptremove.sh has failed with fatal error: Not running with correct permission set.\n");
 		return 2;
 	}
 	string cache = "/etc/mrai";
@@ -84,7 +82,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"apt purge has failed. Most likely a configuration bug with an app.");
+		error_report(2,called_as,"apt purge has failed. Most likely a configuration bug with an app.");
 		return 2;
 	}
 	try
@@ -118,7 +116,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("1",called_as,"Cannot modify files in " + cache);
+		error_report(1,called_as,"Cannot modify files in " + cache);
 	}
 	try
 	{
@@ -145,7 +143,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",called_as,"clean.sh has failed");
+		error_report(2,called_as,"clean.sh has failed");
 	}
 	return 0;
 }

@@ -1,12 +1,12 @@
 Package: mrai
-Version: 1.4.2-beta6
+Version: 1.5.0-beta7
 Maintainer: Thomas Castleman <contact@draugeros.org>
 Section: admin
 Homepage: https://github.com/drauger-os-development/mrai
 Architecture: amd64
 Priority: optional
 Suggests: apt-fast (>=1.9.5-1~ubuntu18.04.1)
-Depends: apt (>=1.6.3ubuntu0.1), git (>=2.17.1), make (>=4.1), bash, bc (>=1.07.1-2)
+Depends: apt (>=1.6.3ubuntu0.1), git (>=2.17.1), make (>=4.1)
 Recommends: snapd (>=2.35.4), flatpak (>=1.0.1)
 Description: Multiple Repo App Installer
  mrai (Short for "Multiple Repository Application Installer") is a program inspired by the AUR helpers such as yaourt and yay from Arch Linux and it's derivatives.

@@ -1,7 +1,7 @@
 /*
  * edit-apt-sources.cxx
  *
- * Copyright 2019 Thomas Castleman <contact@draugeros.org>
+ * Copyright 2020 Thomas Castleman <contact@draugeros.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION 0.2.1-beta2
+ * VERSION 0.2.2-beta2
  */
 
 
@@ -34,14 +34,9 @@ using namespace std;
 int main(int argc, char **argv)
 {
 	string file = argv[1];
-	string cache = "/etc/mrai";
 	int i = 0;
-	string usr = "";
-	string scripts = "/usr/share/mrai";
+	string usr = argv[2];
 	string called_as = argv[0];
-	string R = "\033[0;31m";
-	string G = "\033[0;32m";
-	string NC = "\033[0m";
 	string contents;
 	string editor;
 	string * editor_location = &editor;
@@ -50,6 +45,7 @@ int main(int argc, char **argv)
 		while ( i == 0 )
 		{
 			ifstream f("/home/" + usr + "/.selected_editor");
+			cout << "/home/" + usr + "/.selected_editor" << endl;
 			ifstream g(cache + "/selected_editor.conf");
 			if ( f.good() || g.good() )
 			{
@@ -97,7 +93,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",argv[0],"Could not parse selected_editor.conf or .selected-editor. Most likly file system permissions issue.");
+		error_report(2,argv[0],"Could not parse selected_editor.conf or .selected-editor. Most likly file system permissions issue.");
 		return 2;
 	}
 	try
@@ -116,7 +112,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-			error_report("2",argv[0],"Could not manipulate " + file + ". Most likely not running as root or incorrect file system permissions.");
+			error_report(2,argv[0],"Could not manipulate " + file + ". Most likely not running as root or incorrect file system permissions.");
 			return 2;
 	}
 	try
@@ -126,7 +122,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report("2",argv[0],"apt update failed. Most likly bad network connection.");
+		error_report(2,argv[0],"apt update failed. Most likly bad network connection.");
 		return 2;
 	}
 	cout << "\n" + G + "\bConfiguring Apt Repos Complete!\n" + NC << endl;

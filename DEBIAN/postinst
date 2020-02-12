@@ -1,12 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 cache="/etc/mrai"
-if [[ ! -d $cache ]]; then
+/bin/mkdir -p "$cache"
+if [ ! -d $cache ]; then
 	/bin/mkdir $cache
 fi
-if [[ ! -d $cache/gitauto ]]; then
+if [ ! -d $cache/gitauto ]; then
 	/bin/mkdir $cache/gitauto
 fi
-if [[ ! -d $cache/gitman ]]; then
+if [ ! -d $cache/gitman ]; then
 	/bin/mkdir $cache/gitman
 fi
 if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then

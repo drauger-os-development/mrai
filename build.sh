@@ -13,13 +13,18 @@ mkdir ../"$FOLDER"
 #							     #
 ##############################################################
 cd usr/share/mrai
-g++ -Wall -m64 -o "log-out" "log-out.cxx"
-g++ -Wall -m64 -o "edit-apt-sources" "edit-apt-sources.cxx"
-g++ -Wall -m64 -o "base-spinner" "base-spinner.cxx"
-g++ -Wall -m64 -o "clean" "clean.cxx"
-g++ -Wall -m64 -o "gitautoinst" "gitautoinst.cxx"
-g++ -Wall -m64 -o "aptremove" "aptremove.cxx"
+g++ -Wall -m64 -o "log-out" "log-out.cxx" && echo "log-out compiled successfully"
+g++ -Wall -m64 -o "edit-apt-sources" "edit-apt-sources.cxx" && echo "edit-apt-sources compiled successfully"
+g++ -Wall -m64 -o "base-spinner" "base-spinner.cxx" && echo "base-spinner compiled successfully"
+g++ -Wall -m64 -o "clean" "clean.cxx" && echo "clean compiled successfully"
+g++ -Wall -m64 -o "gitautoinst" "gitautoinst.cxx" && echo "gitautoinst compiled successfully"
+g++ -Wall -m64 -o "aptremove" "aptremove.cxx" && echo "aptremove compiled successfully"
 cd ../../..
+cd sbin
+g++ -Wall -m64 -o "snapupdate" "snapupdate.cxx" && echo "snapupdate compiled successfully"
+g++ -Wall -m64 -o "aptupdate" "aptupdate.cxx" && echo "aptupdate compiled successfully"
+g++ -Wall -m64 -o "mrai" "mrai.cxx" && echo "mrai compiled successfully"
+cd ..
 ##############################################################
 #							     #
 #							     #
@@ -97,6 +102,12 @@ rm mrai/usr/share/mrai/clean
 rm mrai/usr/share/mrai/base-spinner
 rm mrai/usr/share/mrai/log-out
 rm mrai/usr/share/mrai/edit-apt-sources
+rm "$FOLDER"/sbin/snapupdate.cxx
+rm "$FOLDER"/sbin/aptupdate.cxx
+rm "$FOLDER"/sbin/mrai.cxx
+rm mrai/sbin/mrai
+rm mrai/sbin/aptupdate
+rm mrai/sbin/snapupdate
 #build the shit
 dpkg-deb --build "$FOLDER"
 rm -rf "$FOLDER"
