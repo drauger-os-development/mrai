@@ -202,3 +202,13 @@ bool Vector_Contains(string_list &vector, std::string search)
 	}
 	return false;
 }
+
+bool is_snapd_installed()
+{
+	return DoesPathExist("/usr/bin/snap");
+}
+
+bool is_aptfast_installed()
+{
+	return DoesPathExist("/usr/sbin/apt-fast");
+}
