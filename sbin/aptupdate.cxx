@@ -19,6 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
+ * VERSION: 0.2.1-beta2
  */
 
 
@@ -30,7 +31,6 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	string version = "0.2.0-beta2";
 	string called_as = argv[0];
 	string arg1;
 	int s = 0;

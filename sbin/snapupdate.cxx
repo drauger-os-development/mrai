@@ -19,6 +19,8 @@
  * MA 02110-1301, USA.
  *
  *
+ *
+ * VERSION: 0.1.7-beta2
  */
 
 
@@ -31,7 +33,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	string version = "0.1.6-beta2";
+	string version = "";
 	string scripts = "/usr/share/mrai";
 	string called_as = argv[0];
 	string R = "\033[0;31m";

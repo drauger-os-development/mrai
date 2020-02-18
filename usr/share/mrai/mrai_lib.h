@@ -40,6 +40,8 @@ std::string cache = "/etc/mrai";
 std::string scripts = "/usr/share/mrai";
 std::string gitautocache = "/etc/mrai/gitauto";
 std::string gitmancache = "/etc/mrai/gitman";
+string version = "1.5.3-beta7";
+string VERSION = version;
 
 //define macros
 #define elif else if
