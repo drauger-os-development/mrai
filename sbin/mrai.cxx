@@ -2049,9 +2049,13 @@ int main(int argc, char **argv_list)
 						string_list package_list = StringToVector(output);
 						string_list output_list;
 						int num;
-						if ((argv[1].find("-a") != std::string::npos))
+						if ((argc > 2  and (argv[2].find("-a") != std::string::npos)) || ( argc > 1 and (argv[1].find("a") != std::string::npos)))
 						{
-							if (argv[1].find("-a") != std::string::npos)
+							if (argc > 2  and (argv[2].find("-a") != std::string::npos))
+							{
+								num = 3;
+							}
+							else
 							{
 								num = 2;
 							}
@@ -2059,116 +2063,125 @@ int main(int argc, char **argv_list)
 							{
 								if (package_list[i].find(argv[num]) != std:: string::npos)
 								{
-									cout << "\t * " << package_list[i] << endl;
+									cout << "\t" << package_list[i] << endl;
 								}
 							}
 						}
-						elif (argc > 1  and (argv[2].find("-a") != std::string::npos))
+						else
 						{
-							if (argv[2].find("-a") != std::string::npos)
-							{
-								num = 3;
-							}
 							for (unsigned int i = 0; i < package_list.size(); i++)
 							{
-								if (package_list[i].find(argv[num]) != std:: string::npos)
-								{
-									cout << "\t * " << package_list[i] << endl;
-								}
+								cout << "\t" << package_list[i] << endl;
 							}
 						}
-						if (Vector_Contains(L,"s"))
+						cout << endl;
+						cout << G << "Apt Package Count: " << package_list.size() << NC << endl;
+					}
+					if (Vector_Contains(L,"s"))
+					{
+						if (is_snapd_installed())
 						{
-							if (is_snapd_installed())
+							cout << G << "\nSnaps:\n" << NC << endl;
+							if (argc > 2)
 							{
-								cout << G << "\nSnaps:\n" << NC << endl;
 								system(ConvertToChar("/usr/bin/snap list " + argv[2]));
-								cout << endl;
 							}
 							else
 							{
-								error_report(2, called_as, "Snapd not available. Install with 'mrai -ia snapd'");
-								exit(2);
+								system(ConvertToChar("/usr/bin/snap list"));
 							}
+							cout << endl;
 						}
-						if (Vector_Contains(L,"f"))
+						else
 						{
-							if (is_flatpak_installed())
+							error_report(2, called_as, "Snapd not available. Install with 'mrai -ia snapd'");
+							exit(2);
+						}
+					}
+					if (Vector_Contains(L,"f"))
+					{
+						if (is_flatpak_installed())
+						{
+							cout << G << "\nFlatpaks:\n" << NC << endl;
+							if (argc > 2)
 							{
-								cout << G << "\nFlatpaks:\n" << NC << endl;
 								system(ConvertToChar("/usr/bin/flatpak list -a | grep " + argv[2]));
-								cout << endl;
 							}
 							else
 							{
-								error_report(2,called_as,"Flatpak is not available. Install it with 'mrai -ia flatpak'");
-								exit(2);
+								system(ConvertToChar("/usr/bin/flatpak list -a"));
+							}
+							cout << endl;
+						}
+						else
+						{
+							error_report(2,called_as,"Flatpak is not available. Install it with 'mrai -ia flatpak'");
+							exit(2);
+						}
+					}
+					if (Vector_Contains(L,"gm"))
+					{
+						string_list search_field = gitmanlist(called_as);
+						string_list output_list;
+						for (unsigned int i = 0; i < search_field.size(); i++)
+						{
+							if (search_field[i].find(argv[2]) != std::string::npos)
+							{
+								output_list.insert(output_list.end(),search_field[i]);
 							}
 						}
-						if (Vector_Contains(L,"gm"))
+						cout << G << "\nInstalled git Apps:\nInstalled through Manual Method:\n" << NC << flush;
+						for (unsigned int i = 0; i < output_list.size(); i++)
 						{
-							string_list search_field = gitmanlist(called_as);
-							string_list output_list;
-							for (unsigned int i = 0; i < search_field.size(); i++)
+							cout << "\t * " << output_list[i] << endl;
+						}
+					}
+					if (Vector_Contains(L,"ga"))
+					{
+						string_list search_field = gitautolist(called_as);
+						string_list output_list;
+						for (unsigned int i = 0; i < search_field.size(); i++)
+						{
+							if (search_field[i].find(argv[2]) != std::string::npos)
 							{
-								if (search_field[i].find(argv[2]) != std::string::npos)
-								{
-									output_list.insert(output_list.end(),search_field[i]);
-								}
-							}
-							cout << G << "\nInstalled git Apps:\nInstalled through Manual Method:\n" << NC << flush;
-							for (unsigned int i = 0; i < output_list.size(); i++)
-							{
-								cout << "\t * " << output_list[i] << endl;
+								output_list.insert(output_list.end(),search_field[i]);
 							}
 						}
-						if (Vector_Contains(L,"ga"))
+						cout << G << "\nInstalled git Apps:\nInstalled through Automatic Method:\n" << NC << flush;
+						for (unsigned int i = 0; i < output_list.size(); i++)
 						{
-							string_list search_field = gitautolist(called_as);
-							string_list output_list;
-							for (unsigned int i = 0; i < search_field.size(); i++)
-							{
-								if (search_field[i].find(argv[2]) != std::string::npos)
-								{
-									output_list.insert(output_list.end(),search_field[i]);
-								}
-							}
-							cout << G << "\nInstalled git Apps:\nInstalled through Automatic Method:\n" << NC << flush;
-							for (unsigned int i = 0; i < output_list.size(); i++)
-							{
-								cout << "\t * " << output_list[i] << endl;
-							}
+							cout << "\t * " << output_list[i] << endl;
 						}
-						if (Vector_Contains(L,"gb")  and ! Vector_Contains(L,"ga") and ! Vector_Contains(L,"gm"))
+					}
+					if (Vector_Contains(L,"gb")  and ! Vector_Contains(L,"ga") and ! Vector_Contains(L,"gm"))
+					{
+						string_list list1 = gitmanlist(called_as);
+						string_list list2 = gitautolist(called_as);
+						if (list1.size() <= 0)
 						{
-							string_list list1 = gitmanlist(called_as);
-							string_list list2 = gitautolist(called_as);
-							if (list1.size() <= 0)
-							{
-								list1.insert(list1.end(), "No apps found installed using manual method.");
-							}
-							if (list2.size() <= 0)
-							{
-								list2.insert(list2.end(), "No apps found installed using automatic method.");
-							}
-							cout << G << "\nInstalled git Apps:\n\nInstalled through Manual Method:\n" << NC <<  endl;
-							for (unsigned int i = 0; i < list1.size(); i++)
-							{
-								cout << list1[i] << endl;
-							}
-							cout << G << "Installed through Automatic Method:\n" << NC << endl;
-							for (unsigned int i = 0; i < list2.size(); i++)
-							{
-								cout << list2[i] << endl;
-							}
+							list1.insert(list1.end(), "No apps found installed using manual method.");
 						}
-						elif (Vector_Contains(L,"gb"))
+						if (list2.size() <= 0)
 						{
-							if (Vector_Contains(L,"ga") and Vector_Contains(L,"gm"))
-							{
-								error_report(2,called_as,"Already specified the 'manual only' or 'automatic only' flags.Please do not use the manual only, automatic only, or unspecified flags in conjunction.");
-								exit(2);
-							}
+							list2.insert(list2.end(), "No apps found installed using automatic method.");
+						}
+						cout << G << "\nInstalled git Apps:\n\nInstalled through Manual Method:\n" << NC <<  endl;
+						for (unsigned int i = 0; i < list1.size(); i++)
+						{
+							cout << list1[i] << endl;
+						}
+						cout << G << "\nInstalled through Automatic Method:\n" << NC << endl;
+						for (unsigned int i = 0; i < list2.size(); i++)
+						{
+							cout << list2[i] << endl;
+						}
+					}
+					elif (Vector_Contains(L,"gb"))
+					{
+						if (Vector_Contains(L,"ga") and Vector_Contains(L,"gm"))
+						{
+							error_report(2,called_as,"Already specified the 'manual only' or 'automatic only' flags.Please do not use the manual only, automatic only, or unspecified flags in conjunction.");
+							exit(2);
 						}
 					}
 				}

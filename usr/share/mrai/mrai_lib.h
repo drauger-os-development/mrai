@@ -40,8 +40,8 @@ std::string cache = "/etc/mrai";
 std::string scripts = "/usr/share/mrai";
 std::string gitautocache = "/etc/mrai/gitauto";
 std::string gitmancache = "/etc/mrai/gitman";
-string version = "1.5.3-beta7";
-string VERSION = version;
+std::string version = "1.5.4-beta7";
+std::string VERSION = version;
 
 //define macros
 #define elif else if
@@ -109,7 +109,7 @@ int base_spinner(std::string &message, std::string &PID)
 	std::string DIR = "/proc/" + PID;
 	while (DoesPathExist(DIR))
 	{
-		usleep(250000);
+		sleep(250000);
 		std::cout << "\r\033[K";
 		std::cout << "[" << sp[i] << "] " << message << std::flush;;
 		if ( i == 3)
