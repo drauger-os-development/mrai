@@ -10,15 +10,6 @@ fi
 if [ ! -d $cache/gitman ]; then
 	/bin/mkdir $cache/gitman
 fi
-if $(/usr/bin/dpkg -l | /bin/grep -q "ii  flatpak"); then
-	/bin/echo "" >> $cache/flatpak.flag
-fi
-if $(/usr/bin/dpkg -l | /bin/grep -q "ii  snapd"); then
-	/bin/echo "" >> $cache/snapd.flag
-fi
-if $(/usr/bin/dpkg -l | /bin/grep -q "ii  apt-fast"); then
-	/bin/echo "" >> $cache/apt-fast.flag
-fi
 usr=$(users)
 if [ -f /home/$usr/.selected_editor ]; then
 	/bin/cp /home/$usr/.selected_editor $cache/selected_editor.conf

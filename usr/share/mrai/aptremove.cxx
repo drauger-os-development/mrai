@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION: 0.1.4-beta3
+ * VERSION: 0.1.5-beta3
  */
 
 
@@ -50,10 +50,9 @@ int main(int argc, char **argv)
 		error_report(2,called_as,"aptremove.sh has failed with fatal error: Not running with correct permission set.\n");
 		return 2;
 	}
-	string cache = "/etc/mrai";
 	try
 	{
-		if (DoesPathExist(cache + "apt-fast.flag"))
+		if (is_aptfast_installed())
 		{
 			if (assume_yes)
 			{
@@ -84,39 +83,6 @@ int main(int argc, char **argv)
 	{
 		error_report(2,called_as,"apt purge has failed. Most likely a configuration bug with an app.");
 		return 2;
-	}
-	try
-	{
-		string file;
-		for (auto & each : passv)
-		{
-			if (each == "apt-fast")
-			{
-				file = cache + "/apt-fast.flag";
-				const char * DELETE_FILE = ConvertToChar(file);
-				remove(DELETE_FILE);
-			}
-			else if (each == "snapd")
-			{
-				file = cache + "/snapd.flag";
-				const char * DELETE_FILE = ConvertToChar(file);
-				remove(DELETE_FILE);
-			}
-			else if (each == "flatpak")
-			{
-				file = cache + "/flatpak.flap";
-				const char * DELETE_FILE = ConvertToChar(file);
-				remove(DELETE_FILE);
-			}
-			else if (each == "mrai")
-			{
-				return 0;
-			}
-		}
-	}
-	catch (...)
-	{
-		error_report(1,called_as,"Cannot modify files in " + cache);
 	}
 	try
 	{

@@ -19,6 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
+ * VERSION: 0.2.1-beta2
  */
 
 
@@ -30,7 +31,6 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	string version = "0.1.9-beta1";
 	string called_as = argv[0];
 	string arg1;
 	int s = 0;
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	}
 	try
 	{
-		if (DoesPathExist("/etc/mrai/apt-fast.flag"))
+		if (is_aptfast_installed())
 		{
 			if (y == 0)
 			{

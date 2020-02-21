@@ -40,6 +40,8 @@ std::string cache = "/etc/mrai";
 std::string scripts = "/usr/share/mrai";
 std::string gitautocache = "/etc/mrai/gitauto";
 std::string gitmancache = "/etc/mrai/gitman";
+std::string version = "1.5.4-beta7";
+std::string VERSION = version;
 
 //define macros
 #define elif else if
@@ -107,7 +109,7 @@ int base_spinner(std::string &message, std::string &PID)
 	std::string DIR = "/proc/" + PID;
 	while (DoesPathExist(DIR))
 	{
-		usleep(250000);
+		sleep(250000);
 		std::cout << "\r\033[K";
 		std::cout << "[" << sp[i] << "] " << message << std::flush;;
 		if ( i == 3)
@@ -201,4 +203,14 @@ bool Vector_Contains(string_list &vector, std::string search)
 		}
 	}
 	return false;
+}
+
+bool is_snapd_installed()
+{
+	return DoesPathExist("/usr/bin/snap");
+}
+
+bool is_aptfast_installed()
+{
+	return DoesPathExist("/usr/sbin/apt-fast");
 }
