@@ -49,4 +49,13 @@ Drauger OS users can install it directly from the repos by running `sudo apt ins
 # Uninstalling
 To uninstall, run:
 
-  `sudo apt purge mrai`
+    `sudo apt purge mrai`
+
+Or, you can use the stones to destroy the stones:
+    `mrai -r mrai`
+
+# Usage
+A near-full set of usage instructions can be obtained with:
+    `mrai -h`
+or
+    `mrai --help`
