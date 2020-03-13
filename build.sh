@@ -4,6 +4,13 @@ PAK=$(cat DEBIAN/control | grep 'Package: ' | sed 's/Package: //g')
 ARCH=$(cat DEBIAN/control | grep 'Architecture: '| sed 's/Architecture: //g')
 FOLDER="$PAK\_$VERSION\_$ARCH"
 FOLDER=$(echo "$FOLDER" | sed 's/\\//g')
+if [ "$ARCH" == "amd64" ]; then
+	COMPILER="g++ -m64"
+	ARGS="-m64"
+elif [ "$ARCH" == "arm64" ]; then
+	COMPILER="aarch64-linux-gnu-g++"
+	ARGS=""
+fi
 mkdir ../"$FOLDER"
 ##############################################################
 #							     #
@@ -13,17 +20,17 @@ mkdir ../"$FOLDER"
 #							     #
 ##############################################################
 cd usr/share/mrai
-g++ -Wall -m64 -o "log-out" "log-out.cxx" && echo "log-out compiled successfully"
-g++ -Wall -m64 -o "edit-apt-sources" "edit-apt-sources.cxx" && echo "edit-apt-sources compiled successfully"
-g++ -Wall -m64 -o "base-spinner" "base-spinner.cxx" && echo "base-spinner compiled successfully"
-g++ -Wall -m64 -o "clean" "clean.cxx" && echo "clean compiled successfully"
-g++ -Wall -m64 -o "gitautoinst" "gitautoinst.cxx" && echo "gitautoinst compiled successfully"
-g++ -Wall -m64 -o "aptremove" "aptremove.cxx" && echo "aptremove compiled successfully"
+$COMPILER $ARGS -Wall -o "log-out" "log-out.cxx" && echo "log-out compiled successfully"
+$COMPILER $ARGS -Wall -o "edit-apt-sources" "edit-apt-sources.cxx" && echo "edit-apt-sources compiled successfully"
+$COMPILER $ARGS -Wall -o "base-spinner" "base-spinner.cxx" && echo "base-spinner compiled successfully"
+$COMPILER $ARGS -Wall -o "clean" "clean.cxx" && echo "clean compiled successfully"
+$COMPILER $ARGS -Wall -o "gitautoinst" "gitautoinst.cxx" && echo "gitautoinst compiled successfully"
+$COMPILER $ARGS -Wall -o "aptremove" "aptremove.cxx" && echo "aptremove compiled successfully"
 cd ../../..
 cd sbin
-g++ -Wall -m64 -o "snapupdate" "snapupdate.cxx" && echo "snapupdate compiled successfully"
-g++ -Wall -m64 -o "aptupdate" "aptupdate.cxx" && echo "aptupdate compiled successfully"
-g++ -Wall -m64 -o "mrai" "mrai.cxx" && echo "mrai compiled successfully"
+$COMPILER $ARGS -Wall -o "snapupdate" "snapupdate.cxx" && echo "snapupdate compiled successfully"
+$COMPILER $ARGS -Wall -o "aptupdate" "aptupdate.cxx" && echo "aptupdate compiled successfully"
+$COMPILER $ARGS -Wall -o "mrai" "mrai.cxx" && echo "mrai compiled successfully"
 cd ..
 ##############################################################
 #							     #
