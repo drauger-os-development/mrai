@@ -26,7 +26,7 @@
 
 #include <iostream>
 #include <string>
-#include "../usr/share/mrai/mrai_lib.h"
+#include "../usr/share/mrai/mrai_lib.hpp"
 #include <sys/wait.h>
 
 using namespace std;

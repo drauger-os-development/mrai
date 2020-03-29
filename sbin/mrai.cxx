@@ -33,7 +33,7 @@
 #include <boost/algorithm/string.hpp>
 #include <vector>
 #include <regex>
-#include "../usr/share/mrai/mrai_lib.h"
+#include "../usr/share/mrai/mrai_lib.hpp"
 
 using namespace std;
 

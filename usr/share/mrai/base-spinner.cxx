@@ -26,7 +26,7 @@
 #include <string>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "mrai_lib.h"
+#include "mrai_lib.hpp"
 
 using namespace std;
 

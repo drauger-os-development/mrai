@@ -25,7 +25,7 @@
 
 #include <iostream>
 #include <string>
-#include "mrai_lib.h"
+#include "mrai_lib.hpp"
 #include <unistd.h>
 #include <vector>
 #include <boost/algorithm/string.hpp>

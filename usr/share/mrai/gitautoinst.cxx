@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 #include <experimental/filesystem>
 #include <unistd.h>
-#include "mrai_lib.h"
+#include "mrai_lib.hpp"
 
 using namespace std;
 

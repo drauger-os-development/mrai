@@ -27,7 +27,7 @@
 #include <string>
 #include <bits/stdc++.h>
 #include <stdlib.h>
-#include "mrai_lib.h"
+#include "mrai_lib.hpp"
 
 using namespace std;
 
