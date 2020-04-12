@@ -23,16 +23,8 @@
  */
 
 
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sys/stat.h>
 #include <experimental/filesystem>
-#include <unistd.h>
-#include <stdlib.h>
 #include <boost/algorithm/string.hpp>
-#include <vector>
-#include <regex>
 #include "../usr/share/mrai/mrai_lib.hpp"
 
 using namespace std;
@@ -253,7 +245,7 @@ int flatinstall(string &arg1, string &arg2, string_list &package_vector, bool as
 			}
 			else
 			{
-				cerr << R << "\n" << "ERROR: Package " << package_vector[i] << " not in domain list. Cannot install." << NC << "\n" << endl;
+				cerr << R << "\n" << "ERROR: " << package_vector[i] << " not in domain list. Cannot install." << NC << "\n" << endl;
 				return 2;
 			}
 		}
@@ -425,7 +417,7 @@ int gitmaninstall(string &repo_url, string &called_as)
 	chdir(ConvertToChar(PATH));
 	string file_string = run("/bin/ls");
 	cout << file_string << endl;
-	cout << G << "Which of the above files would you like to try to run in order to install " << PATH << "? (Case-Sensitive) : " << NC << flush;
+	cout << G << "Which of the above files would you like to try to run in order to complete installation? (Case-Sensitive) : " << NC << flush;
 	string script;
 	cin >> script;
 	cout << endl;
@@ -519,7 +511,7 @@ int gitremove(string_list &death_row, string &called_as)
 			}
 			else
 			{
-				error_report(1,called_as,"No Makefile could be found. Therefore, mrai cannot uninstall Github package.");
+				error_report(1,called_as,"No Makefile could be found. Therefore, mrai cannot uninstall git package.");
 				return 1;
 			}
 		}
@@ -654,7 +646,7 @@ int flatremove(bool &assume_yes, string pass)
 	}
 	catch (...)
 	{
-		cerr << "\n" << R << "ERROR: " << "Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" << endl;
+		cerr << "\n" << R << "ERROR: " << "Function flatremove has encountered an error.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" << endl;
 		return 2;
 	}
 }
@@ -668,7 +660,7 @@ int snapremove(string pass)
 	}
 	catch (...)
 	{
-		cerr << "\n" << R << "ERROR: " << NC << "Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" << endl;
+		cerr << "\n" << R << "ERROR: " << NC << "Function snapremove has encountered an error.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" << endl;
 		return 1;
 	}
 }
@@ -1511,7 +1503,7 @@ int main(int argc, char **argv_list)
 						}
 						catch (...)
 						{
-							error_report(1,called_as," Installation from git failed.");
+							error_report(1,called_as,"Installation from git failed.");
 							exit(1);
 						}
 					}
@@ -1749,7 +1741,7 @@ int main(int argc, char **argv_list)
 									}
 									elif (ans == "exit" or ans == "cancel" or ans == "EXIT" or ans == "CANCEL")
 									{
-										cout << Y << "\nExiting . . .\n" << NC << endl;
+										cout << Y << "\nAborting . . .\n" << NC << endl;
 										exit(0);
 									}
 									else
@@ -2180,7 +2172,7 @@ int main(int argc, char **argv_list)
 					{
 						if (Vector_Contains(L,"ga") and Vector_Contains(L,"gm"))
 						{
-							error_report(2,called_as,"Already specified the 'manual only' or 'automatic only' flags.Please do not use the manual only, automatic only, or unspecified flags in conjunction.");
+							error_report(2,called_as,"Already specified the 'manual only' or 'automatic only' flags. Please do not use the manual only, automatic only, or unspecified flags in conjunction.");
 							exit(2);
 						}
 					}
@@ -2252,7 +2244,7 @@ int main(int argc, char **argv_list)
 	}
 	catch (...)
 	{
-		error_report(2,"UNKNOWN"," AN ERROR HAS OCCURED.");
+		error_report(2,"UNKNOWN","AN ERROR HAS OCCURED.");
 		exit(2);
 	}
 }
