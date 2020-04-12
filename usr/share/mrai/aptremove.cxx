@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	vector<string> * passv_address = &passv;
 	if (getuid() != 0)
 	{
-		error_report(2,called_as,"aptremove.sh has failed with fatal error: Not running with correct permission set.\n");
+		error_report(2,called_as,"aptremove has failed with fatal error: Not running with correct permission set.\n");
 		return 2;
 	}
 	try
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report(2,called_as,"clean.sh has failed");
+		error_report(2,called_as,"clean has failed");
 	}
 	return 0;
 }
