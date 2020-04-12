@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION: 0.1.5-beta3
+ * VERSION: 0.1.6-beta3
  */
 
 #include "mrai_lib.hpp"
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	vector<string> * passv_address = &passv;
 	if (getuid() != 0)
 	{
-		error_report(2,called_as,"aptremove has failed with fatal error: Not running with correct permission set.\n");
+		error_report(2,called_as,translate("aptremove_root_error", "", ""));
 		return 2;
 	}
 	try
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report(2,called_as,"apt purge has failed. Most likely a configuration bug with an app.");
+		error_report(2,called_as,translate("aptremove_purge_error", "", ""));
 		return 2;
 	}
 	try
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 		else
 		{
 			string ans;
-			cout << "Would you like mrai to clean up left-over, unused dependencies? [y/N]: " << flush;
+			cout << translate("aptremove_clean_prompt", "", "") << " [y/N]: " << flush;
 			cin >> ans;
 			if (ans == "Y" or ans == "y")
 			{
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report(2,called_as,"clean has failed");
+		error_report(2, called_as, translate("aptremove_clean_fail", "", ""));
 	}
 	return 0;
 }

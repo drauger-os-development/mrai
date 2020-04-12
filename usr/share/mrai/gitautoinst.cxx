@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION: 0.1.3-beta2
+ * VERSION: 0.1.4-beta2
  */
 
 
@@ -49,13 +49,13 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-			cout << Y << "\nDue to added support for GitLab, automatic URL infrencing has been removed.\nPlease provide the FULL URL to clone from.\n" << NC << endl;
+			cout << Y << translate("url_infrencing_error", "", "") << NC << endl;
 		return 1;
 		}
 	}
 	catch (...)
 	{
-		error_report(2,called_as,"git clone failed. Either because the provided URL is not GitHub, or because the cloning is being done as root, or there is no internet.");
+		error_report(2,called_as,translate("gitautoinst_clone_failure", "", ""));
 		return 2;
 	}
 	string PATH = GetURLFilePath(PASS);
@@ -74,23 +74,23 @@ int main(int argc, char **argv)
 		{
 			mpath = PATH + "/MAKEFILE";
 		}
-		cout << "\nA Makefile has been detected. Some apps require you to run a seperate file before the Makefile." << endl;
+		cout << translate("gitautoinst_makefile_found", "", "") << endl;
 		string ans;
-		cout << "Would you like to run such a file? [y/N]: " << flush;
+		cout << translate("gitautoinst_preconfig_script_prompt", "", "") << " [y/N]: " << flush;
 		cin >> ans;
 		if (ans == "Y" or ans == "y")
 		{
 			system("/bin/ls --color=auto");
 			string ans2;
-			cout << "Which of the above files would you like to run? (Press enter with no input to cancel and continue with running the Makefile. Type 'exit' to exit.): " << flush;
+			cout << translate("gitautoinst_preconfig_script_selection_prompt", "", "") << flush;
 			if (ans2 == "exit" or ans2 == "EXIT")
 			{
-				cout << "\n" << R << "Aborting . . .\n" << NC << endl;
+				cout << "\n" << R << translate("abort", "", "") << NC << endl;
 				return 1;
 			}
 			else if (ans2 != "")
 			{
-				cout << "Would you like to run this file as root? [y/N]: " << flush;
+				cout << translate("run_with_root_prompt", "", "") << " [y/N]: " << flush;
 				cin >> ans;
 				const char * COMMAND = ConvertToChar("/bin/chmod +x " + PATH + ans2);
 				try
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 				}
 				catch (...)
 				{
-					error_report(2,called_as,"Could not mark file as executable.");
+					error_report(2,called_as,translate("gitautoinst_mark_exec_fail", "", ""));
 					return 2;
 				}
 				if (ans == "Y" or ans == "y")
@@ -111,8 +111,8 @@ int main(int argc, char **argv)
 					}
 					catch (...)
 					{
-						cerr << R << ans2 << "Failed" << endl;
-						error_report(2,called_as,"Pre-Makefile script failed to run correctly.");
+						cerr << R << ans2 << translate("failure", "", "") << NC << endl;
+						error_report(2,called_as,translate("gitautoinst_preconfig_script_error", "", ""));
 						return 2;
 					}
 				}
@@ -125,8 +125,8 @@ int main(int argc, char **argv)
 					}
 					catch (...)
 					{
-						cerr << R << ans2 << "Failed" << endl;
-						error_report(2,called_as,"Pre-Makefile script failed to run correctly.");
+						cerr << R << ans2 << translate("failure", "", "") << NC << endl;
+						error_report(2,called_as,translate("gitautoinst_preconfig_script_error", "", ""));
 						return 2;
 					}
 				}
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 		}
 		catch (...)
 		{
-			error_report(1,called_as,"make depend not recognized inside Makefile. Continuing . . .");
+			error_report(1, called_as, translate("gitautoinst_make_depend_error", "", ""));
 		}
 		try
 		{
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 		}
 		catch (...)
 		{
-			error_report(2,called_as,"make has failed");
+			error_report(2, called_as, translate("gitautoinst_make_failure", "", ""));
 			return 2;
 		}
 		try
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
 		}
 		catch (...)
 		{
-			error_report(1,called_as,"make install has failed");
+			error_report(1, called_as, translate("gitautoinst_make_install_failure", "", ""));
 		}
 		ofstream flag;
 		flag.open(gitautocache + PATH + "/auto.flag",std::ios_base::app);
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		cerr << R << "\nNo makefile detected. Removing local repository . . .\n" << NC << endl;
+		cerr << R << translate("gitautoinst_no_makefile", "", "") << NC << endl;
 		remove(ConvertToChar(gitautocache + PATH));
 	}
 }

@@ -20,7 +20,7 @@
  *
  *
  *
- * VERSION: 0.1.7-beta2
+ * VERSION: 0.1.8-beta2
  */
 
 #include "../usr/share/mrai/mrai_lib.hpp"
@@ -47,13 +47,13 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-			cout << "\n" << R << "Option not recognized.\n" << endl;
+			cout << "\n" << R << translate("snapupdate_opt_invalid", "", "") << endl;
 			return 1;
 		}
 	}
 	if (is_snapd_installed())
 	{
-		cout << "\n" << G << "Force Updating Snaps. Please Wait . . . " << NC << "\n" << endl;
+		cout << "\n" << G << translate("snapupdate_force_update", "", "") << NC << "\n" << endl;
 		try
 		{
 			/*
@@ -81,13 +81,13 @@ int main(int argc, char **argv)
 		}
 		catch (...)
 		{
-			error_report(2,called_as,"Snap has had an error. Most likely network issues.");
+			error_report(2,called_as,translate("snapupdate_error", "", ""));
 			return 2;
 		}
 	}
 	else
 	{
-		cout << "\n" << R << "We're sorry. It appears snapd is not installed. Please run { mrai -ia snapd } to install it.\n" << NC << endl;
+		cout << "\n" << R << translate("snapd_not_installed", "", "") << NC << endl;
 		return 1;
 	}
 	return 0;
