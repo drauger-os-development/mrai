@@ -30,6 +30,16 @@
 #include <vector>
 #include <unistd.h>
 #include <regex>
+#include <stdlib.h>
+#include <fstream>
+
+//define macros
+#define elif else if
+#define string_list std::vector<std::string>
+#define int_list std::vector<int>
+#define float_list std::vector<float>
+#define bool_list std::vector<bool>
+#define sleep(x) usleep(x)
 
 //define global vars
 std::string R = "\033[0;31m";
@@ -40,16 +50,99 @@ std::string cache = "/etc/mrai";
 std::string scripts = "/usr/share/mrai";
 std::string gitautocache = "/etc/mrai/gitauto";
 std::string gitmancache = "/etc/mrai/gitman";
-std::string version = "1.5.4-beta7";
+std::string version = "1.5.5-beta7";
 std::string VERSION = version;
 
-//define macros
-#define elif else if
-#define string_list std::vector<std::string>
-#define int_list std::vector<int>
-#define float_list std::vector<float>
-#define bool_list std::vector<bool>
-#define sleep(x) usleep(x)
+std::vector<string_list> defaults = {
+	{"h", "mrai Package Manager: the Multiple Repo App Installer\n\n-c, --clean\t\tDelete old *.deb files, old config files, and old Github files\n\n--find\t\t\tFind the package the provides a given command\n\n-i,--install \tInstall an app, if none of the below options are given, check in the following order:\n\n\t\t\tapt, snap, flatpak, Github manual method, Github automatic method\n\n\n	-a, ---apt	\tInstall just from apt. In which case, usage will be:\n\n	\t\t\t\t\tmrai -ia {apt-package-name}\n\n\t\t\t\tTo install multiple apps at once, add a comma between each package name:\n\n\t\t\t\t\t\tmrai -ia {package-1},{package-2},{package-3},...\n\n	-g, --git,	\tInstall just from Github, In which case, usage will be:\n	--gm, --ga	\n	\t\t\t\t\tmrai -ig {/github-username/github-repo-name (or Github URL)}\n\n\t\t\t\tUnder this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or\n\t\t\t\tautomaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your\n\t\t\t\tsystem.\n\n\n	-s, --snap\t\tInstall just from snapd, In which case, usage will be:\n\n\t\t\t\t\t	mrai -is {snap-name}\n\n\n	-f, --flat	\tInstall as Flatpak, In which case, usage will be:\n\n	\t\t\t\t\tmrai -if {flatpak-name}\n\n\n-h, --help\t\tDisplay this help dialogue and exit.\n\n\n-r, --remove	\tUninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,\n--uninstall\t\tthe name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed\n\n\n-S, --search,\t\tSearch for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,\n--query	\t\tplease vist https://www.github.com\n\n\n\t-a, --apt	\tSearch for an app through apt\n\n\n\t-s, --snap\t\tSearch for an app through snap\n\n\n\t-f, --flat\t\tSearch for an app through flatpak\n\n\n\t--ga\t\t\tSearch for an app that was installed using GitHub Automatic Method\n\n\n\t--gm\t\t\tSearch for an app that was installed using GitHub Manual Method\n\n\n\t--git\t\t\tSearch for an app installed from GitHub, regardless of method\n\n\n\t-v, --verbose\t\tGive more information about the queried package\n\n\n-u, --update,\t\tUpdate your software. This may or may not work for packages installed from Github.\n\n	-a, --apt\t	Update from only apt\n\n\n	-f, --flat\t\tUpdate from only Flatpak\n\n\n\t-g, --git	\tUpdate from only Github\n\n\n	-s, --snap\t\tUpdate only installed snaps\n\n\n-v, --version\t\tPrint Current Version and exit\n\n\n--fix-config\t\tEssentially this runs 'sudo dpkg --configure -a', to fix package management issues\n\n\n--add-repo\t\tAdd a repository, MUST BE FOLLOWED BY ONE OF THE FOLLOWING OPTIONS:\n\n\n	-a, --apt\t\tadds a new PPA\n\n\n\t-f, --flat\t	adds a new Flatpak Remote\n\n\n-l, --list\t\tList installed apps, pass a package name after this flag to search for an installed app\n\n\n	-a, --apt\tFilter installed apps to ones installed with apt\n\n\n\t-f, --flat\tFilter installed apps to ones installed with Flatpak\n\n\n\t-s, --snap\tFilter installed apps to ones installed with Snap\n\n\n\t--ga\t\tFilter installed apps to ones installed using GitHub Automatic Method\n\n\n\t--gm\t\tFilter installed apps to ones installed using GitHub Manual Method\n\n\n\t--git\t\tFilter installed apps to ones installed from GitHub, regardless of method\n\n\n--edit-sources,\t\tEdit enabled apt repos by editing /etc/apt/sources.list or one of the files\n--edit-repos,\t\tin /etc/apt/sources.list.d\n--edit-apt-repos"},
+	{"failure", "has failed."},
+	{"error", "ERROR: "},
+	{"report", "Please fill out an issue report\non our GitHub at https://github.com/drauger-os-development/mrai/issues\n"},
+	{"all_installed", "All passed packages are already installed.\n"},
+	{"no_candidates", "No installation candidates found."},
+	{"not_in_domain_list", " not in domain list. Cannot install."},
+	{"no_remotes", "No more remotes to try."},
+	{"flatpak_remote_failed", "Flatpak installation from \v failed. Trying next remote . . ."},
+	{"flatpak_not_installed", "Package 'flatpak' is not installed\nPlease run:\n\n\tmrai -ia flatpak\n\nto install it.\n"},
+	{"already_installed_snaps", "Some snaps that where passed cannot be installed because they are already installed.:\n"},
+	{"snaps_still_installing", "The following packages will still be installed:\n"},
+	{"snap_standard_failure", "Standard Snap Installation Failed. Attempt Classic Snap Installation?"},
+	{"snap_classic_failure", "Classic snap installation failed."},
+	{"snapd_not_installed", "Sorry. Package 'snapd' is not installed. Please run {mrai -ia snapd} to install it.\n"},
+	{"url_not_accessable", "Inaccessable URL provided to git."},
+	{"url_infrencing_error", "\nDue to added support for GitLab, automatic URL infrencing has been removed.\nPlease provide the FULL URL to clone from.\n"},
+	{"git_file_prompt", "Which of the above files would you like to try to run in order to complete installation? (Case-Sensitive) : "},
+	{"abort", "\nAborting . . .\n"},
+	{"run_with_root_prompt", "Should this file be run with root privleges?"},
+	{"make_uninstall_failure", "most likely due to developers not adding this flag. Please request they add it."},
+	{"makefile_not_found_uninstall", "No Makefile could be found. Therefore, mrai cannot uninstall git package."},
+	{"attempt_uninstall", "Attempting to uninstall. Please wait . . ."},
+	{"git_uninstall_failed", "All uninstall options failed. Potentially consider adding it to this app?"},
+	{"encountered_error", "Function \v ecountered an error"},
+	{"directory_not_found", "Cannot find directory for app"},
+	{"no_git_apps", "\nNo Apps installed using git through mrai.\n"},
+	{"no_git_auto_apps", "No apps found installed using automatic method."},
+	{"no_git_manual_apps", "No apps found installed using manual method."},
+	{"git_app_not_found", "'git' app \v not found in local repository database."},
+	{"no_flag_file", "\nNo flag file found in local repository of "},
+	{"url_inaccessable_git_update", "Could not update \v. URL not accessable."},
+	{"makefile_failed", "Makefile update method failed."},
+	{"updating_flatpak", "Updating Flatpaks. Please Wait . . . \n"},
+	{"flatpak_update_error", "Flatpak encountered an error. Updating will continue."},
+	{"clean_failure", "clean has failed. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"},
+	{"no_arguments", "No arguments passed. mrai must have arguments passed to be used.\n"},
+	{"run_with_root_error", "Please do not run mrai with root privleges. This will cause file system issues with GitHub installations."},
+	{"mrai_already_running", "mrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited."},
+	{"fix_config", "Attempting to correct package configuration. Please wait . . . \n"},
+	{"fix_config_failure", "--fix-config failed. Most likely due to faulty package configurations."},
+	{"name_repo_prompt", "What would you like to name this repo?: "},
+	{"package_manager_error", "No package manager indicated.\n"},
+	{"sources_list_pre_open", "\nTo enable an apt repo, remove the \"# \" (including the space) from the beginning of the line.\nTo disable a repo, just add the \"# \" back to the beginning of the line.\n\nLines beginning with \"deb-src\" are for source code.\n"},
+	{"sources_list_directory_notice", "\nYour sources.list.d directroy has config files in it as well.\n"},
+	{"open_file_prompt", "Give the number of the file you would like to edit:"},
+	{"value_not_unsigned_int", "\nValue entered not a positive integer. Please try again.\n"},
+	{"not_within_range", "Not within designated range. Please try again.\n"},
+	{"no_opt_passed", "No options passed.\n"},
+	{"find_function_error", "Find function takes 2 arguments. 1 passed.\n"},
+	{"flag_failure", "Flag system failed. Something was set and got through but was not detected before work segment. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"},
+	{"attempt_install", "\nAttempting to Install . . .\n"},
+	{"git_install_failure", "Installation from git failed."},
+	{"install_failed", "\nAll installation methods failed.$NC\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n"},
+	{"install_flag_error", "Install flag was set but nothing was set dictating what package manager to use."},
+	{"package_not_installed", "\nAccording to all our databases, \v is not installed.\n"},
+	{"show_similar_names_prompt", "Show packages with similar names?"},
+	{"show_similar_names", "\nApps with similar package names:\n\n"},
+	{"no_similar_debs", "No Apt Packages with similar names installed.\n"},
+	{"similar_debs", "Apt Packages:\n\n"},
+	{"no_similar_snaps", "No Snaps with similar names installed.\n"},
+	{"similar_snaps", "Snaps:\n\n"},
+	{"no_similar_flatpaks", "\nNo Flatpaks with similar names installed.\n"},
+	{"similar_flatpaks", "Flatpaks:\n\n"},
+	{"error_var_type", "Unrecognized value in variable 'type' in uninstall segment: "},
+	{"multiple_installations", "\nThere are mutliple apps which fit the package name \"\v\".\n\nThese are installed through: "},
+	{"select_package_manager_prompt","\n\nFrom which package manager would you like to uninstall?"},
+	{"select_one", "Select ONE: "},
+	{"not_provided_option", "\nNOT A PROVIDED OPTION. PLEASE TRY AGAIN.\n"},
+	{"unknown_error_type", "Unknown error with var type when attempting to remove package."},
+	{"matching_terms_git_manual", "Matching terms found installed using manual git mentod.\n\nMatching app names:"},
+	{"matching_terms_git_auto", "Matching terms found installed using automatic git mentod.\n\nMatching app names:"},
+	{"no_matching_terms_git_manual", "\nThe search term provided was not found to be installed using git manual method.\n"},
+	{"no_matching_terms_git_auto", "\nThe search term provided was not found to be installed using git automatic method.\n"},
+	{"flatpak_not_verbose", "Flatpak does not support verbose search mode. Using normal search.\n"},
+	{"git_manual_not_verbose", "git manual method does not support verbose searching. Falling back to standard search . . ."},
+	{"git_auto_not_verbose", "git automatic method does not support verbose searching. Falling back to standard search . . ."},
+	{"aptupdate_error", "aptupdate has had an error. Please check error log for more info."},
+	{"installed_git", "\nInstalled git Apps:\n"},
+	{"installed_git_manual", "Installed through Manual Method:\n"},
+	{"installed_git_auto", "Installed through Automatic Method:\n"},
+	{"multiple_git_flag_error", "Already specified the 'manual only' or 'automatic only' flags. Please do not use the manual only, automatic only, or unspecified flags in conjunction."},
+	{"no_providing_package", "No package providing specificed command."},
+	{"providing_package", "\nPackage providing command '\v': " + NC + "\v\n"},
+	{"unknown_error", "AN ERROR HAS OCCURED."}
+};
+
+
+
 
 int error_report(int error_code, std::string called_as, std::string error_message)
 {
@@ -213,4 +306,102 @@ bool is_snapd_installed()
 bool is_aptfast_installed()
 {
 	return DoesPathExist("/usr/sbin/apt-fast");
+}
+
+string_list split(std::string input, char term)
+{
+	const char *char_input = ConvertToChar(input);
+	std::stringstream ss(char_input);
+	std::string to;
+	string_list output;
+
+	if (char_input != NULL)
+	{
+		while(std::getline(ss,to,term))
+		{
+			output.insert(output.end(), to);
+		}
+	}
+	return output;
+}
+
+std::string translate(std::string var_name, std::string parse_in1, std::string parse_in2)
+{
+	std::string LANG_in = getenv("LANG");
+	std::string LANG = "";
+	for (int i = 0; i < 5; i++)
+	{
+		LANG = LANG + LANG_in[i];
+	}
+	//check if /etc/drauger-locales/$LANG exists, minus the .UTF-8 at the end
+	if (DoesPathExist("/etc/drauger-locales/" + LANG))
+	{
+		std::ifstream config_file;
+		config_file.open("/etc/drauger-locales/" + LANG + "/mrai.conf");
+		std::string config = "";
+		if ( ! config_file)
+		{
+			error_report(1, "func translate", "ERROR: /etc/drauger-locales/" + LANG + "/mrai.conf CANNOT BE READ");
+			return "Null";
+		}
+		else
+		{
+			config_file >> config;
+			string_list config_array = split(config, '\n');
+			delete &config;
+			std::vector<string_list> config;
+			for (unsigned int i = 0; i < config_array.size(); i++)
+			{
+				config.insert(config.end(), split(config_array[i], '\t'));
+			}
+			//we have our config parsed into a 2D array. Now search for our var
+			for (unsigned int i = 0; i < config.size(); i++)
+			{
+				for (unsigned int i2 = 0; i < config[i].size(); i2++)
+				{
+					if (config[i][i2] == var_name)
+					{
+						//parse in parse_in1 and parse_in2
+						string_list value = split(config[i][i2], '\v');
+						std::string output = value[0] + parse_in1;
+						if (value.size() >= 2)
+						{
+							output = output + value[1] + parse_in2;
+						}
+						if (value.size() >= 3)
+						{
+							output = output + value[2];
+						}
+						return output;
+					}
+				}
+			}
+		}
+	}
+	//it doesn't exist, so use $defaults
+	else
+	{
+		for (unsigned int i = 0; i < defaults.size(); i++)
+		{
+			for (unsigned int i2 = 0; i < defaults[i].size(); i2++)
+			{
+				if (defaults[i][i2] == var_name)
+				{
+					//parse in parse_in1 and parse_in2
+					string_list value = split(defaults[i][i2], '\v');
+					std::string output = value[0] + parse_in1;
+					if (value.size() >= 2)
+					{
+						output = output + value[1] + parse_in2;
+					}
+					if (value.size() >= 3)
+					{
+						output = output + value[2];
+					}
+					return output;
+				}
+			}
+		}
+	}
+	return "ERROR: VAR NOT FOUND";
 }
