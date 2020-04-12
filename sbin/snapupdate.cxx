@@ -23,9 +23,6 @@
  * VERSION: 0.1.7-beta2
  */
 
-
-#include <iostream>
-#include <string>
 #include "../usr/share/mrai/mrai_lib.hpp"
 #include <sys/wait.h>
 

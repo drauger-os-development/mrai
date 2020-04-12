@@ -22,12 +22,7 @@
  * VERSION: 0.1.5-beta3
  */
 
-
-#include <iostream>
-#include <string>
 #include "mrai_lib.hpp"
-#include <unistd.h>
-#include <vector>
 #include <boost/algorithm/string.hpp>
 #include <experimental/filesystem>
 

@@ -22,16 +22,9 @@
  */
  //VERSION: 0.1.6-beta2
 
-#include <iostream>
-#include <string>
-#include <bits/stdc++.h>
-#include <stdlib.h>
 #include <cstdlib>
-#include <fstream>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <experimental/filesystem>
-#include <unistd.h>
 #include "mrai_lib.hpp"
 
 

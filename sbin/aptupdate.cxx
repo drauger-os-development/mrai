@@ -22,9 +22,6 @@
  * VERSION: 0.2.1-beta2
  */
 
-
-#include <iostream>
-#include <string>
 #include "../usr/share/mrai/mrai_lib.hpp"
 
 using namespace std;
