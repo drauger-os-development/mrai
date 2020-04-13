@@ -89,7 +89,7 @@ std::vector<string_list> defaults = {
 	{"makefile_failed", "Makefile update method failed."},
 	{"updating_flatpak", "Updating Flatpaks. Please Wait . . . \n"},
 	{"flatpak_update_error", "Flatpak encountered an error. Updating will continue."},
-	{"clean_failure", "clean has failed. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n"},
+	{"clean_failure", "clean has failed."},
 	{"no_arguments", "No arguments passed. mrai must have arguments passed to be used.\n"},
 	{"run_with_root_error", "Please do not run mrai with root privleges. This will cause file system issues with GitHub installations."},
 	{"mrai_already_running", "mrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited."},
@@ -104,7 +104,7 @@ std::vector<string_list> defaults = {
 	{"not_within_range", "Not within designated range. Please try again.\n"},
 	{"no_opt_passed", "No options passed.\n"},
 	{"find_function_error", "Find function takes 2 arguments. 1 passed.\n"},
-	{"flag_failure", "Flag system failed. Something was set and got through but was not detected before work segment. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n"},
+	{"flag_failure", "Flag system failed. Something was set and got through but was not detected before work segment."},
 	{"attempt_install", "\nAttempting to Install . . .\n"},
 	{"git_install_failure", "Installation from git failed."},
 	{"install_failed", "\nAll installation methods failed.$NC\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n"},
@@ -383,7 +383,15 @@ std::string translate(std::string var_name, std::string parse_in1, std::string p
 			std::vector<string_list> config;
 			for (unsigned int i = 0; i < config_array.size(); i++)
 			{
-				config.insert(config.end(), split(config_array[i], '\t'));
+				if (config_array[i][0] == '#')
+				{
+					continue;
+				}
+				//I know this else statement is verbose, I'm doing it just to be safe
+				else
+				{
+					config.insert(config.end(), split(config_array[i], '\t'));
+				}
 			}
 			//we have our config parsed into a 2D array. Now search for our var
 			for (unsigned int i = 0; i < config.size(); i++)
