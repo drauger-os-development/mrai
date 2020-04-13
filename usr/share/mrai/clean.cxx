@@ -20,19 +20,12 @@
  *
  *
  */
- //VERSION: 0.1.6-beta2
+ //VERSION: 0.1.7-beta2
 
-#include <iostream>
-#include <string>
-#include <bits/stdc++.h>
-#include <stdlib.h>
 #include <cstdlib>
-#include <fstream>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <experimental/filesystem>
-#include <unistd.h>
-#include "mrai_lib.h"
+#include "mrai_lib.hpp"
 
 
 using namespace std;
@@ -79,39 +72,39 @@ int main(int argc, char **argv)
 	{
 		user = argv[1];
 	}
-	cout << "\n" << G << "Deleting old *.deb packages . . . " << NC << "\n" << endl;
+	cout << "\n" << G << translate("clean_apt_clean", "", "") << NC << "\n" << endl;
 	try
 	{
 		system("/usr/bin/apt clean");
 	}
 	catch (...)
 	{
-		error_report(2,called_as,"apt clean has failed. Most likly due to file system permission issues.");
+		error_report(2, called_as, translate("clean_apt_clean_failed", "", ""));
 		return 2;
 	}
 	if ( y == 1)
 	{
-		cout << "\n" << G << "Removing old and out dated dependencies, Deleting old config files . . . " << NC << "\n" << endl;
+		cout << "\n" << G << translate("clean_autoremove", "", "") << NC << "\n" << endl;
 		try
 		{
 			system("/usr/bin/apt -y autoremove --purge");
 		}
 		catch (...)
 		{
-			error_report(2,called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
+			error_report(2, called_as, translate("clean_autoremove_error", "", ""));
 			return 2;
 		}
 	}
 	elif (y == 0)
 	{
-		cout << "\n" << G << "Removing old and out dated dependencies, Deleting old config files . . . " << NC << "\n" << endl;
+		cout << "\n" << G << translate("clean_autoremove", "", "") << NC << "\n" << endl;
 		try
 		{
 			system("/usr/bin/apt autoremove --purge");
 		}
 		catch (...)
 		{
-			error_report(2,called_as,"apt autoremove has failed. Most likly due to app configuration issues.");
+			error_report(2, called_as, translate("clean_autoremove_error", "", ""));
 			return 2;
 		}
 	}
@@ -119,7 +112,7 @@ int main(int argc, char **argv)
 	{
 		return 2;
 	}
-	cout << "\n" << G << "Cleaning up old GitHub files . . ." << NC << "\n" << endl;
+	cout << "\n" << G << translate("clean_git_clean", "", "") << NC << "\n" << endl;
 	try
 	{
 		string DIR = "/home/" + user + "/.mrai";
@@ -130,10 +123,10 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report(2,called_as,"GitHub clean up failed. Most likly due to incorrect file system permissions");
+		error_report(2, called_as, translate("clean_git_error", "", ""));
 		return 2;
 	}
-	cout << "\n" << G << "Clean up complete." << NC << "\n" << endl;
+	cout << "\n" << G << translate("clean_done", "", "") << NC << "\n" << endl;
 	return 0;
 }
 

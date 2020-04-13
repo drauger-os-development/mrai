@@ -28,11 +28,11 @@ mrai: Multiple Repository App Installer
   
   
 # Notes
-As of yet, this is still pre-production software. There are definitly bugs that need to be worked out. `mrai` does work, but please use it with caution.
+As of yet, this is still pre-production software. There are definitely bugs that need to be worked out. `mrai` does work, but please use it with caution.
 If you want a more up-to-date version, consider looking at the `dev-branch` branch. 
 
 # Installation
-Right now, the prefered method of installtion is to either install `mrai` from this GitHub repo so you can have the latest, most up-to-date version, or install it from the \*.deb package in the releases page so that apt can uninstall it later. 
+Right now, the preferred method of installation is to either install `mrai` from this GitHub repo so you can have the latest, most up-to-date version, or install it from the \*.deb package in the releases page so that apt can uninstall it later. 
 
 If installing it from the GitHub repo, we suggest running:
 
@@ -41,6 +41,8 @@ If installing it from the GitHub repo, we suggest running:
 `cd mrai`
 
 `./build.sh`
+
+Set the Architecture field in `DEBIAN/control` to build a *.deb package in that CPU architecture. Currently, `amd64` and `arm64` are supported.
 
 This will generate a \*.deb file in the parent directory which you can then install.
 

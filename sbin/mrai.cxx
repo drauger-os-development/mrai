@@ -23,17 +23,9 @@
  */
 
 
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sys/stat.h>
 #include <experimental/filesystem>
-#include <unistd.h>
-#include <stdlib.h>
 #include <boost/algorithm/string.hpp>
-#include <vector>
-#include <regex>
-#include "../usr/share/mrai/mrai_lib.h"
+#include "../usr/share/mrai/mrai_lib.hpp"
 
 using namespace std;
 
@@ -58,7 +50,7 @@ string_list gitautolist(string &called_as)
 	}
 	catch (...)
  	{
-		error_report(2,called_as,"Function gitautolist failed. File system permissions are messed up in " + gitautocache);
+		error_report(2,called_as,"Function gitautolist " + translate("failure", "", ""));
 		string null = "NULL not able to get list";
 		return StringToVector(null);
 	}
@@ -73,7 +65,7 @@ string_list gitmanlist(string &called_as)
 	}
 	catch (...)
  	{
-		error_report(2,called_as,"Function gitautolist failed. File system permissions are messed up in " + gitmancache);
+		error_report(2,called_as,"Function gitmanlist" + translate("failure", "", ""));
 		string null = "NULL not able to get list";
 		return StringToVector(null);
 	}
@@ -88,7 +80,7 @@ int snapupdate()
 		}
 		catch (...)
 		{
-			cerr << "\n" << R << "snapupdate failed. " << "\033[0m" << "Please fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" << endl;
+			cerr << "\n" << R << "snapupdate " << translate("failure", "", "") << NC << translate("report", "", "") << endl;
 			return(2);
 		}
 }
@@ -111,7 +103,7 @@ int aptinstall (string_list passed, bool assume_yes)
 	}
 	if ( ! (install_vector.size() >= 0) )
 	{
-		cout << "\n" << Y << "All passed packages are already installed.\n" << NC << endl;
+		cout << "\n" << Y << translate("all_installed", "", "") << NC << endl;
 		return(1);
 	}
 	else
@@ -180,7 +172,7 @@ int gitautoinst(string &user, string &pass)
 	}
 	catch (...)
 	{
-		cerr << "\n" << R << "ERROR: " << NC << "gitautoinst has failed. Please fill out an issue report\non our GitHub at https://github.com/drauger-os-development/mrai/issues\n" << endl;
+		cerr << "\n" << R << translate("error", "", "") << NC << "gitautoinst " << translate("failure", "", "") << " " << translate("report", "", "") << endl;
 		return 1;
 	}
 }
@@ -203,7 +195,7 @@ int flatinstall(string &arg1, string &arg2, string_list &package_vector, bool as
 						remotes = run(ConvertToChar("/usr/bin/flatpak remotes"));
 						if (package.find("flathub") != std::string::npos)
 						{
-							cerr << "\n" << Y << "No installation candidates found." << NC << "\n" << endl;
+							cerr << "\n" << Y << translate("no_candidates", "", "") << NC << "\n" << endl;
 							return 1;
 						}
 						else
@@ -253,7 +245,7 @@ int flatinstall(string &arg1, string &arg2, string_list &package_vector, bool as
 			}
 			else
 			{
-				cerr << R << "\n" << "ERROR: Package " << package_vector[i] << " not in domain list. Cannot install." << NC << "\n" << endl;
+				cerr << R << "\n" << translate("error", "", "") << package_vector[i] << translate("not_in_domain_list", "", "") << NC << "\n" << endl;
 				return 2;
 			}
 		}
@@ -279,12 +271,12 @@ int flatinstall(string &arg1, string &arg2, string_list &package_vector, bool as
 			}
 			catch (...)
 			{
-				cerr << "\n" << R << "Flatpak installation from " << list1_vector[i] << " failed. Trying next remote . . ." << NC << "\n" << endl;
+				cerr << "\n" << R << translate("flatpak_remote_failed", list1_vector[i], "") << NC << "\n" << endl;
 			}
 		}
 		if (! success)
 		{
-			cerr << "\n" << R << "No more remotes to try." << NC << "\n" << endl;
+			cerr << "\n" << R << translate("no_remotes", "", "") << NC << "\n" << endl;
 			return 1;
 		}
 		return 0;
@@ -293,7 +285,7 @@ int flatinstall(string &arg1, string &arg2, string_list &package_vector, bool as
 	{
 		if (arg1 == "-if" or arg2 == "--flat")
 		{
-			error_report(2,called_as,"Package 'flatpak' is not installed\nPlease run:\n\n\tmrai -ia flatpak\n\nto install it.\n");
+			error_report(2,called_as,translate("flatpak_not_installed", "", ""));
 		}
 		return 2;
 	}
@@ -334,10 +326,10 @@ int snapinstall(string_list &install_vector, string &arg1, string &arg2)
 		if (not_installable_vector.size() > 0)
 		{
 			string not_installable_string = VectorToString(not_installable_vector);
-			cout << "\n" << Y << "Some snaps that where passed cannot be installed because they are already installed.:\n" << not_installable_string << NC << "\n" << endl;
+			cout << "\n" << Y << translate("already_installed_snaps", "", "") << not_installable_string << NC << "\n" << endl;
 			if (install_vector.size() > 0)
 			{
-				cout << "The following packages will still be installed:\n" << install_string << "\n" << endl;
+				cout << translate("snaps_still_installing", "", "") << install_string << "\n" << endl;
 
 			}
 			else
@@ -353,7 +345,7 @@ int snapinstall(string_list &install_vector, string &arg1, string &arg2)
 		catch (...)
 		{
 			string ans;
-			cout << "\n" << R << "Standard Snap Installation Failed. Attempt Classic Snap Installation? [y/N]: " << flush;
+			cout << "\n" << R << translate("snap_standard_failure", "", "") << " [y/N]: " << flush;
 			cin >> ans;
 			if (ans == "Y" or ans == "y")
 			{
@@ -363,7 +355,7 @@ int snapinstall(string_list &install_vector, string &arg1, string &arg2)
 				}
 				catch (...)
 				{
-					cerr << R << "\nERROR: " << NC << "Classic snap installation failed." << endl;
+					cerr << R << translate("error", "", "") << NC << translate("snap_classic_failure", "", "") << endl;
 					return 2;
 				}
 			}
@@ -378,7 +370,7 @@ int snapinstall(string_list &install_vector, string &arg1, string &arg2)
 	{
 		if (arg1 == "-si" or arg1 == "-is" or arg2 == "--snap")
 		{
-			cerr << "\n" << R << "Sorry. Package 'snapd' is not installed. Please run {mrai -ia snapd} to install it.\n" << endl;
+			cerr << "\n" << R << translate("snapd_not_installed", "", "") << NC << endl;
 			return 2;
 		}
 		else
@@ -411,36 +403,36 @@ int gitmaninstall(string &repo_url, string &called_as)
 			}
 			catch (...)
 			{
-				error_report(2,called_as,"Inaccessable URL provided to git.");
+				error_report(2,called_as,translate("url_not_accessable", "", ""));
 				return 2;
 			}
 		}
 	}
 	else
 	{
-		cout << Y << "\nDue to added support for GitLab, automatic URL infrencing has been removed.\nPlease provide the FULL URL to clone from.\n" << NC << endl;
+		cout << Y << translate("url_infrencing_error", "", "") << NC << endl;
 		return 1;
 	}
 	string PATH = GetURLFilePath(repo_url);
 	chdir(ConvertToChar(PATH));
 	string file_string = run("/bin/ls");
 	cout << file_string << endl;
-	cout << G << "Which of the above files would you like to try to run in order to install " << PATH << "? (Case-Sensitive) : " << NC << flush;
+	cout << G << translate("git_file_prompt", "", "") << NC << flush;
 	string script;
 	cin >> script;
 	cout << endl;
 	if (script == "cancel" or script == "exit" or script == "end" or script == "CANCEL" or script == "EXIT" or script == "END")
 	{
-		cerr << R << "\nAborting . . .\n" << NC << endl;
+		cerr << R << translate("abort", "", "") << NC << endl;
 		return 0;
 	}
 	string root;
-	cout << G << "Should this file be run with root privleges? [y/N]: " << NC << flush;
+	cout << G << translate("run_with_root_prompt", "", "") << " [y/N]: " << NC << flush;
 	cin >> root;
 	cout << endl;
 	if (root == "cancel" or root == "exit" or root == "end" or root == "CANCEL" or root == "EXIT" or root == "END")
 	{
-		cerr << R << "\nAborting . . .\n" << NC << endl;
+		cerr << R << translate("abort", "", "") << NC << endl;
 		return 0;
 	}
 	chmod(ConvertToChar(PATH),0540);
@@ -487,7 +479,7 @@ int aptremove(bool &assume_yes, string &user, string pass)
 	}
 	catch (...)
 	{
-		cerr << "\n" << R << "ERROR: " << NC << "aptremove has failed. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n" << endl;
+		cerr << "\n" << R << translate("error", "", "") << NC << "aptremove " << translate("failure", "", "") << translate("report", "", "") << endl;
 		return 2;
 	}
 }
@@ -513,13 +505,13 @@ int gitremove(string_list &death_row, string &called_as)
 				}
 				catch (...)
 				{
-					error_report(2,called_as,"make uninstall/remove failed, most likely due to developers not adding this flag. Please request they add it.");
+					error_report(2,called_as,"make uninstall/remove " + translate("failure", "", "") + "" + translate("make_uninstall_failure", "", ""));
 					return 2;
 				}
 			}
 			else
 			{
-				error_report(1,called_as,"No Makefile could be found. Therefore, mrai cannot uninstall Github package.");
+				error_report(1,called_as,translate("makefile_not_found_uninstall", "", ""));
 				return 1;
 			}
 		}
@@ -536,7 +528,7 @@ int gitremove(string_list &death_row, string &called_as)
 			script = script.erase(0,4);
 			if (root == "RUN_AS_ROOT=yes")
 			{
-				cout << "\n" << G << "Attempting to uninstall. Please wait . . ." << NC << "\n" << endl;
+				cout << "\n" << G << translate("attempt_uninstall", "", "") << NC << "\n" << endl;
 				int sent = 0;
 				int num = 1;
 				string opt;
@@ -561,7 +553,7 @@ int gitremove(string_list &death_row, string &called_as)
 					}
 					else
 					{
-						error_report(1,called_as,"All uninstall options failed. Potentially consider adding it to this app?");
+						error_report(1,called_as,translate("git_uninstall_failed", "", ""));
 						return 1;
 					}
 					sleep(3);
@@ -581,7 +573,7 @@ int gitremove(string_list &death_row, string &called_as)
 			}
 			elif (root == "RUN_AS_ROOT=no" or root == "RUN_AS_ROOT=null")
 			{
-				cout << "\n" << G << "Attempting to uninstall. Please wait . . ." << NC << "\n" << endl;
+				cout << "\n" << G << translate("attempt_uninstall", "", "") << NC << "\n" << endl;
 				int sent = 0;
 				int num = 1;
 				string opt;
@@ -606,7 +598,7 @@ int gitremove(string_list &death_row, string &called_as)
 					}
 					else
 					{
-						error_report(1,called_as,"All uninstall options failed. Potentially consider adding it to this app?");
+						error_report(1,called_as,translate("git_uninstall_failed", "", ""));
 						return 1;
 					}
 					sleep(3);
@@ -626,12 +618,12 @@ int gitremove(string_list &death_row, string &called_as)
 			}
 			else
 			{
-				error_report(2,called_as,"Function gitremove ecountered an error");
+				error_report(2,called_as,translate("encountered_error", "gitremove", ""));
 			}
 		}
 		else
 		{
-			error_report(2,called_as,"Cannot find directory for app " + death_row[i]);
+			error_report(2,called_as,translate("directory_not_found", "", "") + " " + death_row[i]);
 			return 2;
 		}
 	}
@@ -654,7 +646,7 @@ int flatremove(bool &assume_yes, string pass)
 	}
 	catch (...)
 	{
-		cerr << "\n" << R << "ERROR: " << "Function flatremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" << endl;
+		cerr << "\n" << R << translate("error", "", "") << NC << translate("encountered_error", "flatremove", "") << translate("report", "", "") << endl;
 		return 2;
 	}
 }
@@ -668,7 +660,7 @@ int snapremove(string pass)
 	}
 	catch (...)
 	{
-		cerr << "\n" << R << "ERROR: " << NC << "Function snapremove has failed with exit code $?.\nPlease fill out an issue report on our GitHub at\nhttps://github.com/drauger-os-development/mrai/issues\n" << endl;
+		cerr << "\n" << R << translate("error", "", "") << NC << translate("encountered_error", "snapremove", "") << translate("report", "", "") << endl;
 		return 1;
 	}
 }
@@ -677,7 +669,7 @@ int gitupdate(string_list &update_list, string &called_as)
 {
 	if (update_list.size() == 0)
 	{
-		cerr << Y << "\nNo Apps installed using git through mrai.\n" << NC << endl;
+		cerr << Y << translate("no_git_apps", "", "") << NC << endl;
 		return 0;
 	}
 	string pass;
@@ -704,7 +696,7 @@ int gitupdate(string_list &update_list, string &called_as)
 		}
 		else
 		{
-			error_report(1,called_as,"'git' app " + update_list[each] + " not found in local repository database.");
+			error_report(1,called_as, translate("git_app_not_found", update_list[each], ""));
 			continue;
 		}
 		pass = update_list[each];
@@ -718,7 +710,7 @@ int gitupdate(string_list &update_list, string &called_as)
 		}
 		if (flag == "")
 		{
-			cerr << R << "\nNo flag file found in local repository of " << pass << "\n" << NC << endl;
+			cerr << R << translate("no_flag_file", "", "") << pass << "\n" << NC << endl;
 			continue;
 		}
 		PWD = getenv(env_var);
@@ -748,7 +740,7 @@ int gitupdate(string_list &update_list, string &called_as)
 				}
 				catch (...)
 				{
-					error_report(2,called_as,"Could not update " + pass + ". URL not accessable.");
+					error_report(2,called_as,translate("url_inaccessable_git_update", pass, ""));
 					continue;
 				}
 			}
@@ -768,7 +760,7 @@ int gitupdate(string_list &update_list, string &called_as)
 				}
 				catch (...)
 				{
-					error_report(1,called_as,"Makefile update method failed.");
+					error_report(1,called_as,translate("makefile_failed", "", ""));
 					continue;
 				}
 			}
@@ -793,21 +785,21 @@ int flatupdate(string &called_as, string &arg1, string &arg2)
 {
 	if (is_flatpak_installed())
 	{
-		cout << "\n" << G << "Updating Flatpaks. Please Wait . . . \n" << NC << endl;
+		cout << "\n" << G << translate("updating_flatpak", "", "") << NC << endl;
 		try
 		{
 			system("/usr/bin/flatpak update 2>/dev/null");
 		}
 		catch (...)
 		{
-			error_report(1,called_as,"Flatpak encountered an error. Updating will continue.");
+			error_report(1,called_as,translate("flatpak_update_error", "", ""));
 			cout << endl;
 			return 1;
 		}
 	}
 	elif (arg1 == "-uf" or arg2 == "--flat")
 	{
-		cout << Y << "\nWe're sorry. Package 'flatpak' is not installed. Please run:\n\n\tmrai -ia flatpak\n\nin order to install it.\n" << NC << endl;
+		cout << Y << translate("flatpak_not_installed", "", "") << NC << endl;
 		return 1;
 	}
 	return 0;
@@ -873,21 +865,21 @@ int clean(bool &assume_yes, string &user)
 	}
 	catch (...)
 	{
-		cerr << "\n" << R << "ERROR: " << NC << "clean has failed. Please fill out an issue report at\nhttps://github.com/drauger-os-development/mrai/issues\n" << NC << endl;
+		cerr << "\n" << R << translate("error", "", "") << NC << translate("clean_failure", "", "") << " " << translate("report", "", "") << NC << endl;
 		return 2;
 	}
 }
 
 int main(int argc, char **argv_list)
 {
-	string h = "mrai Package Manager: the Multiple Repo App Installer\n\n-c, --clean\t\tDelete old *.deb files, old config files, and old Github files\n\n--find\t\t\tFind the package the provides a given command\n\n-i,--install \tInstall an app, if none of the below options are given, check in the following order:\n\n\t\t\tapt, snap, flatpak, Github manual method, Github automatic method\n\n\n	-a, ---apt	\tInstall just from apt. In which case, usage will be:\n\n	\t\t\t\t\tmrai -ia {apt-package-name}\n\n\t\t\t\tTo install multiple apps at once, add a comma between each package name:\n\n\t\t\t\t\t\tmrai -ia {package-1},{package-2},{package-3},...\n\n	-g, --git,	\tInstall just from Github, In which case, usage will be:\n	--gm, --ga	\n	\t\t\t\t\tmrai -ig {/github-username/github-repo-name (or Github URL)}\n\n\t\t\t\tUnder this flag you can also use -m or -a to manually indicate whether to install from GitHub manually or\n\t\t\t\tautomaticlly. Please only use the automatic method if the Repo uses a Makefile to install it's software on your\n\t\t\t\tsystem.\n\n\n	-s, --snap\t\tInstall just from snapd, In which case, usage will be:\n\n\t\t\t\t\t	mrai -is {snap-name}\n\n\n	-f, --flat	\tInstall as Flatpak, In which case, usage will be:\n\n	\t\t\t\t\tmrai -if {flatpak-name}\n\n\n-h, --help\t\tDisplay this help dialogue and exit.\n\n\n-r, --remove	\tUninstall an app. {name-installed-under} refers to the name given to refer to the GitHub installation,\n--uninstall\t\tthe name of the apt package, the name of the snap, or the name of the flatpak, depending on how it was installed\n\n\n-S, --search,\t\tSearch for an app. For GitHub based apps, this only works if they are installed. To find apps to install from GitHub,\n--query	\t\tplease vist https://www.github.com\n\n\n\t-a, --apt	\tSearch for an app through apt\n\n\n\t-s, --snap\t\tSearch for an app through snap\n\n\n\t-f, --flat\t\tSearch for an app through flatpak\n\n\n\t--ga\t\t\tSearch for an app that was installed using GitHub Automatic Method\n\n\n\t--gm\t\t\tSearch for an app that was installed using GitHub Manual Method\n\n\n\t--git\t\t\tSearch for an app installed from GitHub, regardless of method\n\n\n\t-v, --verbose\t\tGive more information about the queried package\n\n\n-u, --update,\t\tUpdate your software. This may or may not work for packages installed from Github.\n\n	-a, --apt\t	Update from only apt\n\n\n	-f, --flat\t\tUpdate from only Flatpak\n\n\n\t-g, --git	\tUpdate from only Github\n\n\n	-s, --snap\t\tUpdate only installed snaps\n\n\n-v, --version\t\tPrint Current Version and exit\n\n\n--fix-config\t\tEssentially this runs 'sudo dpkg --configure -a', to fix package management issues\n\n\n--add-repo\t\tAdd a repository, MUST BE FOLLOWED BY ONE OF THE FOLLOWING OPTIONS:\n\n\n	-a, --apt\t\tadds a new PPA\n\n\n\t-f, --flat\t	adds a new Flatpak Remote\n\n\n-l, --list\t\tList installed apps, pass a package name after this flag to search for an installed app\n\n\n	-a, --apt\tFilter installed apps to ones installed with apt\n\n\n\t-f, --flat\tFilter installed apps to ones installed with Flatpak\n\n\n\t-s, --snap\tFilter installed apps to ones installed with Snap\n\n\n\t--ga\t\tFilter installed apps to ones installed using GitHub Automatic Method\n\n\n\t--gm\t\tFilter installed apps to ones installed using GitHub Manual Method\n\n\n\t--git\t\tFilter installed apps to ones installed from GitHub, regardless of method\n\n\n--edit-sources,\t\tEdit enabled apt repos by editing /etc/apt/sources.list or one of the files\n--edit-repos,\t\tin /etc/apt/sources.list.d\n--edit-apt-repos";
+	string h = translate("h", "", "");
 	//copy the argv list so that we can compare the entires
 	//without having the weird "undefined behvior" errors
 	string_list argv(argv_list, argv_list + argc);
 	//if nothing is passed, print the help dialog and exit
 	if (argc <= 1)
 	{
-		cerr << R << "\nERROR: " << NC << "No arguments passed. mrai must have arguments passed to be used.\n" << endl;
+		cerr << R << translate("error", "", "") << NC << translate("no_arguments", "", "") << endl;
 		cout << "\n" << h << "\n" << endl;
 		return(0);
 	}
@@ -907,14 +899,14 @@ int main(int argc, char **argv_list)
 	uid_t uid = getuid();
 	if (uid <= 0)
 	{
-		cerr << "\n" << R << "Please do not run mrai with root privleges. This will cause file system issues with GitHub installations." << NC << "\n" << endl;
+		cerr << "\n" << R << translate("run_with_root_error", "", "") << NC << "\n" << endl;
 		return 2;
 	}
 	//pre-config
 	//check if mrai is already running
 	if (DoesPathExist("/tmp/.mrai.lock"))
 	{
-		cout << "\n" << R << "mrai is already running.\nFor security and stability reasons, please refrain from using mrai until this process has exited." << NC << "\n";
+		cout << "\n" << R << translate("mrai_already_running", "", "") << NC << "\n";
 		return 2;
 	}
 	//obtain lock and initialize everything that hasn't already been set
@@ -934,7 +926,7 @@ int main(int argc, char **argv_list)
 		string COMMAND;
 		if (argv[1] == "--fix-config")
 		{
-			cout << "\n" << G << "Attempting to correct package configuration. Please wait . . . \n" << NC << endl;
+			cout << "\n" << G << translate("fix_config", "", "") << NC << endl;
 			try
 			{
 				system("/usr/bin/pkexec /usr/bin/dpkg --configure -a");
@@ -942,7 +934,7 @@ int main(int argc, char **argv_list)
 			}
 			catch (...)
 			{
-				error_report(2,called_as,"--fix-config failed. Most likely due to faulty package configurations.");
+				error_report(2,called_as,translate("fix_config_failure", "", ""));
 				exit(2);
 			}
 		}
@@ -973,13 +965,13 @@ int main(int argc, char **argv_list)
 				string name;
 				if (argv[3].find("http://") != std::string::npos or argv[3].find("https://") != std::string::npos)
 				{
-					cout << "What would you like to name this repo?: " << flush;
+					cout << translate("name_repo_prompt", "", "") << flush;
 					cin >> name;
 					COMMAND = "/usr/bin/flatpak remote-add --if-not-exists \"" + name + "\" \"" + argv[3] + "\"";
 				}
 				else
 				{
-					cout << "What would you like to name this repo?: " << flush;
+					cout << translate("name_repo_prompt", "", "") << flush;
 					cin >> name;
 					COMMAND = "/usr/bin/flatpak remote-add --if-not-exists \"" + name + "\" \"http://" + argv[3] + "\"";
 				}
@@ -995,13 +987,13 @@ int main(int argc, char **argv_list)
 			}
 			else
 			{
-				error_report(2,called_as,"No package manager indicated.\n");
+				error_report(2, called_as, translate("package_manager_error", "", ""));
 				exit(2);
 			}
 		}
 		elif (argv[1] == "--edit-sources" or argv[1] == "--edit-repos" or argv[1] == "--edit-apt-repos")
 		{
-			cout << "\nTo enable an apt repo, remove the \"# \" (including the space) from the beginning of the line.\nTo disable a repo, just add the \"# \" back to the beginning of the line.\n\nLines beginning with \"deb-src\" are for source code.\n" << endl;
+			cout << translate("sources_list_pre_open", "", "") << endl;
 			if (DoesPathExist("/etc/apt/sources.list.d"))
 			{
 				string sources_dir_list = run("/bin/ls /etc/apt/sources.list.d");
@@ -1019,7 +1011,7 @@ int main(int argc, char **argv_list)
 				}
 				else
 				{
-					cout << "\nYour sources.list.d directroy has config files in it as well.\n" << endl;
+					cout << translate("sources_list_directory_notice", "", "") << endl;
 					cout << "0\t/etc/apt/sources.list" << endl;
 					//convert sources_dir_list to a list data structure
 					string_list sources_dir_vector;
@@ -1035,12 +1027,12 @@ int main(int argc, char **argv_list)
 					{
 						try
 						{
-							cout << "Give the number of the file you would like to edit: [0-" << (sources_dir_vector.size() + 1) << "]: " << flush;
+							cout << translate("open_file_prompt", "", "") << " [0-" << (sources_dir_vector.size() + 1) << "]: " << flush;
 							cin >> *choice_address;
 						}
 						catch (...)
 						{
-							cout << R << "\nValue entered not a positive integer. Please try again.\n" << NC << endl;
+							cout << R << translate("value_not_unsigned_int", "", "") << NC << endl;
 							continue;
 						}
 						if (choice >= 0 and choice <= sources_dir_vector.size() + 1)
@@ -1049,7 +1041,7 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							cout << "\n" << R << "ERROR: " << NC << "Not within designated range. Please try again.\n" << NC << endl;
+							cout << "\n" << R << translate("error", "", "") << NC << translate("not_within_range", "", "") << NC << endl;
 						}
 					}
 					string file;
@@ -1103,7 +1095,7 @@ int main(int argc, char **argv_list)
 		string search_string;
 		if (argc <= 0)
 		{
-			cerr << R << "\nERROR: " << NC << "No options passed.\n" << endl;
+			cerr << R << translate("error", "", "") << NC << translate("no_opt_passed", "", "") << endl;
 			exit(1);
 		}
 		if (argv[1].find("-") != std::string::npos)
@@ -1118,7 +1110,7 @@ int main(int argc, char **argv_list)
 				}
 				else
 				{
-					cerr << R << "\nERROR: " << NC << "Find function takes 2 arguments. 1 passed.\n" << endl;
+					cerr << R << translate("error", "", "") << NC << translate("find_function_error", "", "") << endl;
 					exit(1);
 				}
 			}
@@ -1473,7 +1465,7 @@ int main(int argc, char **argv_list)
 		}
 		if (i.size() <= 0 and ! r and ! c and S.size() <= 0 and u.size() <= 0 and L.size() <= 0 and ! FIND)
 		{
-				error_report(2,called_as,"Flag system failed. Something was set and got through but was not detected before work segment. Please file a bug report at https://github.com/drauger-os-development/mrai/issues\n");
+				error_report(2,called_as,translate("flag_failure", "", "") + " " + translate("report", "", ""));
 				exit(2);
 		}
 		else
@@ -1481,7 +1473,7 @@ int main(int argc, char **argv_list)
 			//install flag
 			if (i.size() > 0)
 			{
-				cout << G << "\nAttempting to Install . . .\n" << NC << endl;
+				cout << G << translate("attempt_install", "", "") << NC << endl;
 				if (Vector_Contains(i,"a") and i.size() == 1)
 				{
 					exit(aptinstall(install,a));
@@ -1511,7 +1503,7 @@ int main(int argc, char **argv_list)
 						}
 						catch (...)
 						{
-							error_report(1,called_as," Installation from git failed.");
+							error_report(1, called_as, translate("git_install_failure", "", ""));
 							exit(1);
 						}
 					}
@@ -1557,7 +1549,7 @@ int main(int argc, char **argv_list)
 									}
 									catch (...)
 									{
-										cerr << R << "\nAll installation methods failed.$NC\nPlease make sure that you have the Github username,\nrepo name, and package name spelled correctly\n" << NC << endl;
+										cerr << R << translate("install_failed", "", "") << NC << endl;
 										exit(2);
 									}
 								}
@@ -1568,7 +1560,7 @@ int main(int argc, char **argv_list)
 				}
 				else
 				{
-					error_report(2,called_as,"Install flag was set but nothing was set dictating what package manager to use.");
+					error_report(2,called_as,translate("install_flag_error", "", ""));
 					exit(2);
 				}
 			}
@@ -1609,22 +1601,22 @@ int main(int argc, char **argv_list)
 						}
 						elif (type[i] == "0")
 						{
-							cout << Y << "\nAccording to all our databases, " << uninstall[i] << " is not installed.\n" << NC << endl;
-							cout << "Show packages with similar names? [y/N]: " << flush;
+							cout << Y << translate("package_not_installed", uninstall[i], "") << NC << endl;
+							cout << translate("show_similar_names_prompt", "", "") << " [y/N]: " << flush;
 							cin >> ans;
 							if (ans != "Y" or ans != "y")
 							{
 								continue;
 							}
-							cout << "\nApps with similar package names:\n\n" << endl;
+							cout << translate("show_similar_names", "", "") << endl;
 							show = run(ConvertToChar("/usr/bin/dpkg -l | /bin/grep " + uninstall[i]));
 							if (show == " " or show == "")
 							{
-								cerr << R << "No Apt Packages with similar names installed.\n" << NC << endl;
+								cerr << R << translate("no_similar_debs", "", "") << NC << endl;
 							}
 							else
 							{
-								cout << "Apt Packages:\n\n" << endl;
+								cout << translate("similar_debs", "", "") << endl;
 								cout << show << "\n" << endl;
 							}
 							if (is_snapd_installed())
@@ -1640,11 +1632,11 @@ int main(int argc, char **argv_list)
 								}
 								if (snap_list.size() <= 0)
 								{
-									cerr << R << "No Snaps with similar names installed.\n" << NC << endl;
+									cerr << R << translate("no_similar_snaps", "", "") << NC << endl;
 								}
 								else
 								{
-									cout << "Snaps:\n\n" << endl;
+									cout << translate("similar_snaps", "", "") << endl;
 									for (unsigned int i2 = 0; i2 < snap_list.size(); i2++)
 									{
 										cout << snap_list[i2] << endl;
@@ -1656,11 +1648,11 @@ int main(int argc, char **argv_list)
 								show = run(ConvertToChar("/usr/bin/flatpak list | /bin/grep " + uninstall[i]));
 								if (show == " " or show == "")
 								{
-									cerr << R << "\nNo Flatpaks with similar names installed.\n" << NC << endl;
+									cerr << R << translate("no_similar_flatpaks", "", "") << NC << endl;
 								}
 								else
 								{
-									cout << "Flatpaks:\n\n" << endl;
+									cout << translate("similar_flatpaks", "", "") << endl;
 									cout << show << endl;
 								}
 							}
@@ -1703,7 +1695,7 @@ int main(int argc, char **argv_list)
 											show.append("git manual");
 											break;
 										default:
-											error_report(2,called_as,"Unrecognized value in variable 'type' in uninstall segment: " + type[i]);
+											error_report(2,called_as,translate("error_var_type", "", "") + type[i]);
 											exit(2);
 									}
 								}
@@ -1716,10 +1708,10 @@ int main(int argc, char **argv_list)
 										break;
 									}
 								}
-								cout << G << "\nThere are mutliple apps which fit the package name \"" << uninstall[i] << "\".\n\nThese are installed through: " << endl;
+								cout << G << translate("multiple_installations", uninstall[i], "") << endl;
 								cout << G << show << endl;
-								cout << G << "\n\nFrom which package manager would you like to uninstall?" << NC << endl;
-								cout << input << "Select ONE: " << flush;
+								cout << G << translate("select_package_manager_prompt", "", "") << NC << endl;
+								cout << input << translate("select_one", "", "") << flush;
 								cin >> ans;
 								while (true)
 								{
@@ -1749,12 +1741,12 @@ int main(int argc, char **argv_list)
 									}
 									elif (ans == "exit" or ans == "cancel" or ans == "EXIT" or ans == "CANCEL")
 									{
-										cout << Y << "\nExiting . . .\n" << NC << endl;
+										cout << Y << translate("abort", "", "") << NC << endl;
 										exit(0);
 									}
 									else
 									{
-										cerr << R << "\nNOT A PROVIDED OPTION. PLEASE TRY AGAIN.\n" << NC << endl;
+										cerr << R << translate("not_provided_option", "", "") << NC << endl;
 									}
 								}
 							}
@@ -1763,7 +1755,7 @@ int main(int argc, char **argv_list)
 				}
 				else
 				{
-					error_report(2,called_as,"Unknown error with var type when attempting to remove package.");
+					error_report(2,called_as,translate("unknown_error_type", "", ""));
 					exit(2);
 				}
 				if (a_list.size() > 0)
@@ -1808,7 +1800,7 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							error_report(1,called_as,"Flatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n");
+							error_report(1,called_as,translate("flatpak_not_installed", "", ""));
 						}
 					}
 					if (Vector_Contains(S,"s"))
@@ -1820,7 +1812,7 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							error_report(1,called_as,"Snapd is not installed. Please run \"mrai -ia snapd\" to install it.\n");
+							error_report(1,called_as,translate("snapd_not_installed", "", ""));
 						}
 					}
 					if (Vector_Contains(S,"gm") or Vector_Contains(S,"gb"))
@@ -1837,7 +1829,7 @@ int main(int argc, char **argv_list)
 									print_list.insert(print_list.end(), list[i]);
 								}
 							}
-							cout << "Matching terms found installed using manual git mentod.\n\nMatching app names:" << endl;
+							cout << translate("matching_terms_git_manual", "", "") << endl;
 							for (unsigned int i = 0; i < print_list.size(); i++)
 							{
 								cout << "\t *" << print_list[i] << endl;
@@ -1846,7 +1838,7 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							cout << Y << "\nThe search term provided was not found to be installed using git manual method.\n" << NC << endl;
+							cout << Y << translate("no_matching_terms_git_manual", "", "") << NC << endl;
 						}
 					}
 					if (Vector_Contains(S,"ga") or Vector_Contains(S,"gb"))
@@ -1863,7 +1855,7 @@ int main(int argc, char **argv_list)
 									print_list.insert(print_list.end(), list[i]);
 								}
 							}
-							cout << "Matching terms found installed using automatic git mentod.\n\nMatching app names:" << endl;
+							cout << translate("matching_terms_git_auto", "", "") << endl;
 							for (unsigned int i = 0; i < print_list.size(); i++)
 							{
 								cout << "\t *" << print_list[i] << endl;
@@ -1872,7 +1864,7 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							cout << Y << "\nThe search term provided was not found to be installed using git automatic method.\n" << NC << endl;
+							cout << Y << translate("no_matching_terms_git_auto", "", "") << NC << endl;
 						}
 					}
 				}
@@ -1886,12 +1878,12 @@ int main(int argc, char **argv_list)
 					{
 						if (is_flatpak_installed())
 						{
-							error_report(1,called_as,"Flatpak does not support verbose search mode. Using normal search.\n");
+							error_report(1,called_as,translate("flatpak_not_verbose", "", ""));
 							system(ConvertToChar("/usr/bin/flatpak search " + search_string));
 						}
 						else
 						{
-							error_report(1,called_as,"Flatpak is not installed. Please run \"mrai -ia flatpak\" to install it.\n");
+							error_report(1,called_as,translate("flatpak_not_installed", "", ""));
 						}
 					}
 					if (Vector_Contains(S,"s"))
@@ -1902,12 +1894,12 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							error_report(1,called_as,"Snapd is not installed. Please run \"mrai -ia snapd\" to install it.\n");
+							error_report(1,called_as,translate("snapd_not_installed", "", ""));
 						}
 					}
 					if (Vector_Contains(S,"gm") or Vector_Contains(S,"gb"))
 					{
-						error_report(1,called_as,"git manual method does not support verbose searching. Falling back to standard search . . .");
+						error_report(1,called_as,translate("git_manual_not_verbose", "", ""));
 						string_list list = gitmanlist(called_as);
 						if (Vector_Contains(list, search_string))
 						{
@@ -1919,7 +1911,7 @@ int main(int argc, char **argv_list)
 									print_list.insert(print_list.end(), list[i]);
 								}
 							}
-							cout << "Matching terms found installed using manual git mentod.\n\nMatching app names:" << endl;
+							cout << translate("matching_terms_git_manual", "", "") << endl;
 							for (unsigned int i = 0; i < print_list.size(); i++)
 							{
 								cout << "\t *" << print_list[i] << endl;
@@ -1928,12 +1920,12 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							cout << Y << "\nThe search term provided was not found to be installed using git manual method.\n" << NC << endl;
+							cout << Y << translate("no_matching_terms_git_manual", "", "") << NC << endl;
 						}
 					}
 					if (Vector_Contains(S,"ga") or Vector_Contains(S,"gb"))
 					{
-						error_report(1,called_as,"git automatic method does not support verbose searching. Falling back to standard search . . .");
+						error_report(1,called_as,translate("git_auto_not_verbose", "", ""));
 						string_list list = gitautolist(called_as);
 						if (Vector_Contains(list, search_string))
 						{
@@ -1945,7 +1937,7 @@ int main(int argc, char **argv_list)
 									print_list.insert(print_list.end(), list[i]);
 								}
 							}
-							cout << "Matching terms found installed using automatic git mentod.\n\nMatching app names:" << endl;
+							cout << translate("matching_terms_git_auto", "", "") << endl;
 							for (unsigned int i = 0; i < print_list.size(); i++)
 							{
 								cout << "\t * " << print_list[i] << endl;
@@ -1954,7 +1946,7 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							cout << Y << "\nThe search term provided was not found to be installed using git automatic method.\n" << NC << endl;
+							cout << Y << translate("no_matching_terms_git_auto", "", "") << NC << endl;
 						}
 					}
 				}
@@ -1979,7 +1971,7 @@ int main(int argc, char **argv_list)
 						}
 						catch (...)
 						{
-							error_report(2,called_as,"aptupdate has had an error. Please check error log for more info.");
+							error_report(2,called_as,translate("aptupdate_error", "", ""));
 							exit(2);
 						}
 					}
@@ -1998,7 +1990,7 @@ int main(int argc, char **argv_list)
 						}
 						catch (...)
 						{
-							error_report(2,called_as,"aptupdate has had an error. Please check error log for more info.");
+							error_report(2,called_as,translate("aptupdate_error", "", ""));
 							exit(2);
 						}
 					}
@@ -2094,7 +2086,7 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							error_report(2, called_as, "Snapd not available. Install with 'mrai -ia snapd'");
+							error_report(2, called_as, translate("snapd_not_installed", "", ""));
 							exit(2);
 						}
 					}
@@ -2115,7 +2107,7 @@ int main(int argc, char **argv_list)
 						}
 						else
 						{
-							error_report(2,called_as,"Flatpak is not available. Install it with 'mrai -ia flatpak'");
+							error_report(2,called_as,translate("flatpak_not_installed", "", ""));
 							exit(2);
 						}
 					}
@@ -2130,7 +2122,7 @@ int main(int argc, char **argv_list)
 								output_list.insert(output_list.end(),search_field[i]);
 							}
 						}
-						cout << G << "\nInstalled git Apps:\nInstalled through Manual Method:\n" << NC << flush;
+						cout << G << translate("installed_git", "", "") << translate("installed_git_manual", "", "") << NC << flush;
 						for (unsigned int i = 0; i < output_list.size(); i++)
 						{
 							cout << "\t * " << output_list[i] << endl;
@@ -2147,7 +2139,7 @@ int main(int argc, char **argv_list)
 								output_list.insert(output_list.end(),search_field[i]);
 							}
 						}
-						cout << G << "\nInstalled git Apps:\nInstalled through Automatic Method:\n" << NC << flush;
+						cout << G << translate("installed_git", "", "") << translate("installed_git_auto", "", "") << NC << flush;
 						for (unsigned int i = 0; i < output_list.size(); i++)
 						{
 							cout << "\t * " << output_list[i] << endl;
@@ -2165,12 +2157,12 @@ int main(int argc, char **argv_list)
 						{
 							list2.insert(list2.end(), "No apps found installed using automatic method.");
 						}
-						cout << G << "\nInstalled git Apps:\n\nInstalled through Manual Method:\n" << NC <<  endl;
+						cout << G << translate("installed_git", "", "") << translate("installed_git_manual", "", "") << NC <<  endl;
 						for (unsigned int i = 0; i < list1.size(); i++)
 						{
 							cout << list1[i] << endl;
 						}
-						cout << G << "\nInstalled through Automatic Method:\n" << NC << endl;
+						cout << G << translate("installed_git_auto", "", "") << NC << endl;
 						for (unsigned int i = 0; i < list2.size(); i++)
 						{
 							cout << list2[i] << endl;
@@ -2180,7 +2172,7 @@ int main(int argc, char **argv_list)
 					{
 						if (Vector_Contains(L,"ga") and Vector_Contains(L,"gm"))
 						{
-							error_report(2,called_as,"Already specified the 'manual only' or 'automatic only' flags.Please do not use the manual only, automatic only, or unspecified flags in conjunction.");
+							error_report(2,called_as,translate("multiple_git_flag_error", "", ""));
 							exit(2);
 						}
 					}
@@ -2209,12 +2201,12 @@ int main(int argc, char **argv_list)
 					{
 						list2.insert(list2.end(), "No apps found installed using automatic method.");
 					}
-					cout << G << "\nInstalled git Apps:\n\nInstalled through Manual Method:\n" << NC <<  endl;
+					cout << G << translate("installed_git", "", "") << translate("installed_git_manual", "", "") << NC <<  endl;
 					for (unsigned int i = 0; i < list1.size(); i++)
 					{
 						cout << list1[i] << endl;
 					}
-					cout << G << "Installed through Automatic Method:\n" << NC << endl;
+					cout << G << translate("installed_git_auto", "", "") << NC << endl;
 					for (unsigned int i = 0; i < list2.size(); i++)
 					{
 						cout << list2[i] << endl;
@@ -2234,12 +2226,12 @@ int main(int argc, char **argv_list)
 					string package = run(ConvertToChar("dpkg -S " + command_path + " | /bin/sed 's/:/ /g' | /usr/bin/awk '{print \\$1}'"));
 					if (package == "")
 					{
-						error_report(1,called_as,"No package providing specificed command.");
+						error_report(1,called_as,translate("no_providing_package", "", ""));
 						exit(1);
 					}
 					else
 					{
-						cout << G << "\nPackage providing command '" << look << "': " << NC << package << "\n" << endl;
+						cout << G << translate("providing_package", look, package) << "\n" << NC << endl;
 					}
 				}
 			}
@@ -2252,7 +2244,7 @@ int main(int argc, char **argv_list)
 	}
 	catch (...)
 	{
-		error_report(2,"UNKNOWN"," AN ERROR HAS OCCURED.");
+		error_report(2,"UNKNOWN",translate("unknown_error", "", ""));
 		exit(2);
 	}
 }

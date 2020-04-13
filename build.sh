@@ -103,6 +103,7 @@ rm "$FOLDER"/usr/share/mrai/base-spinner.cxx
 rm "$FOLDER"/usr/share/mrai/clean.cxx
 rm "$FOLDER"/usr/share/mrai/gitautoinst.cxx
 rm "$FOLDER"/usr/share/mrai/aptremove.cxx
+rm "$FOLDER"/usr/share/mrai/mrai_lib.hpp
 rm mrai/usr/share/mrai/aptremove
 rm mrai/usr/share/mrai/gitautoinst
 rm mrai/usr/share/mrai/clean

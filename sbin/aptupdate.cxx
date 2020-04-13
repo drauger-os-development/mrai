@@ -19,13 +19,10 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION: 0.2.1-beta2
+ * VERSION: 0.2.2-beta2
  */
 
-
-#include <iostream>
-#include <string>
-#include "../usr/share/mrai/mrai_lib.h"
+#include "../usr/share/mrai/mrai_lib.hpp"
 
 using namespace std;
 
@@ -57,17 +54,17 @@ int main(int argc, char **argv)
 	}
 	else if (argc > 2)
 	{
-		cerr << "\n" << R << "aptupdate does not support setting flags seperately. Please use -sy or -ys.\n" << NC << endl;
+		cerr << "\n" << R << translate("aptupdate_seperate_flags", "", "") << NC << endl;
 		return 1;
 	}
-	cout << "\n" << G << "Updating apt cache . . ." << NC << "\n" << endl;
+	cout << "\n" << G << translate("aptupdate_apt_cache", "", "") << NC << "\n" << endl;
 	try
 	{
 		system("/usr/bin/apt update");
 	}
 	catch (...)
 	{
-		cerr << "\n" << R << "An error has occured. Most likely your computer cannot communicate with one or more servers.\nPlease make sure you are connected to the internet and/or try again later.\n" << NC << endl;
+		cerr << "\n" << R << translate("aptupdate_cache_error", "", "") << NC << endl;
 		return 2;
 	}
 	try
@@ -106,7 +103,7 @@ int main(int argc, char **argv)
 	catch (...)
 	{
 		system("/usr/bin/dpkg --configure -a");
-		error_report(2,called_as,"An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey.");
+		error_report(2,called_as,translate("aptupdate_catastrophic_error", "", ""));
 		return 2;
 	}
 	if (s == 1)
