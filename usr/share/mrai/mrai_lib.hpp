@@ -396,38 +396,10 @@ std::string translate(std::string var_name, std::string parse_in1, std::string p
 			//we have our config parsed into a 2D array. Now search for our var
 			for (unsigned int i = 0; i < config.size(); i++)
 			{
-				for (unsigned int i2 = 0; i < config[i].size(); i2++)
-				{
-					if (config[i][i2] == var_name)
-					{
-						//parse in parse_in1 and parse_in2
-						string_list value = split(config[i][i2], '\v');
-						std::string output = value[0] + parse_in1;
-						if (value.size() >= 2)
-						{
-							output = output + value[1] + parse_in2;
-						}
-						if (value.size() >= 3)
-						{
-							output = output + value[2];
-						}
-						return output;
-					}
-				}
-			}
-		}
-	}
-	//it doesn't exist, so use $defaults
-	else
-	{
-		for (unsigned int i = 0; i < defaults.size(); i++)
-		{
-			for (unsigned int i2 = 0; i < defaults[i].size(); i2++)
-			{
-				if (defaults[i][i2] == var_name)
+				if (config[i][0] == var_name)
 				{
 					//parse in parse_in1 and parse_in2
-					string_list value = split(defaults[i][i2], '\v');
+					string_list value = split(config[i][1], '\v');
 					std::string output = value[0] + parse_in1;
 					if (value.size() >= 2)
 					{
@@ -439,6 +411,28 @@ std::string translate(std::string var_name, std::string parse_in1, std::string p
 					}
 					return output;
 				}
+			}
+		}
+	}
+	//it doesn't exist, so use $defaults
+	else
+	{
+		for (unsigned int i = 0; i < defaults.size(); i++)
+		{
+			if (defaults[i][0] == var_name)
+			{
+				//parse in parse_in1 and parse_in2
+				string_list value = split(defaults[i][1], '\v');
+				std::string output = value[0] + parse_in1;
+				if (value.size() >= 2)
+				{
+					output = output + value[1] + parse_in2;
+				}
+				if (value.size() >= 3)
+				{
+					output = output + value[2];
+				}
+				return output;
 			}
 		}
 	}
