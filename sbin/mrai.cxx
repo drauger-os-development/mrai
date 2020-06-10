@@ -109,18 +109,18 @@ int aptinstall (string_list passed, bool assume_yes)
     else
     {
         string install_string = VectorToString(install_vector);
-        string apt-fast_location = is_aptfast_installed();
-        if (apt-fast_location > 0)
+        string aptfast_location = is_aptfast_installed();
+        if (aptfast_location.length() > 0)
         {
             try
             {
                 if (assume_yes)
                 {
-                    system(ConvertToChar("/usr/bin/pkexec " + apt-fast_location + " -y install " + install_string));
+                    system(ConvertToChar("/usr/bin/pkexec " + aptfast_location + " -y install " + install_string));
                 }
                 else
                 {
-                    system(ConvertToChar("/usr/bin/pkexec " + apt-fast_location + " install " + install_string));
+                    system(ConvertToChar("/usr/bin/pkexec " + aptfast_location + " install " + install_string));
                 }
                 for (unsigned int i = 0; i < install_vector.size(); i++)
                 {
