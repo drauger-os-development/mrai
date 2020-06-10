@@ -50,7 +50,7 @@ std::string cache = "/etc/mrai";
 std::string scripts = "/usr/share/mrai";
 std::string gitautocache = "/etc/mrai/gitauto";
 std::string gitmancache = "/etc/mrai/gitman";
-std::string version = "1.5.6-beta7";
+std::string version = "1.5.7-beta7";
 std::string VERSION = version;
 
 std::vector<string_list> defaults = {
