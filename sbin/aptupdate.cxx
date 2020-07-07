@@ -19,100 +19,98 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION: 0.2.1-beta2
+ * VERSION: 0.2.3-beta2
  */
 
-
-#include <iostream>
-#include <string>
-#include "../usr/share/mrai/mrai_lib.h"
+#include "../usr/share/mrai/mrai_lib.hpp"
 
 using namespace std;
 
 int main(int argc, char **argv)
 {
-	string called_as = argv[0];
-	string arg1;
-	int s = 0;
-	int y = 0;
-	if (argc == 2)
-	{
-		arg1 = argv[1];
-		if (arg1 == "--version" or arg1 == "-v")
-		{
-			cout << "\n" << version << "\n" << endl;
-			return 0;
-		}
-		else
-		{
-			if (arg1 == "-sy" or arg1 == "-ys" or arg1 == "-s")
-			{
-				s = 1;
-			}
-			if (arg1 == "-sy" or arg1 == "-ys" or arg1 == "-y")
-			{
-				y = 1;
-			}
-		}
-	}
-	else if (argc > 2)
-	{
-		cerr << "\n" << R << "aptupdate does not support setting flags seperately. Please use -sy or -ys.\n" << NC << endl;
-		return 1;
-	}
-	cout << "\n" << G << "Updating apt cache . . ." << NC << "\n" << endl;
-	try
-	{
-		system("/usr/bin/apt update");
-	}
-	catch (...)
-	{
-		cerr << "\n" << R << "An error has occured. Most likely your computer cannot communicate with one or more servers.\nPlease make sure you are connected to the internet and/or try again later.\n" << NC << endl;
-		return 2;
-	}
-	try
-	{
-		if (is_aptfast_installed())
-		{
-			if (y == 0)
-			{
-				system("/usr/sbin/apt-fast dist-upgrade");
-				system("/usr/bin/apt autoremove");
-				system("/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
-			}
-			else
-			{
-				system("/usr/sbin/apt-fast -y dist-upgrade");
-				system("/usr/bin/apt -y autoremove");
-				system("/usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
-			}
-		}
-		else
-		{
-			if (y == 0)
-			{
-				system("/usr/bin/apt dist-upgrade");
-				system("/usr/bin/apt autoremove");
-				system("/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
-			}
-			else
-			{
-				system("/usr/bin/apt -y dist-upgrade");
-				system("/usr/bin/apt -y autoremove");
-				system("/usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
-			}
-		}
-	}
-	catch (...)
-	{
-		system("/usr/bin/dpkg --configure -a");
-		error_report(2,called_as,"An error has occured mid-update.\nRecovery has been attempted. Shutting down mrai for safey.");
-		return 2;
-	}
-	if (s == 1)
-	{
-		system("/usr/bin/pkexec /sbin/snapupdate");
-	}
-	return 0;
+    string called_as = argv[0];
+    string arg1;
+    int s = 0;
+    int y = 0;
+    if (argc == 2)
+    {
+        arg1 = argv[1];
+        if (arg1 == "--version" or arg1 == "-v")
+        {
+            cout << "\n" << version << "\n" << endl;
+            return 0;
+        }
+        else
+        {
+            if (arg1 == "-sy" or arg1 == "-ys" or arg1 == "-s")
+            {
+                s = 1;
+            }
+            if (arg1 == "-sy" or arg1 == "-ys" or arg1 == "-y")
+            {
+                y = 1;
+            }
+        }
+    }
+    else if (argc > 2)
+    {
+        cerr << "\n" << R << translate("aptupdate_seperate_flags", "", "") << NC << endl;
+        return 1;
+    }
+    cout << "\n" << G << translate("aptupdate_apt_cache", "", "") << NC << "\n" << endl;
+    try
+    {
+        system("/usr/bin/apt update");
+    }
+    catch (...)
+    {
+        cerr << "\n" << R << translate("aptupdate_cache_error", "", "") << NC << endl;
+        return 2;
+    }
+    try
+    {
+        string aptfast_location = is_aptfast_installed();
+        if (aptfast_location.length() > 0)
+        {
+            if (y == 0)
+            {
+                system(ConvertToChar(aptfast_location + " dist-upgrade"));
+                system("/usr/bin/apt autoremove");
+                system("/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
+            }
+            else
+            {
+                system(ConvertToChar(aptfast_location + " -y dist-upgrade"));
+                system("/usr/bin/apt -y autoremove");
+                system("/usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
+            }
+        }
+        else
+        {
+            if (y == 0)
+            {
+                system("/usr/bin/apt dist-upgrade");
+                system("/usr/bin/apt autoremove");
+                system("/usr/bin/apt purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
+            }
+            else
+            {
+                system("/usr/bin/apt -y dist-upgrade");
+                system("/usr/bin/apt -y autoremove");
+                system("/usr/bin/apt -y purge $(/usr/bin/dpkg -l | /bin/grep '^rc' | /usr/bin/awk '{print $2}')");
+            }
+        }
+    }
+    catch (...)
+    {
+        system("/usr/bin/dpkg --configure -a");
+        error_report(2,called_as,translate("aptupdate_catastrophic_error", "", ""));
+        return 2;
+    }
+    if (s == 1)
+    {
+        system("/usr/bin/pkexec /sbin/snapupdate");
+    }
+    return 0;
 }
 

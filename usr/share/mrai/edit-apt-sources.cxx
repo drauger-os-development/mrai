@@ -19,15 +19,11 @@
  * MA 02110-1301, USA.
  *
  *
- * VERSION 0.2.2-beta2
+ * VERSION 0.2.3-beta2
  */
 
 
-#include <iostream>
-#include <string>
-#include <bits/stdc++.h>
-#include <stdlib.h>
-#include "mrai_lib.h"
+#include "mrai_lib.hpp"
 
 using namespace std;
 
@@ -93,7 +89,7 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-		error_report(2,argv[0],"Could not parse selected_editor.conf or .selected-editor. Most likly file system permissions issue.");
+		error_report(2, argv[0], translate("edit_apt_sources_parse_error", "", ""));
 		return 2;
 	}
 	try
@@ -112,20 +108,20 @@ int main(int argc, char **argv)
 	}
 	catch (...)
 	{
-			error_report(2,argv[0],"Could not manipulate " + file + ". Most likely not running as root or incorrect file system permissions.");
+			error_report(2,argv[0],translate("edit_apt_sources_edit_error", file, ""));
 			return 2;
 	}
 	try
 	{
-		cout << "\n" + G + "\bUpdating Apt Repository Cache . . .\n" + NC << endl;
+		cout << "\n" << G << "\b" << translate("aptupdate_apt_cache", "", "") << NC << endl;
 		system("/usr/bin/apt update");
 	}
 	catch (...)
 	{
-		error_report(2,argv[0],"apt update failed. Most likly bad network connection.");
+		error_report(2,argv[0],translate("aptupdate_cache_error", "", ""));
 		return 2;
 	}
-	cout << "\n" + G + "\bConfiguring Apt Repos Complete!\n" + NC << endl;
+	cout << "\n" << G << "\b" << translate("edit_apt_sources_done", "", "") << NC << endl;
 	return 0;
 }
 
