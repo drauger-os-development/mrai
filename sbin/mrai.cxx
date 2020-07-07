@@ -897,7 +897,6 @@ int main(int argc, char **argv_list)
         return(0);
     }
     //check to make sure we DO NOT have root
-<<<<<<< HEAD
     //
     // This has been commented out because we are going to start using setuid() to correct for this issue
     // Later, mrai will self-escalate
@@ -908,14 +907,6 @@ int main(int argc, char **argv_list)
         //cerr << "\n" << R << translate("run_with_root_error", "", "") << NC << "\n" << endl;
         //return 2;
     //}
-=======
-    uid_t uid = getuid();
-    if (uid <= 0)
-    {
-        cerr << "\n" << R << translate("run_with_root_error", "", "") << NC << "\n" << endl;
-        return 2;
-    }
->>>>>>> cd03b5d120d969ea8b333e37b973947e6cd30b43
     //pre-config
     //check if mrai is already running
     if (DoesPathExist("/tmp/.mrai.lock"))
