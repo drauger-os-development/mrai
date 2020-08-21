@@ -6,7 +6,7 @@ FOLDER="$PAK\_$VERSION\_$ARCH"
 FOLDER=$(echo "$FOLDER" | sed 's/\\//g')
 if [ "$ARCH" == "amd64" ]; then
 	COMPILER="g++ -m64"
-	ARGS="-m64"
+	ARGS="-Wall"
 elif [ "$ARCH" == "arm64" ]; then
 	COMPILER="aarch64-linux-gnu-g++"
 	ARGS=""
@@ -20,13 +20,16 @@ mkdir ../"$FOLDER"
 #							     #
 ##############################################################
 cd usr/share/mrai
-$COMPILER $ARGS -Wall -o "log-out" "log-out.cxx" && echo "log-out compiled successfully"
-$COMPILER $ARGS -Wall -o "edit-apt-sources" "edit-apt-sources.cxx" && echo "edit-apt-sources compiled successfully"
-$COMPILER $ARGS -Wall -o "base-spinner" "base-spinner.cxx" && echo "base-spinner compiled successfully"
-$COMPILER $ARGS -Wall -o "clean" "clean.cxx" && echo "clean compiled successfully"
-$COMPILER $ARGS -Wall -o "gitautoinst" "gitautoinst.cxx" && echo "gitautoinst compiled successfully"
-$COMPILER $ARGS -Wall -o "aptremove" "aptremove.cxx" && echo "aptremove compiled successfully"
-cd ../../..
+$COMPILER $ARGS -o "log-out" "log-out.cxx" && echo "log-out compiled successfully"
+$COMPILER $ARGS -o "edit-apt-sources" "edit-apt-sources.cxx" && echo "edit-apt-sources compiled successfully"
+$COMPILER $ARGS -o "base-spinner" "base-spinner.cxx" && echo "base-spinner compiled successfully"
+$COMPILER $ARGS -o "clean" "clean.cxx" && echo "clean compiled successfully"
+$COMPILER $ARGS -o "gitautoinst" "gitautoinst.cxx" && echo "gitautoinst compiled successfully"
+$COMPILER $ARGS -o "aptremove" "aptremove.cxx" && echo "aptremove compiled successfully"
+cd ../../lib
+$COMPILER $ARGS -Werror -fpic -o "mrai_lib.o" "mrai_lib.cxx"
+$COMPILER -shared -o "libmrai.so.1" "mrai_lib.o"
+cd ../..
 cd sbin
 $COMPILER $ARGS -Wall -o "snapupdate" "snapupdate.cxx" && echo "snapupdate compiled successfully"
 $COMPILER $ARGS -Wall -o "aptupdate" "aptupdate.cxx" && echo "aptupdate compiled successfully"

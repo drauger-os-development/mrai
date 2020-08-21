@@ -1,5 +1,5 @@
 /*
- * mrai_lib.h
+ * mrai_lib.cxx
  *
  * Copyright 2020 Thomas Castleman <contact@draugeros.org>
  *
@@ -50,7 +50,7 @@ std::string cache = "/etc/mrai";
 std::string scripts = "/usr/share/mrai";
 std::string gitautocache = "/etc/mrai/gitauto";
 std::string gitmancache = "/etc/mrai/gitman";
-std::string version = "1.5.7-beta7";
+std::string version = "1.5.8-beta7";
 std::string VERSION = version;
 
 std::vector<string_list> defaults = {
@@ -210,7 +210,8 @@ const char* ConvertToChar(const std::string &s)
     return WORKING_STRING;
 }
 
-std::string GetURLFilePath(const std::string& url) {
+std::string GetURLFilePath(const std::string& url)
+{
     auto last_slash_location = url.rfind('/');
     if(last_slash_location == std::string::npos || last_slash_location + 1 >= url.size()) {
         return "";
@@ -249,7 +250,8 @@ int base_spinner(std::string &message, std::string &PID)
     return 0;
 }
 
-std::string run(const char* cmd) {
+std::string run(const char* cmd)
+{
     char buffer[128];
     std::string result = "";
     FILE* pipe = popen(cmd, "r");
