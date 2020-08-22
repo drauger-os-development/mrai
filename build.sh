@@ -1,4 +1,5 @@
 #!/bin/bash
+cp DEBIAN/mrai.control DEBIAN/control
 VERSION=$(cat DEBIAN/control | grep 'Version: ' | sed 's/Version: //g')
 PAK=$(cat DEBIAN/control | grep 'Package: ' | sed 's/Package: //g')
 ARCH=$(cat DEBIAN/control | grep 'Architecture: '| sed 's/Architecture: //g')
@@ -31,9 +32,9 @@ $COMPILER $ARGS -Werror -fpic -o "mrai_lib.o" "mrai_lib.cxx"
 $COMPILER -shared -o "libmrai.so.1" "mrai_lib.o"
 cd ../..
 cd sbin
-$COMPILER $ARGS -Wall -o "snapupdate" "snapupdate.cxx" && echo "snapupdate compiled successfully"
-$COMPILER $ARGS -Wall -o "aptupdate" "aptupdate.cxx" && echo "aptupdate compiled successfully"
-$COMPILER $ARGS -Wall -o "mrai" "mrai.cxx" && echo "mrai compiled successfully"
+$COMPILER $ARGS -o "snapupdate" "snapupdate.cxx" && echo "snapupdate compiled successfully"
+$COMPILER $ARGS -o "aptupdate" "aptupdate.cxx" && echo "aptupdate compiled successfully"
+$COMPILER $ARGS -o "mrai" "mrai.cxx" && echo "mrai compiled successfully"
 cd ..
 ##############################################################
 #							     #
@@ -120,5 +121,19 @@ rm mrai/sbin/mrai
 rm mrai/sbin/aptupdate
 rm mrai/sbin/snapupdate
 #build the shit
+rm "$FOLDER"/DEBIAN/mrai-common.control "$FOLDER"/DEBIAN/mrai.control "$FOLDER"/DEBIAN/mrai-common.install 
 dpkg-deb --build "$FOLDER"
+cd mrai
+cp DEBIAN/mrai-common.control DEBIAN/control
+VERSION=$(cat DEBIAN/control | grep 'Version: ' | sed 's/Version: //g')
+PAK=$(cat DEBIAN/control | grep 'Package: ' | sed 's/Package: //g')
+ARCH=$(cat DEBIAN/control | grep 'Architecture: '| sed 's/Architecture: //g')
+NEW_FOLDER="$PAK\_$VERSION\_$ARCH"
+NEW_FOLDER=$(echo "$NEW_FOLDER" | sed 's/\\//g')
+mv "$FOLDER" "$NEW_FOLDER"
+mv DEBIAN/control "$NEW_FOLDER"/DEBIAN/control
+cp DEBIAN/mrai-common.install "$NEW_FOLDER"/DEBIAN/mrai-common.install
+rm "$NEW_FOLDER"/DEBIAN/mrai.install
+cd ..
+dpkg-deb --build "$NEW_FOLDER"
 rm -rf "$FOLDER"
